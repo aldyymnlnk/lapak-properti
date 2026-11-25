@@ -9,9 +9,9 @@ const publishDate = "2026-11-21";
 const publishIsoDate = "2026-11-21T08:00:00+07:00";
 const publishDisplayDate = "21 November 2026 • 08:00 WIB";
 const pageSlug = "/blog/lapak-properti";
-const pageUrl = `https://lapakproperty.web.id${pageSlug}`;
-const ogImageUrl = "https://lapakproperty.web.id/assets/img/lapak-properti-terpercaya.webp";
-const secondImageUrl = "https://lapakproperty.web.id/assets/img/alur-jual-beli-properti-sampai-akta.webp";
+const pageUrl = `https://infoproperti.web.id${pageSlug}`;
+const ogImageUrl = "https://infoproperti.web.id/assets/img/lapak-properti-terpercaya.webp";
+const secondImageUrl = "https://infoproperti.web.id/assets/img/alur-jual-beli-properti-sampai-akta.webp";
 const authorName = "Aldi Rionaldi Simanullang";
 const keywordsList = "lapak properti, lapak properti online, jual beli rumah, cari rumah dijual, pasang iklan properti, cek legalitas properti, biaya jual beli rumah, tips beli rumah pertama";
 
@@ -42,11 +42,11 @@ const schemaArticle = {
       },
       "publisher": {
         "@type": "Organization",
-        "name": "Lapak Properti",
-        "url": "https://lapakproperty.web.id/",
+        "name": "InfoProperti",
+        "url": "https://infoproperti.web.id/",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://lapakproperty.web.id/assets/img/lapak-properti-terpercaya.webp"
+          "url": "https://infoproperti.web.id/assets/img/lapak-properti-terpercaya.webp"
         }
       }
     },
@@ -112,7 +112,7 @@ const schemaArticle = {
           "name": "Berapa biaya pasang iklan di lapak properti?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Biaya pasang iklan berbeda di setiap platform. Ada yang gratis untuk fitur dasar dan ada yang berbayar untuk penonjolan iklan. Cek ketentuan terbaru di halaman Pasang Iklan Lapak Properti sebelum mendaftar, lalu bandingkan manfaatnya dengan target pembeli yang kamu cari."
+            "text": "Biaya pasang iklan berbeda di setiap platform. Ada yang gratis untuk fitur dasar dan ada yang berbayar untuk penonjolan iklan. Cek ketentuan terbaru di halaman Pasang Iklan InfoProperti sebelum mendaftar, lalu bandingkan manfaatnya dengan target pembeli yang kamu cari."
           }
         },
         {
@@ -149,13 +149,13 @@ const schemaArticle = {
           "@type": "ListItem",
           "position": 1,
           "name": "Beranda",
-          "item": "https://lapakproperty.web.id/"
+          "item": "https://infoproperti.web.id/"
         },
         {
           "@type": "ListItem",
           "position": 2,
           "name": "Blog",
-          "item": "https://lapakproperty.web.id/blog"
+          "item": "https://infoproperti.web.id/blog"
         },
         {
           "@type": "ListItem",
@@ -173,7 +173,7 @@ const schemaArticle = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{pageTitle} — LapakProperti</title>
+    <title>{pageTitle} — InfoProperti</title>
     <meta name="description" content={pageDesc} />
     <meta name="keywords" content={keywordsList} />
     <link rel="canonical" href={pageUrl} />
@@ -341,7 +341,7 @@ const schemaArticle = {
 
                 <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Uji Lima Penanda Iklan Layak Dipercaya</h3>
                 <p>
-                  Lapak Properti merangkum pengecekan iklan ke dalam Uji Lima Penanda, yaitu daftar periksa sederhana yang dipakai sebelum kamu menghubungi penjual:
+                  InfoProperti merangkum pengecekan iklan ke dalam Uji Lima Penanda, yaitu daftar periksa sederhana yang dipakai sebelum kamu menghubungi penjual:
                 </p>
                 <ul class="list-disc pl-5 space-y-2">
                   <li><strong>Penanda data:</strong> harga, luas tanah, luas bangunan, dan alamat tertulis lengkap.</li>
@@ -513,10 +513,10 @@ const schemaArticle = {
                   Lapak properti mempercepat pertemuan penjual dan pembeli, tetapi keputusan akhir tetap bergantung pada data yang sudah kamu verifikasi. Gunakan daftar periksa di panduan ini dan libatkan notaris atau PPAT sejak tahap kesepakatan harga.
                 </p>
                 <p>
-                  Lihat pilihan terbaru di halaman <a href="/katalog" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Cari Properti Lapak Properti</a>, atau <a href="/agen/login" class="text-emerald-700 font-semibold underline hover:text-emerald-800">pasang iklan properti</a> sekarang. Butuh bantuan memilih langkah? Konsultasi lewat halaman <a href="/kontak" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Kontak</a> atau hubungi admin lewat WhatsApp.
+                  Lihat pilihan terbaru di halaman <a href="/katalog" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Cari Properti InfoProperti</a>, atau <a href="/agen/login" class="text-emerald-700 font-semibold underline hover:text-emerald-800">pasang iklan properti</a> sekarang. Butuh bantuan memilih langkah? Konsultasi lewat halaman <a href="/kontak" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Kontak</a> atau hubungi admin lewat WhatsApp.
                 </p>
                 <p class="text-xs text-slate-500 pt-2">
-                  <strong>Sumber rujukan:</strong> <a href="https://pajak.go.id/id/artikel/mau-beli-tanah-apa-saja-pajaknya" target="_blank" rel="noopener noreferrer" class="underline hover:text-emerald-700">Kementerian Keuangan: Mau Beli Tanah, Apa Saja Pajaknya?</a>; Peraturan Pemerintah No. 34 Tahun 2016; Undang-Undang No. 5 Tahun 1960 (UUPA); <a href="https://lapakproperty.web.id/" class="underline hover:text-emerald-700">halaman resmi Lapak Properti</a>.
+                  <strong>Sumber rujukan:</strong> <a href="https://pajak.go.id/id/artikel/mau-beli-tanah-apa-saja-pajaknya" target="_blank" rel="noopener noreferrer" class="underline hover:text-emerald-700">Kementerian Keuangan: Mau Beli Tanah, Apa Saja Pajaknya?</a>; Peraturan Pemerintah No. 34 Tahun 2016; Undang-Undang No. 5 Tahun 1960 (UUPA); <a href="https://infoproperti.web.id/" class="underline hover:text-emerald-700">halaman resmi InfoProperti</a>.
                 </p>
               </section>
             </div>
@@ -539,9 +539,9 @@ const schemaArticle = {
 
             <!-- CTA PROMO WHATSAPP -->
             <div class="bg-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 text-center space-y-4 shadow-xl text-white">
-              <h3 class="text-xl font-bold">Konsultasi Jual Beli &amp; Pasang Iklan di Lapak Properti</h3>
+              <h3 class="text-xl font-bold">Konsultasi Jual Beli &amp; Pasang Iklan di InfoProperti</h3>
               <p class="text-slate-300 text-xs md:text-sm max-w-lg mx-auto">
-                Butuh arahan memilih unit rumah, tanah, atau ingin memasarkan properti Anda dengan aman? Hubungi admin resmi Lapak Properti sekarang.
+                Butuh arahan memilih unit rumah, tanah, atau ingin memasarkan properti Anda dengan aman? Hubungi admin resmi InfoProperti sekarang.
               </p>
               <div class="flex flex-wrap justify-center gap-3 pt-1">
                 <a
@@ -592,7 +592,7 @@ const schemaArticle = {
                     <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
                   </summary>
                   <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
-                    Biaya pasang iklan berbeda di setiap platform. Ada yang gratis untuk fitur dasar dan ada yang berbayar untuk penonjolan iklan. Cek ketentuan terbaru di halaman Pasang Iklan Lapak Properti sebelum mendaftar, lalu bandingkan manfaatnya dengan target pembeli yang kamu cari.
+                    Biaya pasang iklan berbeda di setiap platform. Ada yang gratis untuk fitur dasar dan ada yang berbayar untuk penonjolan iklan. Cek ketentuan terbaru di halaman Pasang Iklan InfoProperti sebelum mendaftar, lalu bandingkan manfaatnya dengan target pembeli yang kamu cari.
                   </p>
                 </details>
 
@@ -637,7 +637,7 @@ const schemaArticle = {
               <!-- Box Fast Contact -->
               <div class="bg-[#0F172A] text-white p-6 rounded-3xl border border-slate-800 space-y-4 shadow-lg">
                 <span class="inline-block px-2.5 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full text-[11px] font-semibold">
-                  Layanan Lapak Properti
+                  Layanan InfoProperti
                 </span>
                 <h4 class="font-bold text-base">Cari Unit atau Pasang Iklan?</h4>
                 <p class="text-slate-300 text-xs leading-relaxed">

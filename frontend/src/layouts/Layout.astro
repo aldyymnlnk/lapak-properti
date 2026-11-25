@@ -1,21 +1,17 @@
 ---
-import Navbar, { type BreadcrumbItem } from '../components/Navbar.astro';
+import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
 interface Props {
   title?: string;
   description?: string;
   active?: 'beranda' | 'tentang' | 'katalog' | 'galeri' | 'blog' | 'kontak' | 'pesanan';
-  breadcrumbs?: BreadcrumbItem[];
-  hideBreadcrumb?: boolean;
 }
 
 const {
-  title = 'LapakProperti — Marketplace & Verifikasi Hunian Terpercaya',
-  description = 'Platform marketplace properti kos, rumah, dan tanah dengan sistem verifikasi ketersediaan dua arah.',
-  active,
-  breadcrumbs,
-  hideBreadcrumb = false
+  title = 'InfoProperti — Marketplace & Verifikasi Hunian Terpercaya',
+  description = 'Platform marketplace properti kos, rumah, dan tanah di infoproperti.web.id dengan sistem verifikasi ketersediaan dua arah.',
+  active
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -58,7 +54,7 @@ const isLoginPage = currentPath === '/admin/login' || currentPath === '/agen/log
             <div class="flex items-center gap-6">
               <a href="/admin" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight">
                 <span class="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center overflow-hidden shadow-xs">
-                  <img src="/assets/img/logo.webp" alt="Logo LapakProperti" class="w-full h-full object-contain" />
+                  <img src="/assets/img/logo.webp" alt="Logo InfoProperti" class="w-full h-full object-contain" />
                 </span>
                 <span>CMS <span class="text-emerald-400">Mitra</span></span>
               </a>
@@ -131,11 +127,7 @@ const isLoginPage = currentPath === '/admin/login' || currentPath === '/agen/log
         </header>
       ) : (
         /* ================= NAVBAR KHUSUS HALAMAN PUBLIK / PEMBELI ================= */
-        <Navbar
-          active={active}
-          breadcrumbs={breadcrumbs}
-          hideBreadcrumb={hideBreadcrumb}
-        />
+        <Navbar active={active} />
       )
     )}
 
@@ -150,7 +142,7 @@ const isLoginPage = currentPath === '/admin/login' || currentPath === '/agen/log
         <footer class="bg-white border-t border-slate-200 mt-16">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <div>
-              <span class="font-bold text-slate-800">LapakProperti</span> — Sistem Marketplace & Verifikasi Properti Dua Arah.
+              <span class="font-bold text-slate-800">InfoProperti</span> (infoproperti.web.id) — Sistem Marketplace & Verifikasi Properti Dua Arah.
             </div>
             <div class="flex items-center gap-5">
               <a href="/" class="hover:text-slate-800 transition">Beranda</a>

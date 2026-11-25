@@ -1,13 +1,17 @@
 ---
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
 ---
 
 <html lang="id">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pesanan & Notifikasi Saya — LapakProperti</title>
+    <title>Pesanan & Notifikasi Saya — InfoProperti</title>
+    <meta name="description" content="Pantau status pengajuan booking, verifikasi KTP, dan bukti transaksi properti Anda di InfoProperti." />
+    <link rel="canonical" href="https://infoproperti.web.id/pesanan" />
     <style is:global>
       @import '../styles/global.css';
     </style>
@@ -58,7 +62,8 @@ import Footer from '../components/Footer.astro';
 
     <Footer />
 
-    <script is:inline>
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
+      const API_BASE = apiUrl || 'http://localhost:5000';
       const container = document.getElementById('orders-container');
       const counterEl = document.getElementById('order-counter');
       const headingEl = document.getElementById('list-heading');
@@ -121,7 +126,7 @@ import Footer from '../components/Footer.astro';
           return;
         }
         try {
-          const res = await fetch(`http://localhost:5000/api/orders/track?ids=${savedIds.join(',')}`, { cache: 'no-store' });
+          const res = await fetch(`${API_BASE}/api/orders/track?ids=${savedIds.join(',')}`, { cache: 'no-store' });
           const data = await res.json();
           renderCards(data, 'Tidak Ada Data Pengajuan');
         } catch {
@@ -136,7 +141,7 @@ import Footer from '../components/Footer.astro';
 
         headingEl.textContent = `Hasil Pencarian untuk "${q}"`;
         try {
-          const res = await fetch(`http://localhost:5000/api/orders/track?query=${encodeURIComponent(q)}`, { cache: 'no-store' });
+          const res = await fetch(`${API_BASE}/api/orders/track?query=${encodeURIComponent(q)}`, { cache: 'no-store' });
           const data = await res.json();
           renderCards(data, `Tidak Ditemukan Pengajuan dengan Nomor/NIK "${q}"`);
         } catch {
@@ -146,5 +151,172 @@ import Footer from '../components/Footer.astro';
 
       loadLocalOrders();
     </script>
+  </body>
+</html>
+```[cite: 20]
+
+---
+
+### 3. `tentang.astro`
+```astro
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tentang Kami — InfoProperti</title>
+    <meta name="description" content="Kenali InfoProperti, platform pemesanan Kos, Rumah, dan Kavling Tanah di Malang Raya dengan verifikasi dua arah dan status unit real-time." />
+    <link rel="canonical" href="https://infoproperti.web.id/tentang" />
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="tentang" />
+
+      <!-- HERO SECTION RATA TENGAH -->
+      <section class="relative bg-[#0F172A] text-white py-16 px-4 border-b border-slate-800 overflow-hidden">
+        <div class="absolute inset-0 opacity-15 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80');"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/85 to-transparent"></div>
+
+        <div class="relative max-w-4xl mx-auto text-center z-10">
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-3">
+            Tentang InfoProperti
+          </span>
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+            Ekosistem Marketplace Properti dengan Verifikasi Dua Arah & KYC
+          </h1>
+          <p class="text-slate-300 text-xs sm:text-sm mt-3 max-w-2xl mx-auto leading-relaxed">
+            Menghadirkan standar baru pemesanan Kos, Rumah, dan Kavling Tanah di Malang Raya yang transparan, aman secara identitas, dan bebas dari risiko bentrok pemesanan (double-booking).
+          </p>
+        </div>
+      </section>
+
+      <main class="max-w-6xl mx-auto px-4 py-12 space-y-12">
+
+        <!-- 1. LATAR BELAKANG & STATISTIK SINGKAT -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Latar Belakang Platform</span>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
+              Mengapa InfoProperti Dibangun?
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Dalam transaksi sewa kos maupun jual-beli rumah dan kavling tanah secara konvensional, calon penyewa sering menghadapi ketidakpastian ketersediaan unit secara real-time, risiko dua orang membayar unit yang sama di waktu bersamaan, hingga minimnya bukti transaksi digital yang sah.
+            </p>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <strong>InfoProperti</strong> dirancang untuk menjembatani pembeli dan pemilik properti melalui mekanisme <em>Two-Way Verification</em>: penjual memvalidasi identitas KTP pemesan serta kesiapan fisik unit terlebih dahulu sebelum gerbang pembayaran (QRIS / Virtual Account) dibuka.
+            </p>
+          </div>
+
+          <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs text-center">
+              <strong class="block text-2xl sm:text-3xl font-black text-[#059669]">100%</strong>
+              <span class="text-xs font-bold text-slate-800 mt-1 block">Verifikasi KTP (KYC)</span>
+              <p class="text-[11px] text-slate-500 mt-1">Setiap pemesan tervalidasi identitas resminya.</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs text-center">
+              <strong class="block text-2xl sm:text-3xl font-black text-blue-600">0%</strong>
+              <span class="text-xs font-bold text-slate-800 mt-1 block">Risiko Double-Booking</span>
+              <p class="text-[11px] text-slate-500 mt-1">Stok unit otomatis terkunci setelah pembayaran lunas.</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs text-center">
+              <strong class="block text-2xl sm:text-3xl font-black text-indigo-600">3 Tipe</strong>
+              <span class="text-xs font-bold text-slate-800 mt-1 block">Kategori Properti</span>
+              <p class="text-[11px] text-slate-500 mt-1">Kos Hunian, Rumah Tinggal, & Kavling Tanah.</p>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs text-center">
+              <strong class="block text-2xl sm:text-3xl font-black text-amber-600">2 Kanal</strong>
+              <span class="text-xs font-bold text-slate-800 mt-1 block">E-Receipt Otomatis</span>
+              <p class="text-[11px] text-slate-500 mt-1">Bukti bayar langsung dikirim ke Email & WhatsApp.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. VISI & MISI -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#059669] flex items-center justify-center font-extrabold text-sm">
+              V
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900">Visi Kami</h3>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Menjadi platform rujukan utama pemesanan hunian dan aset properti di Malang Raya yang mengedepankan kejujuran status unit, keamanan identitas, dan kemudahan transaksi digital.
+            </p>
+          </div>
+
+          <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-extrabold text-sm">
+              M
+            </div>
+            <h3 class="text-base font-extrabold text-slate-900">Misi Kami</h3>
+            <ul class="text-xs sm:text-sm text-slate-600 space-y-1.5 list-disc pl-4 leading-relaxed">
+              <li>Menyediakan informasi spesifikasi properti yang terstruktur dan transparan.</li>
+              <li>Mencegah klaim ganda melalui sistem penguncian status unit otomatis.</li>
+              <li>Memberikan bukti pelunasan digital instan melalui Email dan WhatsApp.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- 3. EMPAT PILAR KEAMANAN SISTEM -->
+        <section class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="text-center max-w-2xl mx-auto mb-8">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Keunggulan Arsitektur</span>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">4 Pilar Perlindungan Transaksi</h2>
+            <p class="text-xs text-slate-500 mt-1">Setiap tahap pemesanan dikawal oleh alur status terukur demi kenyamanan pembeli maupun pemilik.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+              <span class="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">01. KYC KTP</span>
+              <h4 class="font-extrabold text-slate-900 text-sm">Validasi Identitas Pemesan</h4>
+              <p class="text-slate-600 leading-relaxed">Calon penyewa melampirkan NIK 16 digit & foto KTP untuk mencegah pemesanan fiktif.</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+              <span class="inline-block px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">02. TWO-WAY CHECK</span>
+              <h4 class="font-extrabold text-slate-900 text-sm">Konfirmasi Kesiapan Unit</h4>
+              <p class="text-slate-600 leading-relaxed">Penjual memeriksa kondisi fisik unit terlebih dahulu sebelum menyetujui pembayaran.</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+              <span class="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">03. AUTO LOCK</span>
+              <h4 class="font-extrabold text-slate-900 text-sm">Penguncian Unit Otomatis</h4>
+              <p class="text-slate-600 leading-relaxed">Begitu lunas via QRIS, BCA, atau BRI, status unit langsung berubah menjadi BOOKED.</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5">
+              <span class="inline-block px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 font-bold text-[10px]">04. E-RECEIPT</span>
+              <h4 class="font-extrabold text-slate-900 text-sm">Struk Digital Instan</h4>
+              <p class="text-slate-600 leading-relaxed">Bukti pembayaran resmi terkirim ke inbox Email & nomor WhatsApp pembeli.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. CTA BANNER -->
+        <section class="bg-[#0F172A] text-white p-8 rounded-2xl text-center space-y-4">
+          <h2 class="text-xl sm:text-2xl font-extrabold">Siap Menemukan Hunian atau Kavling Impian Anda?</h2>
+          <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
+            Jelajahi daftar unit tersedia sekarang atau hubungi tim kami untuk menjadwalkan survei lokasi secara langsung.
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
+            <a href="/katalog" class="px-6 py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition">
+              Lihat Katalog Unit
+            </a>
+            <a href="/kontak" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition">
+              Hubungi Kami
+            </a>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <Footer />
   </body>
 </html>

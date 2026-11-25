@@ -34,7 +34,7 @@ const specs = property?.specifications && typeof property.specifications === 'ob
 const rawPhone = String(specs.seller_phone || property?.seller_phone || '081234567890').trim();
 const sellerWaNumber = rawPhone.replace(/^0/, '62').replace(/[^0-9]/g, '') || '6281234567890';
 const sellerDisplayPhone = rawPhone || '+62 812-3456-7890';
-const sellerName = specs.seller_name || property?.seller_name || 'Admin LapakProperti';
+const sellerName = specs.seller_name || property?.seller_name || 'Admin InfoProperti';
 const isAgentListing = Boolean(specs.agent_email || specs.agent_id || property?.owner_role === 'AGENT');
 
 // HANYA tampilkan foto yang diunggah Admin/Agen (tanpa foto stok/AI tambahan!)
@@ -91,7 +91,8 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{property ? `${property.title} — LapakProperti` : 'Detail Properti — LapakProperti'}</title>
+    <title>{property ? `${property.title} — InfoProperti` : 'Detail Properti — InfoProperti'}</title>
+    <link rel="canonical" href={`https://infoproperti.web.id/property/${id}`} />
     <style is:global>
       @import '../../styles/global.css';
     </style>

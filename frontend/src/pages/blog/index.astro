@@ -58,12 +58,12 @@ const allTags = [...new Set(articles.flatMap((a) => a.tags))];
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog & Panduan Properti — LapakProperti</title>
+    <title>Blog & Panduan Properti — InfoProperti</title>
     <meta
       name="description"
-      content="Kumpulan panduan jual beli rumah, cara pasang iklan properti, cek legalitas sertifikat SHM/HGB, dan rincian biaya pajak BPHTB serta notaris."
+      content="Kumpulan panduan jual beli rumah, cara pasang iklan properti, cek legalitas sertifikat SHM/HGB, dan rincian biaya pajak BPHTB serta notaris di infoproperti.web.id."
     />
-    <link rel="canonical" href="https://lapakproperty.web.id/blog" />
+    <link rel="canonical" href="https://infoproperti.web.id/blog" />
     <style is:global>
       @import '../../styles/global.css';
     </style>
@@ -277,7 +277,6 @@ const allTags = [...new Set(articles.flatMap((a) => a.tags))];
           }
         });
 
-        // Update gaya tombol kategori
         catButtons.forEach((btn) => {
           const isSelected = btn.dataset.category === activeCategory;
           btn.className = isSelected
@@ -285,7 +284,6 @@ const allTags = [...new Set(articles.flatMap((a) => a.tags))];
             : 'cat-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer bg-slate-800/80 text-slate-300 border border-slate-700 hover:border-emerald-500/50 hover:text-white';
         });
 
-        // Update gaya tombol tag di hero
         tagButtons.forEach((btn) => {
           const isSelected = (btn.dataset.tag || '').toLowerCase() === activeTag.toLowerCase();
           btn.className = isSelected
@@ -293,7 +291,6 @@ const allTags = [...new Set(articles.flatMap((a) => a.tags))];
             : 'tag-btn px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-400 border border-slate-800 hover:border-emerald-500/40 hover:text-emerald-300 text-[11px] font-medium transition cursor-pointer';
         });
 
-        // Toggle tombol clear search & reset filter
         if (clearSearchBtn) {
           clearSearchBtn.classList.toggle('hidden', !searchQuery);
         }
@@ -302,7 +299,6 @@ const allTags = [...new Set(articles.flatMap((a) => a.tags))];
           resetAllBtn.classList.toggle('hidden', !hasFilter);
         }
 
-        // Update counter & empty state
         if (resultCounter) {
           resultCounter.innerHTML = `Menampilkan <strong class="text-slate-800">${visibleCount}</strong> dari ${cards.length} artikel panduan`;
         }

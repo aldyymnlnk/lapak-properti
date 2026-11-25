@@ -50,7 +50,7 @@ async function sendDigitalReceipt(order, property, paymentMethod) {
       const htmlReceipt = `
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: auto; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden;">
           <div style="background: #0F172A; color: #ffffff; padding: 20px 24px;">
-            <h2 style="margin: 0; font-size: 18px;">LapakProperti — E-Receipt Resmi</h2>
+            <h2 style="margin: 0; font-size: 18px;">InfoProperti — E-Receipt Resmi</h2>
             <p style="margin: 4px 0 0; font-size: 12px; color: #34d399;">Status: LUNAS (PAID) & UNIT TERKUNCI (BOOKED)</p>
           </div>
           <div style="padding: 24px; color: #1e293b; font-size: 13px; line-height: 1.6;">
@@ -65,15 +65,15 @@ async function sendDigitalReceipt(order, property, paymentMethod) {
               <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; color: #64748b;">Waktu Lunas</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${paidTime}</td></tr>
               <tr><td style="padding: 10px 8px; color: #059669; font-weight: bold;">Total Dibayar</td><td style="padding: 10px 8px; color: #059669; font-size: 15px; font-weight: bold;">${formattedPrice}</td></tr>
             </table>
-            <p style="font-size: 11px; color: #64748b;">Simpan email ini sebagai bukti sah pemesanan unit Anda di LapakProperti.</p>
+            <p style="font-size: 11px; color: #64748b;">Simpan email ini sebagai bukti sah pemesanan unit Anda di InfoProperti (infoproperti.web.id).</p>
           </div>
         </div>
       `;
 
       await transporter.sendMail({
-        from: `"LapakProperti Official" <${process.env.SMTP_EMAIL}>`,
+        from: `"InfoProperti Official" <${process.env.SMTP_EMAIL}>`,
         to: order.buyer_email,
-        subject: `[LUNAS] Bukti Pembayaran Booking #${shortId} - ${property?.title || 'LapakProperti'}`,
+        subject: `[LUNAS] Bukti Pembayaran Booking #${shortId} - ${property?.title || 'InfoProperti'}`,
         html: htmlReceipt
       });
       console.log(`E-Receipt terkirim ke email: ${order.buyer_email}`);
@@ -84,14 +84,14 @@ async function sendDigitalReceipt(order, property, paymentMethod) {
 
   if (order.buyer_phone && process.env.FONNTE_TOKEN) {
     try {
-      const waMessage = `*BUKTI PEMBAYARAN LUNAS - LAPAKPROPERTI*\n\n` +
+      const waMessage = `*BUKTI PEMBAYARAN LUNAS - INFOPROPERTI*\n\n` +
         `ID Order: *#${shortId}*\n` +
         `Nama: *${order.buyer_name}*\n` +
         `Unit: *${property?.title || '-'}* (${property?.block_or_unit || '-'})\n` +
         `Metode: *${paymentMethod}*\n` +
         `Total Lunas: *${formattedPrice}*\n` +
         `Status Unit: *BOOKED (Terkunci Atas Nama Anda)*\n\n` +
-        `Terima kasih telah bertransaksi di LapakProperti.`;
+        `Terima kasih telah bertransaksi di InfoProperti.`;
 
       await fetch('https://api.fonnte.com/send', {
         method: 'POST',
@@ -164,7 +164,7 @@ async function syncOrderToGoogleSheet(orderId, eventName = 'SYNC') {
 app.get('/', (req, res) => {
   res.json({
     status: 'OK',
-    message: 'Server LapakProperti & Supabase Berhasil Terhubung!',
+    message: 'Server InfoProperti & Supabase Berhasil Terhubung!',
     google_sheets_connected: Boolean(GOOGLE_SHEET_WEBHOOK)
   });
 });
@@ -221,7 +221,7 @@ app.post('/api/auth/login', async (req, res) => {
           user: {
             id: 'demo-admin',
             name: 'Mitra Pemilik Properti',
-            email: 'mitra@lapakproperti.id',
+            email: 'mitra@infoproperti.web.id',
             phone: '081234567890',
             role: 'SELLER'
           }
@@ -837,5 +837,5 @@ app.post('/api/admin/sync-sheets', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Backend LapakProperti running di http://localhost:${PORT}`);
+  console.log(`Backend InfoProperti running di http://localhost:${PORT}`);
 });
