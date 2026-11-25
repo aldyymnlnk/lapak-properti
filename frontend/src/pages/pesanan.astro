@@ -1,0 +1,150 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pesanan & Notifikasi Saya — LapakProperti</title>
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="pesanan" />
+
+      <!-- HERO SECTION RATA TENGAH -->
+      <section class="bg-[#0F172A] text-white py-14 px-4 border-b border-slate-800">
+        <div class="max-w-3xl mx-auto text-center">
+          <span class="inline-block px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-3">
+            Pelacakan Tanpa Perlu Akun
+          </span>
+          <h1 class="text-3xl md:text-4xl font-extrabold">Status Pengajuan & Pesanan Saya</h1>
+          <p class="text-slate-300 text-xs sm:text-sm mt-2.5 leading-relaxed">
+            Pantau status verifikasi KTP, lanjutkan pembayaran QRIS/VA, atau unduh ulang bukti pelunasan menggunakan Nomor WhatsApp atau NIK Anda.
+          </p>
+
+          <form id="track-form" class="mt-6 max-w-lg mx-auto bg-white p-1.5 rounded-xl flex gap-2 shadow-lg">
+            <input
+              type="text"
+              id="track-input"
+              required
+              placeholder="Masukkan Nomor WhatsApp (08...) atau NIK (16 digit)..."
+              class="w-full px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none"
+            />
+            <button type="submit" class="bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2 rounded-lg cursor-pointer shrink-0">
+              Cek Status
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <main class="max-w-4xl mx-auto px-4 py-10 space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 id="list-heading" class="text-base font-extrabold text-slate-900">Riwayat Pengajuan di Perangkat Ini</h2>
+          <span id="order-counter" class="text-xs text-slate-500 font-semibold">0 Pesanan</span>
+        </div>
+
+        <div id="orders-container" class="space-y-4">
+          <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center text-xs text-slate-400">
+            Memeriksa riwayat pengajuan Anda...
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline>
+      const container = document.getElementById('orders-container');
+      const counterEl = document.getElementById('order-counter');
+      const headingEl = document.getElementById('list-heading');
+
+      function renderCards(orders, emptyMessage) {
+        if (counterEl) counterEl.textContent = `${orders.length} Pesanan`;
+
+        if (!orders.length) {
+          container.innerHTML = `
+            <div class="bg-white p-10 rounded-2xl border border-slate-200 text-center space-y-2">
+              <h3 class="text-sm font-bold text-slate-700">${emptyMessage}</h3>
+              <p class="text-xs text-slate-400">Gunakan kolom pencarian di atas dengan Nomor WhatsApp atau NIK Anda saat mendaftar.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = orders.map((o) => {
+          const prop = o.properties || {};
+          let badge = '<span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">Menunggu Verifikasi Penjual</span>';
+          let btnText = 'Pantau Status Verifikasi';
+          let btnStyle = 'bg-slate-800 hover:bg-slate-900 text-white';
+
+          if (o.status === 'APPROVED') {
+            badge = '<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold animate-pulse">DISETUJUI • SIAP BAYAR</span>';
+            btnText = 'Bayar Sekarang (QRIS / BCA / BRI)';
+            btnStyle = 'bg-[#059669] hover:bg-emerald-700 text-white';
+          } else if (o.status === 'PAID') {
+            badge = '<span class="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold">LUNAS (E-RECEIPT)</span>';
+            btnText = 'Lihat & Cetak Struk Lunas';
+            btnStyle = 'bg-blue-600 hover:bg-blue-700 text-white';
+          } else if (o.status === 'REJECTED') {
+            badge = '<span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">Ditolak Penjual</span>';
+            btnText = 'Lihat Alasan Penolakan';
+            btnStyle = 'bg-slate-200 text-slate-700';
+          }
+
+          return `
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-mono text-xs font-bold text-slate-400">#${String(o.id).slice(0, 8)}</span>
+                  ${badge}
+                </div>
+                <h3 class="text-base font-extrabold text-slate-900">${prop.title || 'Unit Properti'}</h3>
+                <p class="text-xs text-slate-500">Pemesan: <strong>${o.buyer_name}</strong> • Nominal: <strong class="text-emerald-700">Rp ${Number(prop.price || 0).toLocaleString('id-ID')}</strong></p>
+              </div>
+              <a href="/order/${o.id}" class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-xs font-bold transition shrink-0 ${btnStyle}">
+                ${btnText} &rarr;
+              </a>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async function loadLocalOrders() {
+        const savedIds = JSON.parse(localStorage.getItem('lp_my_orders') || '[]');
+        if (!savedIds.length) {
+          renderCards([], 'Belum Ada Riwayat Pengajuan di Browser Ini');
+          return;
+        }
+        try {
+          const res = await fetch(`http://localhost:5000/api/orders/track?ids=${savedIds.join(',')}`, { cache: 'no-store' });
+          const data = await res.json();
+          renderCards(data, 'Tidak Ada Data Pengajuan');
+        } catch {
+          renderCards([], 'Gagal terhubung ke server');
+        }
+      }
+
+      document.getElementById('track-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const q = document.getElementById('track-input').value.trim();
+        if (!q) return;
+
+        headingEl.textContent = `Hasil Pencarian untuk "${q}"`;
+        try {
+          const res = await fetch(`http://localhost:5000/api/orders/track?query=${encodeURIComponent(q)}`, { cache: 'no-store' });
+          const data = await res.json();
+          renderCards(data, `Tidak Ditemukan Pengajuan dengan Nomor/NIK "${q}"`);
+        } catch {
+          alert('Gagal memeriksa data pesanan.');
+        }
+      });
+
+      loadLocalOrders();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,774 @@
+---
+export const prerender = false;
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const { id } = Astro.params;
+let property: any = null;
+let similarProperties: any[] = [];
+
+try {
+  const res = await fetch(`${API_URL}/api/properties/${id}`, { cache: 'no-store' });
+  if (res.ok) {
+    property = await res.json();
+  }
+
+  const allRes = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
+  if (allRes.ok) {
+    const allList = await allRes.json();
+    similarProperties = (Array.isArray(allList) ? allList : [])
+      .filter((item: any) => String(item.id) !== String(id))
+      .slice(0, 3);
+  }
+} catch (error) {
+  property = null;
+}
+
+const statusLower = String(property?.status || 'available').toLowerCase();
+const isBooked = statusLower === 'booked' || statusLower === 'sold';
+const cat = (property?.category || 'kos').toLowerCase();
+const specs = property?.specifications && typeof property.specifications === 'object' ? property.specifications : {};
+
+// Nomor WhatsApp & Nama Penjual / Agen
+const rawPhone = String(specs.seller_phone || property?.seller_phone || '081234567890').trim();
+const sellerWaNumber = rawPhone.replace(/^0/, '62').replace(/[^0-9]/g, '') || '6281234567890';
+const sellerDisplayPhone = rawPhone || '+62 812-3456-7890';
+const sellerName = specs.seller_name || property?.seller_name || 'Admin LapakProperti';
+const isAgentListing = Boolean(specs.agent_email || specs.agent_id || property?.owner_role === 'AGENT');
+
+// HANYA tampilkan foto yang diunggah Admin/Agen (tanpa foto stok/AI tambahan!)
+const rawExtras = Array.isArray(property?.gallery)
+  ? property.gallery
+  : (Array.isArray(specs.gallery) ? specs.gallery : []);
+
+const galleryPhotos: string[] = [
+  ...(property?.image_url ? [String(property.image_url).trim()] : []),
+  ...rawExtras.map((u: any) => String(u || '').trim()).filter(Boolean)
+];
+
+// Spesifikasi Utama
+let specCards: { label: string; value: string }[] = [];
+if (property) {
+  if (cat === 'kos') {
+    specCards = [
+      { label: 'Tipe Kos', value: specs.kos_type || 'Putra / Putri' },
+      { label: 'Nomor Kamar', value: property.block_or_unit || '-' },
+      { label: 'Luas Kamar', value: specs.room_size || '3.5 x 4 m' },
+      { label: 'Kamar Mandi', value: specs.bathroom || 'Kamar Mandi Dalam' },
+      { label: 'Listrik', value: specs.electricity || 'Token Mandiri' },
+      { label: 'Status Unit', value: isBooked ? 'Terisi / Terkunci' : 'Siap Huni' }
+    ];
+  } else if (cat === 'rumah') {
+    specCards = [
+      { label: 'Kamar Tidur', value: specs.bedrooms || '-' },
+      { label: 'Kamar Mandi', value: specs.bathrooms || '-' },
+      { label: 'Luas Tanah', value: specs.land_area || '-' },
+      { label: 'Luas Bangunan', value: specs.building_area || '-' },
+      { label: 'Sertifikat', value: specs.legality ? specs.legality.split('•')[0].trim() : 'SHM' },
+      { label: 'Listrik & Air', value: specs.utilities || '2200W • PDAM' }
+    ];
+  } else {
+    specCards = [
+      { label: 'Nomor Kavling', value: property.block_or_unit || '-' },
+      { label: 'Luas Tanah', value: specs.land_area || '-' },
+      { label: 'Dimensi', value: specs.dimensions || '-' },
+      { label: 'Sertifikat', value: specs.certificate ? specs.certificate.split('(')[0].trim() : 'SHM' },
+      { label: 'Peruntukan', value: specs.zoning || 'Zona Kuning' },
+      { label: 'Akses Jalan', value: specs.road_access || 'Paving 6 Meter' }
+    ];
+  }
+}
+
+const facilitiesList = specs.facilities
+  ? String(specs.facilities).split(',').map((f) => f.trim()).filter(Boolean)
+  : ['Akses Jalan Lebar', 'Lingkungan Aman & Tenang', 'Bebas Banjir', 'Dekat Fasilitas Umum'];
+
+const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Timur');
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{property ? `${property.title} — LapakProperti` : 'Detail Properti — LapakProperti'}</title>
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="katalog" />
+
+      {property ? (
+        <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+          <!-- BREADCRUMB NAVIGASI -->
+          <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <a href="/" class="hover:text-emerald-700 transition">Beranda</a>
+            <span>/</span>
+            <a href="/katalog" class="hover:text-emerald-700 transition capitalize">{cat}</a>
+            <span>/</span>
+            <span class="text-slate-800 font-semibold truncate max-w-xs sm:max-w-md">{property.title}</span>
+          </nav>
+
+          <!-- GALERI FOTO DINAMIS (MENYESUAIKAN JUMLAH FOTO ASLI YANG DIUNGGAH) -->
+          {galleryPhotos.length === 1 && (
+            <section class="rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
+              <div class="relative h-72 sm:h-96 md:h-[420px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
+                <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
+                  <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
+                  <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
+                    {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
+                  </span>
+                </div>
+                <span class="absolute bottom-3.5 right-3.5 px-3 py-1 rounded-lg bg-slate-950/75 text-white text-xs font-bold">
+                  1 Foto • Klik Perbesar
+                </span>
+              </div>
+            </section>
+          )}
+
+          {galleryPhotos.length === 2 && (
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
+              {galleryPhotos.map((photo, idx) => (
+                <div class="relative h-64 sm:h-80 md:h-[360px] group cursor-pointer overflow-hidden" data-lightbox={photo}>
+                  <img src={photo} alt={`${property.title} foto ${idx + 1}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  {idx === 0 && (
+                    <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
+                      <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
+                      <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
+                        {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+          )}
+
+          {galleryPhotos.length === 3 && (
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
+              <div class="md:col-span-2 md:row-span-2 relative h-64 sm:h-80 md:h-[380px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
+                <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
+                  <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
+                  <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
+                    {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
+                  </span>
+                </div>
+              </div>
+              {galleryPhotos.slice(1, 3).map((photo, idx) => (
+                <div class="relative h-48 md:h-[185px] group cursor-pointer overflow-hidden bg-slate-300" data-lightbox={photo}>
+                  <img src={photo} alt={`${property.title} foto ${idx + 2}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                </div>
+              ))}
+            </section>
+          )}
+
+          {galleryPhotos.length >= 4 && (
+            <section class="grid grid-cols-1 md:grid-cols-4 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
+              <div class="md:col-span-2 md:row-span-2 relative h-64 sm:h-80 md:h-[380px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
+                <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
+                  <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
+                  <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
+                    {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
+                  </span>
+                </div>
+              </div>
+
+              {galleryPhotos.slice(1, 5).map((photo, idx) => (
+                <div class="relative h-44 md:h-[185px] group cursor-pointer overflow-hidden bg-slate-300" data-lightbox={photo}>
+                  <img src={photo} alt={`${property.title} foto ${idx + 2}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  {idx === 3 && galleryPhotos.length > 5 && (
+                    <div class="absolute inset-0 bg-slate-950/60 flex flex-col items-center justify-center text-white">
+                      <span class="text-xs font-extrabold">+{galleryPhotos.length - 5} Foto Lainnya</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </section>
+          )}
+
+          <!-- KONTEN UTAMA 2 KOLOM -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+
+            <!-- KOLOM KIRI (7 KOLOM): INFORMASI PROPERTI -->
+            <div class="lg:col-span-7 space-y-6">
+
+              <!-- HEADER JUDUL, HARGA & TOMBOL SHARE -->
+              <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-xs">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+                      {property.title}
+                    </h1>
+                    <p class="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 mt-2">
+                      <svg class="w-4 h-4 text-[#059669] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>{property.location}</span>
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    id="btn-share"
+                    title="Bagikan Properti"
+                    class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer shrink-0"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-baseline justify-between gap-2">
+                  <div>
+                    <span class="text-[11px] text-slate-400 block">Harga Penawaran</span>
+                    <p class="text-2xl sm:text-3xl font-black text-[#059669]">
+                      Rp {Number(property.price || 0).toLocaleString('id-ID')}
+                      <span class="text-xs font-medium text-slate-500">/{property.price_unit || 'unit'}</span>
+                    </p>
+                  </div>
+                  <span class="text-[11px] text-slate-400">
+                    Unit ID: <strong class="font-mono text-slate-600">#{String(property.id).slice(0, 8).toUpperCase()}</strong>
+                  </span>
+                </div>
+
+                <!-- SPESIFIKASI UTAMA -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                  <h2 class="text-sm font-extrabold text-slate-900 mb-4">Spesifikasi Utama</h2>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                    {specCards.map((item) => (
+                      <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 flex flex-col justify-between">
+                        <span class="text-[11px] text-slate-400 font-medium">{item.label}</span>
+                        <strong class="text-xs sm:text-sm font-bold text-slate-800 mt-1">{item.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <!-- DESKRIPSI PROPERTI -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                  <h2 class="text-sm font-extrabold text-slate-900 mb-3">Deskripsi Properti</h2>
+                  <div class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line space-y-3">
+                    <p>
+                      {property.description || 'Unit properti strategis dengan legalitas jelas, lingkungan nyaman, dan akses mudah menuju pusat pendidikan maupun fasilitas umum.'}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- FASILITAS & KEUNGGULAN -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                  <h2 class="text-sm font-extrabold text-slate-900 mb-3">Fasilitas & Keunggulan</h2>
+                  <div class="flex flex-wrap gap-2">
+                    {facilitiesList.map((fac) => (
+                      <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50/70 border border-emerald-200/70 text-emerald-900 text-xs font-semibold">
+                        <svg class="w-3.5 h-3.5 text-[#059669]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {fac}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <!-- LOKASI & PETA -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-sm font-extrabold text-slate-900">Lokasi Properti</h2>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-xs font-bold text-[#059669] hover:underline"
+                    >
+                      Buka di Google Maps &rarr;
+                    </a>
+                  </div>
+                  <div class="rounded-xl overflow-hidden border border-slate-200 h-56 bg-slate-100">
+                    <iframe
+                      title="Peta Lokasi Properti"
+                      width="100%"
+                      height="100%"
+                      style="border:0;"
+                      loading="lazy"
+                      referrerpolicy="no-referrer-when-downgrade"
+                      src={`https://maps.google.com/maps?q=${mapQuery}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- KOLOM KANAN (5 KOLOM): DUAL-TRACK PROFESIONAL -->
+            <aside class="lg:col-span-5 space-y-5 sticky top-24">
+
+              <!-- JALUR 1: FORMULIR BOOKING RESMI & ANTI-DOUBLE BOOKING (VERIFIKASI ADMIN) -->
+              <div class="bg-white p-6 rounded-2xl border-2 border-emerald-500/40 shadow-sm space-y-4">
+                <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div>
+                    <span class="inline-block px-2 py-0.5 rounded bg-emerald-50 text-[#059669] text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                      Sistem Anti-Double Booking
+                    </span>
+                    <h2 class="text-base font-extrabold text-slate-900">Ajukan Booking Resmi</h2>
+                    <p class="text-[11px] text-slate-500 mt-0.5">
+                      Kunci unit dengan verifikasi KTP/NIK. Setelah ACC Admin, lanjutkan pembayaran & terima E-Receipt.
+                    </p>
+                  </div>
+                </div>
+
+                {isBooked ? (
+                  <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1.5">
+                    <strong class="block font-extrabold text-rose-700">Unit Ini Sudah Terkunci / Terisi</strong>
+                    <p>Unit sedang dalam proses transaksi atau sudah dibooking pembeli lain. Silakan hubungi penjual via WhatsApp di bawah untuk cek ketersediaan unit serupa.</p>
+                  </div>
+                ) : (
+                  <form id="booking-kyc-form" class="space-y-3 text-xs">
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Nama Lengkap Sesuai KTP *</label>
+                      <input
+                        type="text"
+                        id="buyer-name"
+                        required
+                        placeholder="Masukkan nama lengkap Anda"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#059669] focus:outline-none"
+                      />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block font-bold text-slate-700 mb-1">NIK KTP (16 Digit) *</label>
+                        <input
+                          type="text"
+                          id="buyer-nik"
+                          required
+                          maxlength="16"
+                          pattern="[0-9]{16}"
+                          placeholder="357301xxxxxxxxxx"
+                          class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-[#059669] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label class="block font-bold text-slate-700 mb-1">No. WhatsApp Aktif *</label>
+                        <input
+                          type="tel"
+                          id="buyer-phone"
+                          required
+                          placeholder="081234567890"
+                          class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#059669] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Upload Foto KTP (Verifikasi KYC) *</label>
+                      <label
+                        for="buyer-ktp-file"
+                        class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-dashed border-emerald-400 bg-emerald-50/40 hover:bg-emerald-50 cursor-pointer transition"
+                      >
+                        <span id="ktp-file-label" class="text-[11px] font-semibold text-emerald-800 truncate">
+                          + Pilih Foto KTP (JPG/PNG, Maks. 5MB)
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-emerald-200 text-emerald-700 shrink-0">
+                          Browse
+                        </span>
+                      </label>
+                      <input type="file" id="buyer-ktp-file" accept="image/*" required class="hidden" />
+                    </div>
+
+                    <div>
+                      <label class="block font-bold text-slate-700 mb-1">Rencana Masuk / Catatan Tambahan</label>
+                      <input
+                        type="text"
+                        id="buyer-notes"
+                        placeholder="Contoh: Rencana masuk awal bulan depan"
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-[#059669] focus:outline-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      id="btn-submit-booking"
+                      class="w-full bg-[#0F172A] hover:bg-slate-800 text-emerald-400 font-extrabold text-xs py-3.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <span id="btn-booking-label">Kunci Unit & Ajukan Verifikasi KTP</span>
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              <!-- JALUR 2: KONSULTASI & SURVEI LANGSUNG VIA WHATSAPP (AGEN / ADMIN) -->
+              <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Konsultasi & Survei Lokasi</span>
+                  <span class={`text-[10px] font-bold px-2 py-0.5 rounded ${isAgentListing ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {isAgentListing ? 'Mitra Agen Terverifikasi' : 'Admin Pusat'}
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-emerald-100 text-[#059669] flex items-center justify-center font-extrabold text-sm shrink-0">
+                    {sellerName.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">{sellerName}</h3>
+                    <p class="text-[11px] text-slate-500">Tanya detail unit atau jadwalkan survei via WA</p>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" data-quick-msg="Halo, apakah unit ini masih tersedia?" class="quick-chip text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 border border-slate-200 transition cursor-pointer">
+                      Masih tersedia?
+                    </button>
+                    <button type="button" data-quick-msg="Halo, saya ingin jadwalkan survei lokasi unit ini." class="quick-chip text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 border border-slate-200 transition cursor-pointer">
+                      Jadwal survei
+                    </button>
+                    <button type="button" data-quick-msg="Halo, apakah harganya masih bisa nego?" class="quick-chip text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-emerald-50 hover:text-emerald-800 text-slate-700 border border-slate-200 transition cursor-pointer">
+                      Bisa nego?
+                    </button>
+                  </div>
+
+                  <textarea
+                    id="wa-custom-message"
+                    rows="2"
+                    class="w-full text-xs p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669] text-slate-700"
+                  >Halo, saya tertarik dengan properti ini dan ingin menanyakan detail sebelum booking.</textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    id="btn-chat-wa"
+                    class="w-full bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Chat WhatsApp</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="btn-reveal-phone"
+                    data-phone={sellerDisplayPhone}
+                    class="w-full bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs py-2.5 px-3 rounded-xl border border-slate-300 transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span id="phone-label">Lihat No. HP</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- SIMULASI CICILAN / ESTIMASI SEWA -->
+              <div class="bg-[#0F172A] text-white p-5 rounded-2xl border border-slate-800 shadow-md space-y-3">
+                <div>
+                  <h3 class="text-sm font-extrabold">
+                    {cat === 'kos' ? 'Estimasi Biaya Sewa' : 'Simulasi Cicilan / KPR'}
+                  </h3>
+                  <p class="text-[11px] text-slate-400">Hitung perkiraan anggaran Anda dengan mudah.</p>
+                </div>
+
+                {cat === 'kos' ? (
+                  <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-xs">
+                    <div class="flex justify-between">
+                      <span class="text-slate-400">Sewa per Bulan</span>
+                      <strong>Rp {Number(property.price || 0).toLocaleString('id-ID')}</strong>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-slate-400">Estimasi 6 Bulan</span>
+                      <strong>Rp {(Number(property.price || 0) * 6).toLocaleString('id-ID')}</strong>
+                    </div>
+                    <div class="pt-1.5 border-t border-slate-700 flex justify-between items-center">
+                      <span class="text-slate-300 font-semibold">Estimasi 1 Tahun</span>
+                      <strong class="text-emerald-400 text-sm">Rp {(Number(property.price || 0) * 12).toLocaleString('id-ID')}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <div class="space-y-2.5 text-xs">
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1.5">
+                      <div class="flex justify-between">
+                        <span class="text-slate-400">Uang Muka (DP <span id="dp-percent-label">20</span>%)</span>
+                        <strong id="dp-amount-label">Rp {Math.round(Number(property.price || 0) * 0.2).toLocaleString('id-ID')}</strong>
+                      </div>
+                      <div class="pt-1.5 border-t border-slate-700 flex justify-between items-center">
+                        <span class="text-slate-300 font-semibold">Estimasi Cicilan / Bln</span>
+                        <strong id="monthly-installment" class="text-emerald-400 text-sm">
+                          Rp {Math.round((Number(property.price || 0) * 0.8 * (1 + 0.065 * 15)) / (15 * 12)).toLocaleString('id-ID')}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Uang Muka (DP)</label>
+                        <select id="sim-dp" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+                          <option value="0.1">10%</option>
+                          <option value="0.2" selected>20%</option>
+                          <option value="0.3">30%</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">Tenor Cicilan</label>
+                        <select id="sim-tenor" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none">
+                          <option value="5">5 Tahun</option>
+                          <option value="10">10 Tahun</option>
+                          <option value="15" selected>15 Tahun</option>
+                          <option value="20">20 Tahun</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </aside>
+          </div>
+
+          <!-- PROPERTI SERUPA -->
+          {similarProperties.length > 0 && (
+            <section class="pt-8 border-t border-slate-200">
+              <div class="flex items-center justify-between mb-5">
+                <div>
+                  <h2 class="text-lg font-extrabold text-slate-900">Properti Serupa</h2>
+                  <p class="text-xs text-slate-500">Rekomendasi hunian dan kavling lain yang mungkin cocok untuk Anda</p>
+                </div>
+                <a href="/katalog" class="text-xs font-bold text-[#059669] hover:underline">Lihat Semua &rarr;</a>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {similarProperties.map((sim: any) => (
+                  <a href={`/property/${sim.id}`} class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition">
+                    <div class="relative h-44 bg-slate-200 overflow-hidden">
+                      {sim.image_url ? (
+                        <img
+                          src={sim.image_url}
+                          alt={sim.title}
+                          class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                        />
+                      ) : (
+                        <div class="w-full h-full flex items-center justify-center text-xs text-slate-400">Tanpa Foto</div>
+                      )}
+                      <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded bg-[#059669] text-white text-[10px] font-bold uppercase">
+                        {sim.category}
+                      </span>
+                    </div>
+                    <div class="p-4">
+                      <p class="text-base font-extrabold text-[#059669]">
+                        Rp {Number(sim.price || 0).toLocaleString('id-ID')}
+                        <span class="text-[11px] font-normal text-slate-400">/{sim.price_unit || 'unit'}</span>
+                      </p>
+                      <h3 class="text-sm font-bold text-slate-900 mt-1 line-clamp-1">{sim.title}</h3>
+                      <p class="text-xs text-slate-500 mt-0.5 truncate">{sim.location}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+        </main>
+      ) : (
+        <main class="max-w-3xl mx-auto px-4 py-20 text-center">
+          <div class="bg-white p-10 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+            <h1 class="text-lg font-extrabold text-slate-800">Properti Tidak Ditemukan</h1>
+            <p class="text-xs text-slate-500">Unit yang Anda cari mungkin sudah dihapus atau tautan tidak valid.</p>
+            <a href="/katalog" class="inline-block mt-2 px-5 py-2.5 rounded-xl bg-[#059669] text-white text-xs font-bold">
+              Kembali ke Katalog
+            </a>
+          </div>
+        </main>
+      )}
+    </div>
+
+    <Footer />
+
+    <!-- LIGHTBOX MODAL FOTO -->
+    <div id="lightbox-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 flex items-center justify-center p-4">
+      <button type="button" id="close-lightbox" class="absolute top-5 right-5 text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer">
+        Tutup &times;
+      </button>
+      <img id="lightbox-img" src="" alt="Preview Foto Properti" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain" />
+    </div>
+
+    <script
+      is:inline
+      define:vars={{
+        apiUrl: API_URL,
+        propId: property?.id || '',
+        propTitle: property?.title || '',
+        propLocation: property?.location || '',
+        propPrice: Number(property?.price || 0),
+        propUnit: property?.price_unit || 'unit',
+        waNumber: sellerWaNumber
+      }}
+    >
+      const API_BASE = apiUrl || 'http://localhost:5000';
+
+      // ================= JALUR 1: SUBMIT BOOKING RESMI + UPLOAD KTP =================
+      let ktpDataUrl = '';
+      const ktpFileInput = document.getElementById('buyer-ktp-file');
+      const ktpFileLabel = document.getElementById('ktp-file-label');
+
+      ktpFileInput?.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Ukuran foto KTP maksimal 5MB.');
+          ktpFileInput.value = '';
+          return;
+        }
+        if (ktpFileLabel) ktpFileLabel.textContent = `Terpilih: ${file.name}`;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxW = 900;
+            const scale = img.width > maxW ? maxW / img.width : 1;
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            ktpDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      const bookingForm = document.getElementById('booking-kyc-form');
+      bookingForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!ktpDataUrl) {
+          alert('Harap unggah foto KTP untuk verifikasi identitas (KYC).');
+          return;
+        }
+
+        const btnSubmit = document.getElementById('btn-submit-booking');
+        const btnLabel = document.getElementById('btn-booking-label');
+        if (btnSubmit) btnSubmit.disabled = true;
+        if (btnLabel) btnLabel.textContent = 'Mengunci Unit & Mengirim Pengajuan...';
+
+        const buyerName = document.getElementById('buyer-name').value.trim();
+        const buyerNik = document.getElementById('buyer-nik').value.trim();
+        const buyerPhone = document.getElementById('buyer-phone').value.trim();
+        const notes = document.getElementById('buyer-notes').value.trim();
+
+        try {
+          const res = await fetch(`${API_BASE}/api/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              property_id: propId,
+              buyer_name: buyerName,
+              buyer_nik: buyerNik,
+              buyer_phone: buyerPhone,
+              ktp_image_url: ktpDataUrl,
+              notes
+            })
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok && data.order?.id) {
+            // Simpan ID order ke localStorage agar lonceng Notifikasi di Navbar aktif
+            const existingOrders = JSON.parse(localStorage.getItem('lp_my_orders') || '[]');
+            if (!existingOrders.includes(data.order.id)) {
+              existingOrders.unshift(data.order.id);
+              localStorage.setItem('lp_my_orders', JSON.stringify(existingOrders));
+            }
+            window.location.href = `/order/${data.order.id}`;
+          } else {
+            alert(data.error || 'Gagal mengajukan booking. Pastikan unit masih tersedia.');
+            if (btnSubmit) btnSubmit.disabled = false;
+            if (btnLabel) btnLabel.textContent = 'Kunci Unit & Ajukan Verifikasi KTP';
+          }
+        } catch {
+          alert('Gagal terhubung ke server backend.');
+          if (btnSubmit) btnSubmit.disabled = false;
+          if (btnLabel) btnLabel.textContent = 'Kunci Unit & Ajukan Verifikasi KTP';
+        }
+      });
+
+      // ================= JALUR 2: QUICK MESSAGE & CHAT WHATSAPP =================
+      const customMsgBox = document.getElementById('wa-custom-message');
+      document.querySelectorAll('.quick-chip').forEach((chip) => {
+        chip.addEventListener('click', () => {
+          if (customMsgBox) {
+            customMsgBox.value = chip.getAttribute('data-quick-msg') || '';
+          }
+        });
+      });
+
+      document.getElementById('btn-chat-wa')?.addEventListener('click', () => {
+        const userNote = customMsgBox?.value.trim() || 'Halo, saya tertarik dengan properti ini.';
+        const formattedPrice = `Rp ${propPrice.toLocaleString('id-ID')}/${propUnit}`;
+        const pageUrl = window.location.href;
+
+        const fullText =
+          `${userNote}\n\n` +
+          `*Detail Unit:*\n` +
+          `• Properti: *${propTitle}*\n` +
+          `• Lokasi: ${propLocation}\n` +
+          `• Harga: *${formattedPrice}*\n` +
+          `• Link: ${pageUrl}`;
+
+        window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(fullText)}`, '_blank');
+      });
+
+      const revealBtn = document.getElementById('btn-reveal-phone');
+      const phoneLabel = document.getElementById('phone-label');
+      revealBtn?.addEventListener('click', () => {
+        const phone = revealBtn.getAttribute('data-phone') || '+62 812-3456-7890';
+        if (phoneLabel) phoneLabel.textContent = phone;
+        navigator.clipboard?.writeText(phone);
+      });
+
+      document.getElementById('btn-share')?.addEventListener('click', async () => {
+        if (navigator.share) {
+          await navigator.share({ title: propTitle, url: window.location.href });
+        } else {
+          await navigator.clipboard?.writeText(window.location.href);
+          alert('Tautan properti berhasil disalin!');
+        }
+      });
+
+      const dpSelect = document.getElementById('sim-dp');
+      const tenorSelect = document.getElementById('sim-tenor');
+      function updateSimulation() {
+        if (!dpSelect || !tenorSelect) return;
+        const dpRate = parseFloat(dpSelect.value);
+        const years = parseInt(tenorSelect.value, 10);
+        const dpAmount = propPrice * dpRate;
+        const loan = propPrice - dpAmount;
+        const estimatedMonthly = (loan * (1 + 0.065 * years)) / (years * 12);
+
+        document.getElementById('dp-percent-label').textContent = String(Math.round(dpRate * 100));
+        document.getElementById('dp-amount-label').textContent = `Rp ${Math.round(dpAmount).toLocaleString('id-ID')}`;
+        document.getElementById('monthly-installment').textContent = `Rp ${Math.round(estimatedMonthly).toLocaleString('id-ID')}`;
+      }
+      dpSelect?.addEventListener('change', updateSimulation);
+      tenorSelect?.addEventListener('change', updateSimulation);
+
+      const lightboxModal = document.getElementById('lightbox-modal');
+      const lightboxImg = document.getElementById('lightbox-img');
+      document.querySelectorAll('[data-lightbox]').forEach((el) => {
+        el.addEventListener('click', () => {
+          const src = el.getAttribute('data-lightbox');
+          if (src && lightboxImg && lightboxModal) {
+            lightboxImg.src = src;
+            lightboxModal.classList.remove('hidden');
+          }
+        });
+      });
+      document.getElementById('close-lightbox')?.addEventListener('click', () => {
+        lightboxModal?.classList.add('hidden');
+      });
+      lightboxModal?.addEventListener('click', (e) => {
+        if (e.target === lightboxModal) lightboxModal.classList.add('hidden');
+      });
+    </script>
+  </body>
+</html>

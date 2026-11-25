@@ -1,0 +1,526 @@
+---
+export const prerender = false;
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+
+let allProperties: any[] = [];
+try {
+  const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
+  if (res.ok) {
+    const data = await res.json();
+    allProperties = Array.isArray(data) ? data : [];
+  }
+} catch {
+  allProperties = [];
+}
+
+// 3 Wakil Katalog
+const featuredProperties = allProperties.slice(0, 3);
+
+// 3 Wakil Galeri
+const fallbackGallery = [
+  {
+    id: '',
+    title: 'Interior Kamar Kos Eksklusif',
+    category: 'kos',
+    location: 'Lowokwaru, Kota Malang',
+    image_url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: '',
+    title: 'Fasad Rumah Minimalis Modern',
+    category: 'rumah',
+    location: 'Kawasan Araya, Malang Raya',
+    image_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: '',
+    title: 'Kawasan Kavling Tanah Siap Bangun',
+    category: 'tanah',
+    location: 'Sukun & Dau, Malang',
+    image_url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'
+  }
+];
+
+const galleryPreview = (allProperties.length >= 3 ? allProperties.slice(0, 3) : [...allProperties, ...fallbackGallery]).slice(0, 3);
+
+// 3 Testimoni Pembeli & Penyewa
+const testimonials = [
+  {
+    name: 'Nadia Putri Maharani',
+    role: 'Mahasiswi UB • Penyewa Kos',
+    unit: 'Kos Exclusive Soekarno Hatta',
+    quote: 'Enak banget pakai LapakProperti, status kamarnya jelas dan begitu klik unit langsung bisa tanya jadwal survei lewat WhatsApp tanpa ribet.'
+  },
+  {
+    name: 'Rizky Pratama Wijaya',
+    role: 'Karyawan Swasta • Pembeli Rumah',
+    unit: 'Rumah Minimalis Araya',
+    quote: 'Spesifikasi luas tanah, sertifikat SHM, sampai simulasi cicilannya langsung terlihat di halaman detail. Proses survei dan negosiasinya transparan.'
+  },
+  {
+    name: 'Hendra Saputra',
+    role: 'Investor Lokal • Pembeli Kavling',
+    unit: 'Kavling Siap Bangun Lowokwaru',
+    quote: 'Peta lokasi dan dimensi tanah sesuai dengan kondisi lapangan saat dicek bersama tim. Sangat membantu sebelum memutuskan transaksi.'
+  }
+];
+
+// FAQ Pembeli
+const faqs = [
+  {
+    q: 'Apakah status ketersediaan unit di LapakProperti selalu akurat?',
+    a: 'Ya. Setiap unit yang ditampilkan memiliki indikator status TERSEDIA atau TERKUNCI secara real-time untuk mencegah bentrok jadwal pemesanan antar calon pembeli.'
+  },
+  {
+    q: 'Bagaimana cara menanyakan detail atau menjadwalkan survei lokasi?',
+    a: 'Anda cukup membuka halaman detail properti yang diminati lalu menekan tombol "Chat Penjual via WhatsApp". Pesan otomatis akan menyertakan nama unit, lokasi, dan harga agar langsung direspons.'
+  },
+  {
+    q: 'Apakah harga properti masih bisa dinegosiasikan?',
+    a: 'Untuk beberapa unit Rumah dan Kavling Tanah, negosiasi harga maupun skema pembayaran bertahap/KPR dapat langsung didiskusikan dengan pemilik melalui WhatsApp.'
+  },
+  {
+    q: 'Apakah ada biaya tambahan bagi calon penyewa atau pembeli saat mencari unit?',
+    a: 'Tidak ada. Pencarian katalog, pengecekan spesifikasi, hingga konsultasi jadwal survei lokasi melalui website LapakProperti sepenuhnya gratis bagi calon pembeli.'
+  }
+];
+
+const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
+  'Halo Tim LapakProperti, saya ingin konsultasi pencarian unit Kos / Rumah / Kavling Tanah di Malang Raya.'
+)}`;
+---
+
+<html lang="id" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Beranda — LapakProperti</title>
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="beranda" />
+
+      <!-- 1. HERO SECTION -->
+      <section class="relative bg-[#0F172A] text-white py-20 px-4 border-b border-slate-800 overflow-hidden">
+        <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80');"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/85 to-transparent"></div>
+
+        <div class="relative max-w-4xl mx-auto text-center z-10">
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-4 backdrop-blur-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Marketplace Hunian & Kavling Terverifikasi Malang Raya
+          </span>
+          <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
+            Temukan & Amankan Properti Tanpa Risiko Double-Booking
+          </h1>
+          <p class="text-slate-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8">
+            Jelajahi unit Kos, Rumah, dan Kavling Tanah dengan spesifikasi transparan, status ketersediaan real-time, dan terhubung langsung ke WhatsApp penjual.
+          </p>
+
+          <div class="flex flex-wrap items-center justify-center gap-3">
+            <a href="/katalog" class="bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition shadow-lg">
+              Jelajahi Katalog Unit
+            </a>
+            <a href={waConsultUrl} target="_blank" rel="noopener noreferrer" class="bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition border border-slate-700">
+              Konsultasi via WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. TENTANG SINGKAT PLATFORM + FOTO PENGUAT WEBSITE -->
+      <section class="max-w-6xl mx-auto px-4 pt-14 pb-6">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div class="lg:col-span-6 space-y-4">
+            <span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-extrabold uppercase tracking-wider">
+              Tentang LapakProperti
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
+              Platform Pencarian Kos, Rumah & Kavling Tanah yang Jelas dan Terverifikasi
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <strong>LapakProperti</strong> hadir untuk memudahkan mahasiswa, keluarga, maupun investor menemukan properti di Malang Raya tanpa informasi yang membingungkan. Setiap listing dilengkapi rincian ukuran, legalitas sertifikat (SHM/HGB), fasilitas, peta lokasi akurat, serta simulasi estimasi biaya.
+            </p>
+            <div class="pt-1">
+              <a href="/tentang" class="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#059669] hover:text-emerald-700">
+                <span>Pelajari Selengkapnya Tentang Kami</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- FOTO PENGUAT WEBSITE -->
+          <div class="lg:col-span-6">
+            <div class="relative rounded-2xl overflow-hidden border border-slate-200 shadow-md h-64 sm:h-72 lg:h-80 bg-slate-200 group">
+              <img
+                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80"
+                alt="Hunian Modern & Kavling Terverifikasi LapakProperti"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/20 to-transparent"></div>
+
+              <!-- BADGE PENGUAT KEPERCAYAAN -->
+              <div class="absolute bottom-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 text-white">
+                <div>
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#059669] text-[10px] font-extrabold uppercase tracking-wide shadow">
+                    Terverifikasi Fisik & Legalitas
+                  </span>
+                  <p class="text-xs sm:text-sm font-bold mt-1.5">Kos, Rumah & Kavling Siap Huni di Malang Raya</p>
+                </div>
+                <div class="bg-slate-900/85 backdrop-blur-xs border border-slate-700 px-3 py-2 rounded-xl text-right">
+                  <strong class="block text-sm font-black text-emerald-400">100%</strong>
+                  <span class="text-[10px] text-slate-300">Data Transparan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. KEUNGGULAN UTAMA (DI BAWAH TENTANG) -->
+      <section class="max-w-6xl mx-auto px-4 pt-6 pb-4">
+        <div class="text-center max-w-2xl mx-auto mb-6">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Mengapa Memilih Kami?</span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5">Keunggulan Bertransaksi di LapakProperti</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition space-y-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#059669] flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-sm font-extrabold text-slate-900">Data Spesifikasi & Legalitas Lengkap</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Rincian luas tanah, bangunan, fasilitas kamar, hingga status sertifikat (SHM/HGB) ditampilkan terbuka sebelum Anda survei.
+            </p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition space-y-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h3 class="text-sm font-extrabold text-slate-900">Status Unit Real-Time (Anti Double-Booking)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Unit yang sudah terisi otomatis ditandai terkunci sehingga calon pembeli tidak membuang waktu menanyakan unit yang sudah laku.
+            </p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs hover:shadow-md transition space-y-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <h3 class="text-sm font-extrabold text-slate-900">Terhubung Langsung ke WhatsApp</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Tanya ketersediaan unit, negosiasi harga, atau atur jadwal survei lokasi secara langsung dalam satu klik tanpa perantara rumit.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. KATALOG UNGGULAN (3 WAKIL) -->
+      <section class="max-w-6xl mx-auto px-4 pt-12 pb-4">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+          <div>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Pilihan Terkini</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Katalog Properti Unggulan</h2>
+          </div>
+          <a href="/katalog" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800">
+            <span>Lihat Semua Katalog</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+
+        <div id="featured-container">
+          {featuredProperties.length > 0 ? (
+            <div id="featured-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {featuredProperties.map((item: any) => {
+                const isBooked = item.status === 'BOOKED';
+                return (
+                  <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                      <div class="relative h-48 bg-slate-200 overflow-hidden">
+                        <img
+                          src={item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
+                          alt={item.title}
+                          class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                        />
+                        <span class="absolute top-3 left-3 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md bg-slate-900/80 text-white">
+                          {item.category}
+                        </span>
+                        <span class={`absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}`}>
+                          {isBooked ? 'TERKUNCI' : 'TERSEDIA'}
+                        </span>
+                      </div>
+                      <div class="p-5">
+                        <h3 class="text-base font-bold text-slate-900 line-clamp-1">{item.title}</h3>
+                        <p class="text-xs text-slate-500 mt-1 truncate">{item.location}</p>
+                        <p class="text-base font-extrabold text-[#059669] mt-3">
+                          Rp {Number(item.price || 0).toLocaleString('id-ID')}
+                          <span class="text-xs font-normal text-slate-500">/{item.price_unit || 'bulan'}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="p-5 pt-0">
+                      <a
+                        href={`/property/${item.id}`}
+                        class={`block w-full text-center font-semibold text-xs py-2.5 rounded-xl transition ${
+                          isBooked ? 'bg-slate-200 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
+                        }`}
+                      >
+                        {isBooked ? 'Lihat Detail Unit' : 'Lihat Detail & Hubungi WA'}
+                      </a>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-xs text-slate-500">
+              Belum ada unit properti yang ditampilkan. Silakan buka halaman Katalog untuk memuat data terbaru.
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- 5. GALERI PROPERTI (3 SAJA) -->
+      <section class="max-w-6xl mx-auto px-4 pt-12 pb-4">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+          <div>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Dokumentasi Visual</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Galeri Unit & Lingkungan</h2>
+          </div>
+          <a href="/galeri" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800">
+            <span>Buka Galeri Lengkap</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {galleryPreview.map((gal: any) => (
+            <a
+              href={gal.id ? `/property/${gal.id}` : '/galeri'}
+              class="group relative h-60 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs block"
+            >
+              <img
+                src={gal.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
+                alt={gal.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent"></div>
+              <div class="absolute bottom-4 left-4 right-4 text-white">
+                <span class="inline-block px-2 py-0.5 rounded bg-[#059669] text-[10px] font-extrabold uppercase mb-1.5">
+                  {gal.category}
+                </span>
+                <h3 class="text-sm font-bold line-clamp-1">{gal.title}</h3>
+                <p class="text-[11px] text-slate-300 truncate">{gal.location}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- 6. TESTIMONI PENGGUNA (3 SAJA) -->
+      <section class="max-w-6xl mx-auto px-4 pt-12 pb-4">
+        <div class="text-center max-w-2xl mx-auto mb-8">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Pengalaman Pengguna</span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Apa Kata Penyewa & Pembeli?</h2>
+          <p class="text-xs text-slate-500 mt-1">Cerita nyata pengguna yang menemukan hunian dan aset properti melalui LapakProperti.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {testimonials.map((t) => (
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center gap-1 text-amber-400 text-xs">
+                  <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed italic">"{t.quote}"</p>
+              </div>
+              <div class="pt-3 border-t border-slate-100">
+                <strong class="block text-xs font-extrabold text-slate-900">{t.name}</strong>
+                <span class="block text-[11px] text-slate-500">{t.role}</span>
+                <span class="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                  Unit: {t.unit}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- 7. FAQ (PERTANYAAN YANG SERING DIAJUKAN) -->
+      <section class="max-w-4xl mx-auto px-4 pt-12 pb-4">
+        <div class="text-center mb-8">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Pusat Bantuan</span>
+          <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Pertanyaan yang Sering Diajukan (FAQ)</h2>
+          <p class="text-xs text-slate-500 mt-1">Jawaban cepat seputar pengecekan unit, survei lokasi, dan transaksi di LapakProperti.</p>
+        </div>
+
+        <div class="space-y-3">
+          {faqs.map((item, index) => (
+            <details class="group bg-white rounded-2xl border border-slate-200 p-5 shadow-xs" open={index === 0}>
+              <summary class="flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-900 cursor-pointer list-none">
+                <span>{item.q}</span>
+                <span class="w-6 h-6 rounded-full bg-slate-100 group-open:bg-emerald-50 group-open:text-[#059669] flex items-center justify-center text-slate-500 font-bold shrink-0 transition">
+                  +
+                </span>
+              </summary>
+              <p class="text-xs text-slate-600 leading-relaxed mt-3 pt-3 border-t border-slate-100">
+                {item.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <!-- 8. CTA PENAWARAN PROPERTI & KONSULTASI -->
+      <section class="max-w-6xl mx-auto px-4 py-12">
+        <div class="bg-[#0F172A] text-white rounded-3xl p-8 sm:p-10 border border-slate-800 shadow-lg flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div class="text-center lg:text-left max-w-2xl space-y-2.5">
+            <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+              Siap Survei atau Punya Kriteria Khusus?
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold leading-tight">
+              Temukan Unit Terbaik atau Konsultasikan Kebutuhan Properti Anda
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Pilih langsung unit yang tersedia di katalog kami, atau hubungi tim konsultan LapakProperti via WhatsApp untuk rekomendasi Kos, Rumah, dan Kavling sesuai anggaran Anda.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0 w-full sm:w-auto">
+            <a
+              href="/katalog"
+              class="px-6 py-3.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs text-center transition shadow-md"
+            >
+              Lihat Semua Properti
+            </a>
+            <a
+              href={waConsultUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-6 py-3.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs text-center transition"
+            >
+              Konsultasi Gratis via WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <Footer />
+
+    <script is:inline define:vars={{ apiUrl: API_URL, defaultGallery: fallbackGallery }}>
+      const featuredContainer = document.getElementById('featured-container');
+      const galleryGrid = document.getElementById('gallery-grid');
+
+      function renderFeaturedAndGallery(list) {
+        const items = Array.isArray(list) ? list : [];
+        const topThree = items.slice(0, 3);
+
+        if (featuredContainer) {
+          if (topThree.length > 0) {
+            const cardsHtml = topThree.map((item) => {
+              const isBooked = item.status === 'BOOKED';
+              return `
+                <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                  <div>
+                    <div class="relative h-48 bg-slate-200 overflow-hidden">
+                      <img
+                        src="${item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}"
+                        alt="${item.title || ''}"
+                        class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                      />
+                      <span class="absolute top-3 left-3 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md bg-slate-900/80 text-white">
+                        ${item.category || 'PROPERTI'}
+                      </span>
+                      <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}">
+                        ${isBooked ? 'TERKUNCI' : 'TERSEDIA'}
+                      </span>
+                    </div>
+                    <div class="p-5">
+                      <h3 class="text-base font-bold text-slate-900 line-clamp-1">${item.title || ''}</h3>
+                      <p class="text-xs text-slate-500 mt-1 truncate">${item.location || ''}</p>
+                      <p class="text-base font-extrabold text-[#059669] mt-3">
+                        Rp ${Number(item.price || 0).toLocaleString('id-ID')}
+                        <span class="text-xs font-normal text-slate-500">/${item.price_unit || 'bulan'}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="p-5 pt-0">
+                    <a
+                      href="/property/${item.id}"
+                      class="block w-full text-center font-semibold text-xs py-2.5 rounded-xl transition ${
+                        isBooked ? 'bg-slate-200 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
+                      }"
+                    >
+                      ${isBooked ? 'Lihat Detail Unit' : 'Lihat Detail & Hubungi WA'}
+                    </a>
+                  </div>
+                </article>
+              `;
+            }).join('');
+
+            featuredContainer.innerHTML = `<div id="featured-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">${cardsHtml}</div>`;
+          } else {
+            featuredContainer.innerHTML = `
+              <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-xs text-slate-500">
+                Belum ada unit properti yang ditampilkan. Silakan buka halaman Katalog untuk memuat data terbaru.
+              </div>
+            `;
+          }
+        }
+
+        if (galleryGrid) {
+          const galleryItems = (items.length >= 3 ? items.slice(0, 3) : [...items, ...defaultGallery]).slice(0, 3);
+          galleryGrid.innerHTML = galleryItems.map((gal) => `
+            <a
+              href="${gal.id ? `/property/${gal.id}` : '/galeri'}"
+              class="group relative h-60 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs block"
+            >
+              <img
+                src="${gal.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}"
+                alt="${gal.title || ''}"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent"></div>
+              <div class="absolute bottom-4 left-4 right-4 text-white">
+                <span class="inline-block px-2 py-0.5 rounded bg-[#059669] text-[10px] font-extrabold uppercase mb-1.5">
+                  ${gal.category || 'PROPERTI'}
+                </span>
+                <h3 class="text-sm font-bold line-clamp-1">${gal.title || ''}</h3>
+                <p class="text-[11px] text-slate-300 truncate">${gal.location || ''}</p>
+              </div>
+            </a>
+          `).join('');
+        }
+      }
+
+      async function syncHomeData() {
+        try {
+          const res = await fetch(`${apiUrl}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          renderFeaturedAndGallery(data);
+        } catch {
+          // Pertahankan data SSR jika fetch gagal
+        }
+      }
+
+      window.addEventListener('focus', syncHomeData);
+      window.addEventListener('pageshow', syncHomeData);
+    </script>
+  </body>
+</html>

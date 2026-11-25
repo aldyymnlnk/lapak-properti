@@ -1,0 +1,1672 @@
+---
+export const prerender = false;
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+
+let orders: any[] = [];
+let properties: any[] = [];
+let agents: any[] = [];
+
+try {
+  const [ordersRes, propsRes, agentsRes] = await Promise.all([
+    fetch(`${API_URL}/api/admin/orders`, { cache: 'no-store' }),
+    fetch(`${API_URL}/api/properties`, { cache: 'no-store' }),
+    fetch(`${API_URL}/api/admin/agents`, { cache: 'no-store' })
+  ]);
+
+  if (ordersRes.ok) orders = await ordersRes.json();
+  if (propsRes.ok) properties = await propsRes.json();
+  if (agentsRes.ok) agents = await agentsRes.json();
+} catch {
+  orders = [];
+  properties = [];
+  agents = [];
+}
+
+const pendingCount = orders.filter((o: any) => o.status === 'PENDING_VERIFICATION').length;
+const paidOrders = orders.filter((o: any) => o.status === 'PAID');
+const totalRevenue = paidOrders.reduce((sum: number, o: any) => sum + Number(o.properties?.price || 0), 0);
+const availableProps = properties.filter((p: any) => String(p.status || 'available').toLowerCase() === 'available').length;
+const bookedProps = properties.filter((p: any) => {
+  const st = String(p.status || '').toLowerCase();
+  return st === 'booked' || st === 'sold';
+}).length;
+const activeAgentsCount = agents.filter((a: any) => a.is_active !== false).length;
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin CMS Dashboard — LapakProperti</title>
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col md:flex-row">
+
+    <!-- TOAST NOTIFIKASI PROFESIONAL -->
+    <div
+      id="admin-toast-container"
+      aria-live="polite"
+      class="fixed top-4 right-4 z-[9999] flex flex-col gap-2.5 max-w-sm w-[calc(100vw-2rem)] pointer-events-none"
+    ></div>
+
+    <!-- ================= SIDEBAR NAVIGASI KIRI ================= -->
+    <aside class="w-full md:w-64 bg-[#0F172A] text-white flex flex-col justify-between shrink-0 md:min-h-screen sticky top-0 z-40">
+      <div>
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+          <a href="/admin" class="flex items-center gap-3">
+            <span class="w-9 h-9 bg-[#059669] rounded-xl flex items-center justify-center font-black text-white text-base shadow-sm">
+              LP
+            </span>
+            <div>
+              <h1 class="text-sm font-extrabold tracking-tight leading-none">LapakProperti</h1>
+              <span class="text-[10px] text-emerald-400 font-semibold">Admin Control Panel</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Info Akun Login -->
+        <div class="px-4 py-3 mx-3 mt-3 rounded-xl bg-slate-800/70 border border-slate-700/80 text-xs">
+          <span class="text-[10px] text-slate-400 block">Login sebagai:</span>
+          <strong id="sidebar-admin-name" class="text-white font-bold block truncate">Administrator</strong>
+          <span id="sidebar-admin-email" class="text-[10px] text-emerald-400 block truncate">admin@lapakproperti.id</span>
+        </div>
+
+        <nav class="p-3 flex md:flex-col gap-1.5 overflow-x-auto text-xs font-semibold">
+          <button
+            type="button"
+            data-target="tab-stats"
+            class="sidebar-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>Statistik & Ringkasan</span>
+          </button>
+
+          <button
+            type="button"
+            data-target="tab-properties"
+            class="sidebar-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>Kelola & Posting Properti</span>
+          </button>
+
+          <button
+            type="button"
+            data-target="tab-orders"
+            class="sidebar-btn flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <span class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+              <span>Log Pengajuan & ACC</span>
+            </span>
+            {pendingCount > 0 && (
+              <span class="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            data-target="tab-agents"
+            class="sidebar-btn flex items-center justify-between gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <span class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Portal & Akun Agen</span>
+            </span>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-emerald-300">
+              {agents.length}
+            </span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 hidden md:flex flex-col gap-2 text-xs">
+        <a
+          href="/katalog"
+          target="_blank"
+          class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 font-semibold transition"
+        >
+          <span>Lihat Katalog Publik</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+        <a
+          href="/"
+          target="_blank"
+          class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition"
+        >
+          <span>Lihat Website Pembeli</span>
+        </a>
+        <button
+          type="button"
+          onclick="window.logoutAdmin()"
+          class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white font-bold transition cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span>Logout Admin</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ================= AREA KONTEN UTAMA KANAN ================= -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h2 id="page-heading" class="text-base sm:text-lg font-extrabold text-slate-900">Statistik & Ringkasan Bisnis</h2>
+          <p class="text-xs text-slate-500">Kontrol penuh seluruh listing Kos, Rumah, Kavling Tanah, verifikasi KTP, dan agen mitra.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            onclick="window.location.reload()"
+            class="inline-flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 font-semibold transition cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Refresh</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.logoutAdmin()"
+            class="md:hidden text-xs bg-rose-600 text-white px-3 py-1.5 rounded-lg font-bold"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <main class="p-4 sm:p-6 lg:p-8 flex-1 space-y-8">
+
+        <!-- ========================================================= -->
+        <!-- MENU 1: STATISTIK & RINGKASAN                             -->
+        <!-- ========================================================= -->
+        <section id="tab-stats" class="tab-panel space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-xs font-semibold text-slate-500">Total Unit Terdaftar</span>
+              <h3 class="text-2xl font-black text-slate-900 mt-1">{properties.length} <span class="text-xs font-normal text-slate-400">Unit</span></h3>
+              <span class="text-[11px] text-emerald-600 mt-1 block">Kos, Rumah & Kavling Tanah</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-xs">
+              <span class="text-xs font-semibold text-emerald-700">Unit Tersedia</span>
+              <h3 class="text-2xl font-black text-emerald-700 mt-1">{availableProps}</h3>
+              <span class="text-[11px] text-emerald-600/80 mt-1 block">Status AVAILABLE</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-rose-200 shadow-xs">
+              <span class="text-xs font-semibold text-rose-700">Unit Terkunci</span>
+              <h3 class="text-2xl font-black text-rose-600 mt-1">{bookedProps}</h3>
+              <span class="text-[11px] text-rose-600/80 mt-1 block">Status BOOKED / SOLD</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-indigo-200 shadow-xs">
+              <span class="text-xs font-semibold text-indigo-700">Mitra Agen Aktif</span>
+              <h3 class="text-2xl font-black text-indigo-700 mt-1">{activeAgentsCount} <span class="text-xs font-normal text-indigo-400">/ {agents.length}</span></h3>
+              <span class="text-[11px] text-indigo-600/80 mt-1 block">Terdaftar di Supabase</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-blue-200 shadow-xs">
+              <span class="text-xs font-semibold text-blue-700">Total Transaksi Lunas</span>
+              <h3 class="text-lg font-black text-blue-700 mt-1">Rp {totalRevenue.toLocaleString('id-ID')}</h3>
+              <span class="text-[11px] text-blue-600/80 mt-1 block">{paidOrders.length} transaksi PAID</span>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-extrabold text-slate-800">Pintasan Pengelolaan Cepat</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Tambah unit properti baru, verifikasi KTP pembeli, kelola akun agen, atau sinkronkan laporan.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onclick="window.switchSidebarTab('tab-properties')"
+                class="inline-flex items-center gap-1.5 bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                <span>+ Posting Unit Baru</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="window.switchSidebarTab('tab-orders')"
+                class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-4 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                <span>Verifikasi & Order ({orders.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="window.switchSidebarTab('tab-agents')"
+                class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                <span>Kelola Agen ({agents.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onclick="window.syncAllToGoogleSheets()"
+                class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-slate-800 text-emerald-400 text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer"
+              >
+                <span>Sync ke Google Sheets</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MENU 2: EDIT & POSTING PROPERTI DINAMIS SESUAI KATEGORI   -->
+        <!-- ========================================================= -->
+        <section id="tab-properties" class="tab-panel hidden space-y-6">
+
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <div>
+                <h3 id="form-prop-heading" class="text-base font-extrabold text-slate-900">Posting Properti Baru ke Katalog</h3>
+                <p class="text-xs text-slate-500">Pilih kategori hunian, unggah minimal 1 foto sampul, dan tambahkan foto pendukung sesuai unit asli.</p>
+              </div>
+              <button
+                type="button"
+                id="btn-cancel-edit"
+                class="hidden inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+              >
+                <span>Batal Edit ✕</span>
+              </button>
+            </div>
+
+            <form id="cms-property-form" class="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs">
+              <input type="hidden" id="prop-id" value="" />
+              <input type="hidden" id="prop-agent-id" value="" />
+              <input type="hidden" id="prop-agent-email" value="" />
+
+              <!-- Kolom Input Kiri & Tengah -->
+              <div class="lg:col-span-2 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Nama / Judul Properti *</label>
+                    <input type="text" id="prop-title" required placeholder="Contoh: Kos Putri Eksklusif Dekat UB Malang"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Kategori Hunian *</label>
+                    <select id="prop-category" required
+                      class="w-full px-3.5 py-2.5 rounded-xl border-2 border-emerald-500/60 bg-emerald-50/30 font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                      <option value="kos">Kos / Indekos</option>
+                      <option value="rumah">Rumah / Kontrakan</option>
+                      <option value="tanah">Tanah / Kavling</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label id="label-block" class="block font-bold text-slate-700 mb-1">Nomor Kamar / Tipe Kamar</label>
+                    <input type="text" id="prop-block" placeholder="Contoh: Kamar B-04 (Lantai 1)"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Harga (Rupiah) *</label>
+                    <input type="number" id="prop-price" required min="10000" placeholder="Contoh: 1500000"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Satuan Harga *</label>
+                    <select id="prop-unit" required
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                      <option value="bulan">per Bulan</option>
+                      <option value="tahun">per Tahun</option>
+                      <option value="unit">per Unit / Jual Putus</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Status Ketersediaan</label>
+                    <select id="prop-status"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                      <option value="available">available (Tersedia)</option>
+                      <option value="booked">booked (Terkunci / Terisi)</option>
+                      <option value="sold">sold (Terjual)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Alamat / Lokasi Lengkap *</label>
+                    <input type="text" id="prop-location" required placeholder="Contoh: Jl. Veteran No. 12, Kota Malang"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Pemasang / Agen</label>
+                    <input type="text" id="prop-seller-name" placeholder="Contoh: Admin LapakProperti / Budi Agen"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nomor WhatsApp Penerima Chat *</label>
+                    <input type="tel" id="prop-seller-phone" required placeholder="Contoh: 081234567890"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+                </div>
+
+                <!-- KOTAK SPESIFIKASI DINAMIS SESUAI KATEGORI -->
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span id="spec-section-title" class="text-xs font-extrabold text-emerald-800 uppercase tracking-wider">
+                      Spesifikasi Khusus Kategori: KOS
+                    </span>
+                    <span class="text-[10px] text-slate-500">Tampil otomatis di halaman detail pembeli</span>
+                  </div>
+
+                  <!-- A. FORM KHUSUS KOS -->
+                  <div id="spec-kos" class="spec-group grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Jenis Penghuni Kos</label>
+                      <select id="kos-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="Khusus Putri">Khusus Putri</option>
+                        <option value="Khusus Putra">Khusus Putra</option>
+                        <option value="Campur (Putra & Putri)">Campur (Putra & Putri)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Ukuran Kamar</label>
+                      <input type="text" id="kos-room-size" placeholder="Contoh: 3 x 4 Meter"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Kamar Mandi</label>
+                      <select id="kos-bathroom" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="Kamar Mandi Dalam">Kamar Mandi Dalam</option>
+                        <option value="Kamar Mandi Dalam + Water Heater">Kamar Mandi Dalam + Water Heater</option>
+                        <option value="Kamar Mandi Luar">Kamar Mandi Luar</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Sistem Listrik & Air</label>
+                      <select id="kos-electricity" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="Token Listrik Masing-masing">Token Listrik Masing-masing</option>
+                        <option value="Sudah Termasuk Listrik & Air">Sudah Termasuk Listrik & Air</option>
+                      </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-slate-700 mb-1">Fasilitas Kamar & Bersama</label>
+                      <input type="text" id="kos-facilities" placeholder="Contoh: AC, WiFi 100Mbps, Kasur, Lemari, Dapur Bersama, Parkir Motor"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                  </div>
+
+                  <!-- B. FORM KHUSUS RUMAH -->
+                  <div id="spec-rumah" class="spec-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Luas Tanah (LT)</label>
+                      <input type="text" id="rumah-lt" placeholder="Contoh: 120 m2"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Luas Bangunan (LB)</label>
+                      <input type="text" id="rumah-lb" placeholder="Contoh: 90 m2 (2 Lantai)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Jumlah Kamar Tidur</label>
+                      <input type="text" id="rumah-kt" placeholder="Contoh: 3 Kamar Tidur"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Jumlah Kamar Mandi</label>
+                      <input type="text" id="rumah-km" placeholder="Contoh: 2 Kamar Mandi"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Daya Listrik & Sumber Air</label>
+                      <input type="text" id="rumah-utilities" placeholder="Contoh: Listrik 2200W • Air PDAM"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Legalitas & Carport</label>
+                      <input type="text" id="rumah-legality" placeholder="Contoh: SHM • Carport 2 Mobil"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                  </div>
+
+                  <!-- C. FORM KHUSUS TANAH -->
+                  <div id="spec-tanah" class="spec-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Total Luas Tanah</label>
+                      <input type="text" id="tanah-area" placeholder="Contoh: 150 m2"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Dimensi (Lebar x Panjang)</label>
+                      <input type="text" id="tanah-dimensions" placeholder="Contoh: 10 x 15 Meter"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Legalitas Sertifikat</label>
+                      <select id="tanah-certificate" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="SHM (Sertifikat Hak Milik)">SHM (Sertifikat Hak Milik)</option>
+                        <option value="SHGB">SHGB</option>
+                        <option value="AJB / Petok D Siap SHM">AJB / Petok D Siap SHM</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Zona / Peruntukan Lahan</label>
+                      <input type="text" id="tanah-zoning" placeholder="Contoh: Zona Kuning (Perumahan)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-slate-700 mb-1">Lebar & Kondisi Akses Jalan</label>
+                      <input type="text" id="tanah-road" placeholder="Contoh: Jalan Paving 6 Meter (2 Mobil Papasan)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Deskripsi Lengkap & Keunggulan Lokasi *</label>
+                  <textarea id="prop-description" rows="3" required placeholder="Ceritakan keunggulan lingkungan sekitar, jarak ke kampus/pusat kota, peraturan hunian, atau potensi investasi..."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+              </div>
+
+              <!-- Kolom Kanan: 1. Foto Sampul (Wajib) + 2. Galeri Foto Pendukung Dinamis -->
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between space-y-5">
+                <div class="space-y-4">
+                  <!-- BAGIAN A: FOTO SAMPUL UTAMA (WAJIB) -->
+                  <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <label class="block font-extrabold text-slate-800">1. Foto Sampul Utama <span class="text-rose-600">*</span></label>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">Wajib</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-lg text-[11px] font-bold">
+                      <button type="button" id="mode-upload-btn" class="inline-flex items-center justify-center py-1.5 rounded-md bg-white text-slate-900 shadow-xs transition cursor-pointer">
+                        Upload File
+                      </button>
+                      <button type="button" id="mode-url-btn" class="inline-flex items-center justify-center py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition cursor-pointer">
+                        Link URL
+                      </button>
+                    </div>
+
+                    <div id="box-upload-file">
+                      <label for="prop-file"
+                        class="flex flex-col items-center justify-center w-full py-3 px-3 border-2 border-dashed border-emerald-400 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl cursor-pointer transition text-center">
+                        <span class="text-xs font-bold text-emerald-700">+ Pilih Foto Sampul</span>
+                        <span id="file-name-label" class="text-[10px] text-slate-500 mt-0.5">JPG, PNG, WebP (Maks. 5MB)</span>
+                      </label>
+                      <input type="file" id="prop-file" accept="image/*" class="hidden" />
+                    </div>
+
+                    <div id="box-input-url" class="hidden">
+                      <input type="text" id="prop-image" placeholder="https://example.com/foto-sampul.jpg"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                    </div>
+
+                    <!-- Preview Sampul (Hanya tampil jika sudah ada foto) -->
+                    <div id="cover-preview-wrapper" class="hidden relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                      <img id="image-preview" src="" alt="Preview Sampul" class="w-full h-36 object-cover" />
+                      <button
+                        type="button"
+                        id="btn-remove-cover"
+                        title="Hapus Foto Sampul"
+                        class="absolute top-2 right-2 px-2 py-1 rounded-lg bg-rose-600/95 hover:bg-rose-700 text-white text-[10px] font-bold shadow cursor-pointer"
+                      >
+                        Hapus Sampul
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- BAGIAN B: FOTO PENDUKUNG DINAMIS (OPSIONAL, BISA TAMBAH & HAPUS) -->
+                  <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <label class="block font-extrabold text-slate-800">2. Foto Pendukung</label>
+                        <span class="text-[10px] text-slate-500">Hanya foto yang ditambahkan yang tampil di katalog.</span>
+                      </div>
+                      <button
+                        type="button"
+                        id="btn-add-gallery-slot"
+                        class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-emerald-400 text-[11px] font-bold transition cursor-pointer"
+                      >
+                        + Tambah Foto
+                      </button>
+                    </div>
+
+                    <div id="gallery-slots-container" class="space-y-2.5"></div>
+
+                    <p id="gallery-empty-hint" class="text-[11px] text-slate-400 italic text-center py-2 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                      Belum ada foto pendukung. Klik "+ Tambah Foto" jika ingin menambah sudut ruangan/lokasi lain.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  id="btn-submit-property"
+                  class="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm transition cursor-pointer"
+                >
+                  <span id="btn-submit-label">Posting ke Katalog Sekarang</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tabel Daftar Katalog -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-200">
+              <h3 class="text-base font-extrabold text-slate-800">Daftar Seluruh Properti di Katalog ({properties.length} Unit)</h3>
+              <p class="text-xs text-slate-500">Mencakup unit postingan Admin Pusat maupun seluruh Mitra Agen terdaftar.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  <tr>
+                    <th class="px-5 py-3.5">Foto & Judul</th>
+                    <th class="px-5 py-3.5">Kategori & Pemasang</th>
+                    <th class="px-5 py-3.5">Harga</th>
+                    <th class="px-5 py-3.5">Status (Klik Ubah)</th>
+                    <th class="px-5 py-3.5 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {properties.map((item: any) => {
+                    const stLower = String(item.status || 'available').toLowerCase();
+                    const isBooked = stLower === 'booked' || stLower === 'sold';
+                    const extraCount = Array.isArray(item.gallery)
+                      ? item.gallery.length
+                      : (Array.isArray(item.specifications?.gallery) ? item.specifications.gallery.length : 0);
+                    return (
+                      <tr class="hover:bg-slate-50/80 transition">
+                        <td class="px-5 py-4">
+                          <div class="flex items-center gap-3">
+                            {item.image_url ? (
+                              <img
+                                src={item.image_url}
+                                alt={item.title}
+                                class="w-12 h-12 rounded-lg object-cover bg-slate-200 shrink-0"
+                              />
+                            ) : (
+                              <div class="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0">
+                                No Img
+                              </div>
+                            )}
+                            <div>
+                              <div class="font-bold text-slate-900">{item.title}</div>
+                              <div class="text-[11px] text-slate-500 line-clamp-1">{item.location}</div>
+                              <span class="inline-block mt-0.5 text-[10px] font-semibold text-emerald-700">
+                                Total Foto: {1 + extraCount} foto
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-5 py-4">
+                          <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="uppercase font-bold text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                              {item.category}
+                            </span>
+                            {item.specifications?.agent_email ? (
+                              <span class="font-bold text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                Agen: {item.specifications.seller_name || item.specifications.agent_email}
+                              </span>
+                            ) : (
+                              <span class="font-bold text-[10px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Admin Pusat
+                              </span>
+                            )}
+                          </div>
+                          <div class="text-[11px] text-slate-500 mt-1">{item.block_or_unit || '-'}</div>
+                          <div class="text-[10px] text-emerald-700 font-semibold">
+                            WA: {item.specifications?.seller_phone || 'Default Admin'}
+                          </div>
+                        </td>
+                        <td class="px-5 py-4 font-bold text-slate-800">
+                          Rp {Number(item.price).toLocaleString('id-ID')}/{item.price_unit}
+                        </td>
+                        <td class="px-5 py-4">
+                          <button
+                            type="button"
+                            onclick={`window.togglePropertyStatus('${item.id}', '${stLower}')`}
+                            title="Klik untuk ganti status Tersedia / Terkunci"
+                            class={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition ${
+                              isBooked
+                                ? 'bg-rose-100 hover:bg-rose-200 text-rose-700'
+                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700'
+                            }`}
+                          >
+                            {stLower} ⇄
+                          </button>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                          <div class="flex items-center justify-end gap-2">
+                            <a
+                              href={`/property/${item.id}`}
+                              target="_blank"
+                              class="inline-flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-[11px] transition"
+                            >
+                              <span>Lihat</span>
+                            </a>
+                            <button
+                              type="button"
+                              onclick={`window.loadEditProperty('${item.id}')`}
+                              class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition cursor-pointer"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onclick={`window.removeProperty('${item.id}')`}
+                              class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] transition cursor-pointer"
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MENU 3: LOG PENGAJUAN & VERIFIKASI KTP + ACC/TOLAK        -->
+        <!-- ========================================================= -->
+        <section id="tab-orders" class="tab-panel hidden space-y-4">
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-800">Riwayat Pengajuan & Verifikasi KYC ({orders.length})</h3>
+                <p class="text-xs text-slate-500">Periksa kesesuaian NIK & foto KTP pembeli sebelum ACC, atau ekspor laporan ke Google Sheets / CSV.</p>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  id="btn-sync-gsheet"
+                  onclick="window.syncAllToGoogleSheets()"
+                  class="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-slate-800 text-emerald-400 border border-slate-700 text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition cursor-pointer"
+                >
+                  <span>Sync ke Google Sheets</span>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="window.exportOrdersToCSV()"
+                  class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs transition cursor-pointer"
+                >
+                  <span>Download .CSV</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  <tr>
+                    <th class="px-5 py-3.5">ID Order</th>
+                    <th class="px-5 py-3.5">Unit Properti</th>
+                    <th class="px-5 py-3.5">Pembeli & NIK</th>
+                    <th class="px-5 py-3.5">Dokumen KTP</th>
+                    <th class="px-5 py-3.5">Nominal</th>
+                    <th class="px-5 py-3.5">Status</th>
+                    <th class="px-5 py-3.5 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {orders.map((item: any) => (
+                    <tr class="hover:bg-slate-50/80 transition">
+                      <td class="px-5 py-4 font-mono font-bold text-slate-800">#{String(item.id).slice(0, 8)}</td>
+                      <td class="px-5 py-4">
+                        <div class="font-bold text-slate-900">{item.properties?.title || 'Unit Properti'}</div>
+                        <div class="text-[11px] text-slate-400">{item.properties?.block_or_unit || '-'}</div>
+                      </td>
+                      <td class="px-5 py-4">
+                        <div class="font-bold text-slate-800">{item.buyer_name}</div>
+                        <div class="font-mono text-[11px] text-emerald-700">NIK: {item.buyer_nik || '-'}</div>
+                        <div class="font-mono text-[11px] text-slate-500">WA: {item.buyer_phone}</div>
+                      </td>
+                      <td class="px-5 py-4">
+                        {item.ktp_image_url ? (
+                          <button
+                            type="button"
+                            onclick={`window.previewKtpModal('${item.id}')`}
+                            class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-[11px] transition cursor-pointer"
+                          >
+                            <span>Lihat Foto KTP</span>
+                          </button>
+                        ) : (
+                          <span class="text-[11px] text-slate-400 italic">Via WhatsApp</span>
+                        )}
+                      </td>
+                      <td class="px-5 py-4 font-bold text-slate-800">
+                        Rp {Number(item.properties?.price || 0).toLocaleString('id-ID')}
+                      </td>
+                      <td class="px-5 py-4">
+                        <span class={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${
+                          item.status === 'PENDING_VERIFICATION' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                          item.status === 'APPROVED' ? 'bg-emerald-100 text-[#059669] border border-emerald-200' :
+                          item.status === 'PAID' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                          'bg-red-100 text-red-800 border border-red-200'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td class="px-5 py-4 text-right">
+                        {item.status === 'PENDING_VERIFICATION' ? (
+                          <div class="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onclick={`window.verifyOrder('${item.id}', 'APPROVED')`}
+                              class="bg-[#059669] hover:bg-emerald-700 text-white font-bold px-3.5 py-1.5 rounded-lg text-[11px] transition cursor-pointer shadow-xs"
+                            >
+                              ACC
+                            </button>
+                            <button
+                              type="button"
+                              onclick={`window.verifyOrder('${item.id}', 'REJECTED')`}
+                              class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3.5 py-1.5 rounded-lg text-[11px] transition cursor-pointer shadow-xs"
+                            >
+                              Tolak
+                            </button>
+                          </div>
+                        ) : (
+                          <span class="text-slate-400 text-[11px] italic">Selesai</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {orders.length === 0 && (
+                <div class="text-center py-12 text-slate-400">
+                  <p class="text-xs">Belum ada riwayat pengajuan tercatat.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- MENU 4: MANAJEMEN AKUN MITRA AGEN TERDAFTAR (SUPABASE)    -->
+        <!-- ========================================================= -->
+        <section id="tab-agents" class="tab-panel hidden space-y-6">
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 class="text-base font-extrabold text-slate-900">Portal Khusus Agen Pemilik Properti</h3>
+                <p class="text-xs text-slate-500">Kelola akun mitra agen yang terdaftar di Supabase, cek jumlah unitnya, atau nonaktifkan akses jika diperlukan.</p>
+              </div>
+              <a
+                href="/agen/login"
+                target="_blank"
+                class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition"
+              >
+                Buka Halaman Login Agen &rarr;
+              </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <strong class="text-slate-900 block">Hak Akses Role AGEN (/agen/login)</strong>
+                <ul class="list-disc list-inside text-slate-600 space-y-1">
+                  <li>Mendaftar akun agen mandiri & mengatur nomor WhatsApp bisnis.</li>
+                  <li>Menambah, mengedit, dan mengunci status unit miliknya sendiri.</li>
+                  <li>Tidak memiliki akses ke data KTP/NIK pembeli maupun unit agen lain.</li>
+                </ul>
+              </div>
+              <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-1.5">
+                <strong class="text-emerald-950 block">Hak Akses Role ADMIN (/admin/login)</strong>
+                <ul class="list-disc list-inside text-emerald-900 space-y-1">
+                  <li>Verifikasi KTP/NIK pembeli (ACC / Tolak) & kendali penuh semua listing.</li>
+                  <li>Mengaktifkan atau menonaktifkan akun mitra agen kapan saja.</li>
+                  <li>Ekspor laporan seluruh transaksi ke Google Sheets & file CSV.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabel Daftar Agen Terdaftar dari Supabase -->
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-200">
+              <h3 class="text-base font-extrabold text-slate-800">Daftar Mitra Agen Terdaftar ({agents.length} Akun)</h3>
+              <p class="text-xs text-slate-500">Data langsung dari tabel <code>public.users</code> (role: AGENT) di Supabase.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  <tr>
+                    <th class="px-5 py-3.5">Nama Agen / Usaha</th>
+                    <th class="px-5 py-3.5">Email & WhatsApp</th>
+                    <th class="px-5 py-3.5">Jumlah Unit</th>
+                    <th class="px-5 py-3.5">Status Akun</th>
+                    <th class="px-5 py-3.5 text-right">Kontrol Admin</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  {agents.map((ag: any) => {
+                    const unitCount = properties.filter(
+                      (p: any) =>
+                        p.specifications?.agent_email === ag.email ||
+                        String(p.specifications?.agent_id || '') === String(ag.id) ||
+                        String(p.owner_id || '') === String(ag.id)
+                    ).length;
+                    const isActive = ag.is_active !== false;
+
+                    return (
+                      <tr class="hover:bg-slate-50/80 transition">
+                        <td class="px-5 py-4">
+                          <div class="font-bold text-slate-900">{ag.name}</div>
+                          <div class="text-[10px] text-slate-400">
+                            Bergabung: {ag.created_at ? new Date(ag.created_at).toLocaleDateString('id-ID') : '-'}
+                          </div>
+                        </td>
+                        <td class="px-5 py-4">
+                          <div class="text-slate-800 font-medium">{ag.email}</div>
+                          <div class="font-mono text-[11px] text-emerald-700">WA: {ag.phone || '-'}</div>
+                        </td>
+                        <td class="px-5 py-4 font-bold text-slate-800">
+                          {unitCount} Unit
+                        </td>
+                        <td class="px-5 py-4">
+                          <span class={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            isActive
+                              ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                              : 'bg-rose-100 text-rose-700 border border-rose-200'
+                          }`}>
+                            {isActive ? 'AKTIF' : 'NONAKTIF'}
+                          </span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                          <button
+                            type="button"
+                            onclick={`window.toggleAgentAccount('${ag.id}', ${isActive ? 'false' : 'true'})`}
+                            class={`px-3 py-1.5 rounded-lg text-[11px] font-bold text-white transition cursor-pointer ${
+                              isActive
+                                ? 'bg-rose-600 hover:bg-rose-700'
+                                : 'bg-[#059669] hover:bg-emerald-700'
+                            }`}
+                          >
+                            {isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {agents.length === 0 && (
+                <div class="text-center py-12 text-slate-400">
+                  <p class="text-xs">Belum ada mitra agen yang mendaftar melalui /agen/login.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- MODAL PREVIEW FOTO KTP PEMBELI -->
+    <div id="ktp-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h4 class="text-base font-extrabold text-slate-900">Verifikasi Identitas KTP (KYC)</h4>
+            <p id="modal-ktp-info" class="text-xs text-slate-500 mt-0.5">-</p>
+          </div>
+          <button type="button" onclick="window.closeKtpModal()" class="text-slate-400 hover:text-slate-800 font-bold text-sm px-2 py-1 cursor-pointer">
+            ✕
+          </button>
+        </div>
+        <div class="bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
+          <img id="modal-ktp-img" src="" alt="Foto KTP Pembeli" class="w-full max-h-80 object-contain mx-auto" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="window.closeKtpModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script is:inline define:vars={{ initialOrders: orders, initialProperties: properties, apiUrl: API_URL }}>
+      (function () {
+        var TOAST_KEY = 'lp_admin_toast_next';
+        var ALLOWED_STATUSES = ['available', 'booked', 'sold'];
+
+        function escapeHtml(str) {
+          return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        function showAdminToast(type, title, message) {
+          var container = document.getElementById('admin-toast-container');
+          if (!container) return;
+
+          var isError = type === 'error';
+          var cardClass = isError
+            ? 'bg-white border-l-4 border-l-rose-600 border border-rose-200 text-slate-900'
+            : 'bg-white border-l-4 border-l-emerald-600 border border-emerald-200 text-slate-900';
+          var badgeClass = isError
+            ? 'bg-rose-100 text-rose-700'
+            : 'bg-emerald-100 text-emerald-700';
+          var badgeText = isError ? 'Gagal' : 'Berhasil';
+
+          var toast = document.createElement('div');
+          toast.className =
+            'pointer-events-auto rounded-xl shadow-lg p-3.5 flex items-start justify-between gap-3 transition-all duration-300 ' +
+            cardClass;
+
+          toast.innerHTML =
+            '<div class="min-w-0 flex-1 space-y-1">' +
+            '<div class="flex items-center gap-2">' +
+            '<span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ' +
+            badgeClass +
+            '">' +
+            badgeText +
+            '</span>' +
+            '<strong class="text-xs font-extrabold text-slate-900 truncate">' +
+            escapeHtml(title || (isError ? 'Terjadi Kesalahan' : 'Terkirim ke Katalog')) +
+            '</strong>' +
+            '</div>' +
+            '<p class="text-xs text-slate-600 leading-snug break-words">' +
+            escapeHtml(message || '') +
+            '</p>' +
+            '</div>' +
+            '<button type="button" aria-label="Tutup notifikasi" class="text-slate-400 hover:text-slate-700 text-xs font-bold px-1.5 py-0.5 rounded cursor-pointer">✕</button>';
+
+          var closeBtn = toast.querySelector('button');
+          function dismissToast() {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(12px)';
+            setTimeout(function () {
+              if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 220);
+          }
+
+          if (closeBtn) closeBtn.addEventListener('click', dismissToast);
+          container.appendChild(toast);
+          setTimeout(dismissToast, isError ? 5500 : 4200);
+        }
+
+        function queueToast(type, title, message) {
+          try {
+            sessionStorage.setItem(TOAST_KEY, JSON.stringify({ type: type, title: title, message: message }));
+          } catch {}
+        }
+
+        function flushToast() {
+          try {
+            var raw = sessionStorage.getItem(TOAST_KEY);
+            if (!raw) return;
+            sessionStorage.removeItem(TOAST_KEY);
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.message) {
+              showAdminToast(parsed.type || 'success', parsed.title || 'Berhasil', parsed.message);
+            }
+          } catch {}
+        }
+
+        flushToast();
+
+        function normalizeStatus(val) {
+          var s = String(val || 'available').trim().toLowerCase();
+          return ALLOWED_STATUSES.indexOf(s) !== -1 ? s : 'available';
+        }
+
+        function compressImageFile(file, callback) {
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) {
+            showAdminToast('error', 'Ukuran File Berlebih', 'Ukuran setiap foto maksimal 5MB.');
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const maxWidth = 900;
+              const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+              canvas.width = img.width * scale;
+              canvas.height = img.height * scale;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              callback(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        let currentSeller = null;
+
+        // Proteksi Wajib Login Admin
+        const rawSeller = localStorage.getItem('lapak_seller');
+        if (!rawSeller) {
+          window.location.href = '/admin/login';
+        } else {
+          try {
+            currentSeller = JSON.parse(rawSeller);
+            const nameEl = document.getElementById('sidebar-admin-name');
+            const emailEl = document.getElementById('sidebar-admin-email');
+            if (nameEl && currentSeller && currentSeller.name) nameEl.textContent = currentSeller.name;
+            if (emailEl && currentSeller && currentSeller.email) emailEl.textContent = currentSeller.email;
+
+            const sellerNameInput = document.getElementById('prop-seller-name');
+            const sellerPhoneInput = document.getElementById('prop-seller-phone');
+            if (sellerNameInput && !sellerNameInput.value && currentSeller && currentSeller.name) {
+              sellerNameInput.value = currentSeller.name;
+            }
+            if (sellerPhoneInput && !sellerPhoneInput.value && currentSeller && currentSeller.phone) {
+              sellerPhoneInput.value = currentSeller.phone;
+            }
+          } catch {}
+        }
+
+        window.logoutAdmin = function () {
+          localStorage.removeItem('lapak_seller');
+          window.location.href = '/admin/login';
+        };
+
+        const API_BASE = apiUrl || 'http://localhost:5000';
+        const headings = {
+          'tab-stats': 'Statistik & Ringkasan Bisnis',
+          'tab-properties': 'Kelola & Posting Properti Katalog',
+          'tab-orders': 'Log Pengajuan & Laporan Transaksi',
+          'tab-agents': 'Portal & Manajemen Mitra Agen'
+        };
+
+        window.switchSidebarTab = function (targetId) {
+          document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.add('hidden'));
+          const el = document.getElementById(targetId);
+          if (el) el.classList.remove('hidden');
+
+          document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+            if (btn.getAttribute('data-target') === targetId) {
+              btn.classList.add('bg-emerald-600', 'text-white');
+              btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            } else {
+              btn.classList.remove('bg-emerald-600', 'text-white');
+              btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+            }
+          });
+
+          const headingEl = document.getElementById('page-heading');
+          if (headingEl && headings[targetId]) headingEl.textContent = headings[targetId];
+        };
+
+        document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-target');
+            if (target) window.switchSidebarTab(target);
+          });
+        });
+
+        window.toggleAgentAccount = async function (agentId, nextActiveState) {
+          const label = nextActiveState ? 'MENGAKTIFKAN' : 'MENONAKTIFKAN';
+          if (!confirm(`Yakin ingin ${label} akun agen ini?`)) return;
+
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/agents/${agentId}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ is_active: nextActiveState })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+              queueToast('success', 'Status Akun Agen', data.message || 'Status akun agen berhasil diperbarui.');
+              window.location.reload();
+            } else {
+              showAdminToast('error', 'Gagal Perbarui Agen', data.error || 'Gagal memperbarui status agen.');
+            }
+          } catch {
+            showAdminToast('error', 'Koneksi Gagal', 'Koneksi ke server backend gagal.');
+          }
+        };
+
+        window.previewKtpModal = function (orderId) {
+          const order = initialOrders.find((o) => String(o.id) === String(orderId));
+          if (!order || !order.ktp_image_url) return;
+          document.getElementById('modal-ktp-info').textContent = `Pemesan: ${order.buyer_name} • NIK: ${order.buyer_nik || '-'}`;
+          document.getElementById('modal-ktp-img').src = order.ktp_image_url;
+          document.getElementById('ktp-modal').classList.remove('hidden');
+        };
+
+        window.closeKtpModal = function () {
+          document.getElementById('ktp-modal').classList.add('hidden');
+        };
+
+        const categorySelect = document.getElementById('prop-category');
+        const unitSelect = document.getElementById('prop-unit');
+        const labelBlock = document.getElementById('label-block');
+        const inputBlock = document.getElementById('prop-block');
+        const specSectionTitle = document.getElementById('spec-section-title');
+
+        function updateDynamicCategoryFields(cat, autoSetUnit = true) {
+          document.querySelectorAll('.spec-group').forEach((el) => el.classList.add('hidden'));
+          const activeGroup = document.getElementById(`spec-${cat}`);
+          if (activeGroup) activeGroup.classList.remove('hidden');
+
+          if (cat === 'kos') {
+            specSectionTitle.textContent = 'Spesifikasi Khusus Kategori: KOS';
+            labelBlock.textContent = 'Nomor Kamar / Lantai';
+            inputBlock.placeholder = 'Contoh: Kamar A-01 (Lantai 1)';
+            if (autoSetUnit) unitSelect.value = 'bulan';
+          } else if (cat === 'rumah') {
+            specSectionTitle.textContent = 'Spesifikasi Khusus Kategori: RUMAH';
+            labelBlock.textContent = 'Blok / Nomor Rumah';
+            inputBlock.placeholder = 'Contoh: Blok B2 No. 10';
+            if (autoSetUnit) unitSelect.value = 'tahun';
+          } else if (cat === 'tanah') {
+            specSectionTitle.textContent = 'Spesifikasi Khusus Kategori: TANAH / KAVLING';
+            labelBlock.textContent = 'Nomor Kavling / Lot';
+            inputBlock.placeholder = 'Contoh: Kavling K-05';
+            if (autoSetUnit) unitSelect.value = 'unit';
+          }
+        }
+
+        if (categorySelect) {
+          categorySelect.addEventListener('change', (e) => {
+            updateDynamicCategoryFields(e.target.value, true);
+          });
+        }
+
+        // ================= MANAJEMEN FOTO SAMPUL + GALERI PENDUKUNG DINAMIS =================
+        const imgInput = document.getElementById('prop-image');
+        const fileInput = document.getElementById('prop-file');
+        const fileNameLabel = document.getElementById('file-name-label');
+        const imgPreview = document.getElementById('image-preview');
+        const coverPreviewWrapper = document.getElementById('cover-preview-wrapper');
+        const btnRemoveCover = document.getElementById('btn-remove-cover');
+        const modeUploadBtn = document.getElementById('mode-upload-btn');
+        const modeUrlBtn = document.getElementById('mode-url-btn');
+        const boxUploadFile = document.getElementById('box-upload-file');
+        const boxInputUrl = document.getElementById('box-input-url');
+
+        const galleryContainer = document.getElementById('gallery-slots-container');
+        const galleryEmptyHint = document.getElementById('gallery-empty-hint');
+        const btnAddGallerySlot = document.getElementById('btn-add-gallery-slot');
+        let galleryPhotosState = [];
+
+        function syncCoverPreview() {
+          const val = (imgInput && imgInput.value ? imgInput.value : '').trim();
+          if (val) {
+            imgPreview.src = val;
+            coverPreviewWrapper.classList.remove('hidden');
+          } else {
+            imgPreview.src = '';
+            coverPreviewWrapper.classList.add('hidden');
+          }
+        }
+
+        function renderGallerySlots() {
+          if (!galleryContainer) return;
+          galleryContainer.innerHTML = '';
+          if (galleryEmptyHint) {
+            galleryEmptyHint.classList.toggle('hidden', galleryPhotosState.length > 0);
+          }
+
+          galleryPhotosState.forEach((photoVal, idx) => {
+            const slot = document.createElement('div');
+            slot.className = 'p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2';
+
+            const header = document.createElement('div');
+            header.className = 'flex items-center justify-between';
+            header.innerHTML = `<span class="text-[11px] font-bold text-slate-700">Foto Pendukung #${idx + 1}</span>`;
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'text-[10px] font-bold text-rose-600 hover:underline cursor-pointer';
+            delBtn.textContent = 'Hapus Foto ✕';
+            delBtn.addEventListener('click', () => {
+              galleryPhotosState.splice(idx, 1);
+              renderGallerySlots();
+            });
+            header.appendChild(delBtn);
+            slot.appendChild(header);
+
+            const controls = document.createElement('div');
+            controls.className = 'flex items-center gap-1.5';
+
+            const fileLabel = document.createElement('label');
+            fileLabel.className = 'shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-[10px] font-bold cursor-pointer transition';
+            fileLabel.textContent = 'Upload';
+            const hiddenFile = document.createElement('input');
+            hiddenFile.type = 'file';
+            hiddenFile.accept = 'image/*';
+            hiddenFile.className = 'hidden';
+            hiddenFile.addEventListener('change', (ev) => {
+              const f = ev.target.files && ev.target.files[0];
+              if (!f) return;
+              compressImageFile(f, (dataUrl) => {
+                galleryPhotosState[idx] = dataUrl;
+                renderGallerySlots();
+              });
+            });
+            fileLabel.appendChild(hiddenFile);
+
+            const urlField = document.createElement('input');
+            urlField.type = 'text';
+            urlField.placeholder = 'Atau tempel URL foto...';
+            urlField.value = photoVal && !photoVal.startsWith('data:') ? photoVal : '';
+            urlField.className = 'w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px] focus:outline-none focus:ring-1 focus:ring-emerald-500';
+            urlField.addEventListener('input', (ev) => {
+              galleryPhotosState[idx] = ev.target.value.trim();
+              const prev = slot.querySelector('.slot-preview-img');
+              if (prev) {
+                if (galleryPhotosState[idx]) {
+                  prev.src = galleryPhotosState[idx];
+                  prev.classList.remove('hidden');
+                } else {
+                  prev.classList.add('hidden');
+                }
+              }
+            });
+
+            controls.appendChild(fileLabel);
+            controls.appendChild(urlField);
+            slot.appendChild(controls);
+
+            const previewImg = document.createElement('img');
+            previewImg.alt = `Foto Pendukung ${idx + 1}`;
+            previewImg.className = 'slot-preview-img w-full h-24 object-cover rounded-lg border border-slate-200 bg-white ' + (photoVal ? '' : 'hidden');
+            if (photoVal) previewImg.src = photoVal;
+            slot.appendChild(previewImg);
+
+            galleryContainer.appendChild(slot);
+          });
+        }
+
+        if (btnAddGallerySlot) {
+          btnAddGallerySlot.addEventListener('click', () => {
+            galleryPhotosState.push('');
+            renderGallerySlots();
+          });
+        }
+
+        function setImageMode(mode) {
+          if (mode === 'upload') {
+            modeUploadBtn.classList.add('bg-white', 'text-slate-900', 'shadow-xs');
+            modeUploadBtn.classList.remove('text-slate-600');
+            modeUrlBtn.classList.remove('bg-white', 'text-slate-900', 'shadow-xs');
+            modeUrlBtn.classList.add('text-slate-600');
+            boxUploadFile.classList.remove('hidden');
+            boxInputUrl.classList.add('hidden');
+          } else {
+            modeUrlBtn.classList.add('bg-white', 'text-slate-900', 'shadow-xs');
+            modeUrlBtn.classList.remove('text-slate-600');
+            modeUploadBtn.classList.remove('bg-white', 'text-slate-900', 'shadow-xs');
+            modeUploadBtn.classList.add('text-slate-600');
+            boxInputUrl.classList.remove('hidden');
+            boxUploadFile.classList.add('hidden');
+          }
+        }
+
+        if (modeUploadBtn) modeUploadBtn.addEventListener('click', () => setImageMode('upload'));
+        if (modeUrlBtn) modeUrlBtn.addEventListener('click', () => setImageMode('url'));
+
+        if (imgInput) {
+          imgInput.addEventListener('input', syncCoverPreview);
+        }
+
+        if (btnRemoveCover) {
+          btnRemoveCover.addEventListener('click', () => {
+            imgInput.value = '';
+            if (fileInput) fileInput.value = '';
+            fileNameLabel.textContent = 'JPG, PNG, WebP (Maks. 5MB)';
+            syncCoverPreview();
+          });
+        }
+
+        if (fileInput) {
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            fileNameLabel.textContent = `Terpilih: ${file.name}`;
+            compressImageFile(file, (compressedDataUrl) => {
+              imgInput.value = compressedDataUrl;
+              syncCoverPreview();
+            });
+          });
+        }
+
+        function collectCategorySpecifications(cat, cleanedGallery) {
+          const preservedAgentId = document.getElementById('prop-agent-id').value.trim();
+          const preservedAgentEmail = document.getElementById('prop-agent-email').value.trim();
+
+          const sellerInfo = {
+            seller_name: document.getElementById('prop-seller-name').value.trim() || (currentSeller && currentSeller.name) || 'Admin LapakProperti',
+            seller_phone: document.getElementById('prop-seller-phone').value.trim() || (currentSeller && currentSeller.phone) || '081234567890',
+            gallery: cleanedGallery
+          };
+
+          if (preservedAgentId) sellerInfo.agent_id = preservedAgentId;
+          if (preservedAgentEmail) sellerInfo.agent_email = preservedAgentEmail;
+
+          if (cat === 'kos') {
+            return Object.assign({}, sellerInfo, {
+              kos_type: document.getElementById('kos-type').value,
+              room_size: document.getElementById('kos-room-size').value.trim(),
+              bathroom: document.getElementById('kos-bathroom').value,
+              electricity: document.getElementById('kos-electricity').value,
+              facilities: document.getElementById('kos-facilities').value.trim()
+            });
+          }
+          if (cat === 'rumah') {
+            return Object.assign({}, sellerInfo, {
+              land_area: document.getElementById('rumah-lt').value.trim(),
+              building_area: document.getElementById('rumah-lb').value.trim(),
+              bedrooms: document.getElementById('rumah-kt').value.trim(),
+              bathrooms: document.getElementById('rumah-km').value.trim(),
+              utilities: document.getElementById('rumah-utilities').value.trim(),
+              legality: document.getElementById('rumah-legality').value.trim()
+            });
+          }
+          return Object.assign({}, sellerInfo, {
+            land_area: document.getElementById('tanah-area').value.trim(),
+            dimensions: document.getElementById('tanah-dimensions').value.trim(),
+            certificate: document.getElementById('tanah-certificate').value,
+            zoning: document.getElementById('tanah-zoning').value.trim(),
+            road_access: document.getElementById('tanah-road').value.trim()
+          });
+        }
+
+        function populateCategorySpecifications(cat, specs = {}) {
+          if (!specs || typeof specs !== 'object') return;
+          document.getElementById('prop-agent-id').value = specs.agent_id || '';
+          document.getElementById('prop-agent-email').value = specs.agent_email || '';
+          document.getElementById('prop-seller-name').value = specs.seller_name || '';
+          document.getElementById('prop-seller-phone').value = specs.seller_phone || '';
+
+          if (cat === 'kos') {
+            if (specs.kos_type) document.getElementById('kos-type').value = specs.kos_type;
+            document.getElementById('kos-room-size').value = specs.room_size || '';
+            if (specs.bathroom) document.getElementById('kos-bathroom').value = specs.bathroom;
+            if (specs.electricity) document.getElementById('kos-electricity').value = specs.electricity;
+            document.getElementById('kos-facilities').value = specs.facilities || '';
+          } else if (cat === 'rumah') {
+            document.getElementById('rumah-lt').value = specs.land_area || '';
+            document.getElementById('rumah-lb').value = specs.building_area || '';
+            document.getElementById('rumah-kt').value = specs.bedrooms || '';
+            document.getElementById('rumah-km').value = specs.bathrooms || '';
+            document.getElementById('rumah-utilities').value = specs.utilities || '';
+            document.getElementById('rumah-legality').value = specs.legality || '';
+          } else if (cat === 'tanah') {
+            document.getElementById('tanah-area').value = specs.land_area || '';
+            document.getElementById('tanah-dimensions').value = specs.dimensions || '';
+            if (specs.certificate) document.getElementById('tanah-certificate').value = specs.certificate;
+            document.getElementById('tanah-zoning').value = specs.zoning || '';
+            document.getElementById('tanah-road').value = specs.road_access || '';
+          }
+        }
+
+        window.togglePropertyStatus = async function (propId, currentStatus) {
+          const st = normalizeStatus(currentStatus);
+          const nextStatus = st === 'available' ? 'booked' : 'available';
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/properties/${propId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: nextStatus })
+            });
+            if (res.ok) {
+              queueToast('success', 'Status Diperbarui', `Status unit diubah menjadi "${nextStatus}" di katalog.`);
+              window.location.reload();
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              showAdminToast('error', 'Gagal Ubah Status', errData.error || 'Gagal memperbarui status unit.');
+            }
+          } catch {
+            showAdminToast('error', 'Koneksi Gagal', 'Koneksi ke backend gagal.');
+          }
+        };
+
+        window.syncAllToGoogleSheets = async function () {
+          const btn = document.getElementById('btn-sync-gsheet');
+          const originalHtml = btn ? btn.innerHTML : '';
+          if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>Menyinkronkan...</span>';
+          }
+
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/sync-sheets`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (res.ok) showAdminToast('success', 'Sinkronisasi Sheets', data.message || 'Data berhasil disinkronkan ke Google Sheets.');
+            else showAdminToast('error', 'Gagal Sync Sheets', data.error || 'Gagal menyinkronkan ke Google Sheets.');
+          } catch {
+            showAdminToast('error', 'Koneksi Gagal', 'Gagal terhubung ke server backend.');
+          } finally {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = originalHtml;
+            }
+          }
+        };
+
+        window.exportOrdersToCSV = function () {
+          if (!initialOrders || initialOrders.length === 0) {
+            showAdminToast('error', 'Ekspor CSV Batal', 'Belum ada data pembelian untuk diekspor ke CSV.');
+            return;
+          }
+
+          const headers = ['ID Order', 'Tanggal', 'Nama Properti', 'Kategori', 'Blok/Unit', 'Harga', 'Nama Pembeli', 'NIK KTP', 'No WhatsApp', 'Catatan', 'Status'];
+          const rows = initialOrders.map((o) => [
+            o.id,
+            o.created_at ? new Date(o.created_at).toLocaleString('id-ID') : '-',
+            `"${((o.properties && o.properties.title) || '').replace(/"/g, '""')}"`,
+            (o.properties && o.properties.category) || '-',
+            `"${((o.properties && o.properties.block_or_unit) || '-').replace(/"/g, '""')}"`,
+            (o.properties && o.properties.price) || 0,
+            `"${(o.buyer_name || '').replace(/"/g, '""')}"`,
+            `'${o.buyer_nik || '-'}`,
+            `'${o.buyer_phone || ''}`,
+            `"${(o.notes || '-').replace(/"/g, '""')}"`,
+            o.status
+          ]);
+
+          const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+          const encodedUri = encodeURI(csvContent);
+          const link = document.createElement('a');
+          link.setAttribute('href', encodedUri);
+          link.setAttribute('download', `Laporan_LapakProperti_${new Date().toISOString().slice(0, 10)}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showAdminToast('success', 'Ekspor Berhasil', 'File CSV laporan transaksi berhasil diunduh.');
+        };
+
+        window.verifyOrder = async function (orderId, status) {
+          const label = status === 'APPROVED' ? 'MENYETUJUI (ACC)' : 'MENOLAK';
+          if (!confirm(`Yakin ingin ${label} pesanan #${String(orderId).slice(0, 8)}?`)) return;
+
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/orders/${orderId}/verify`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+              queueToast('success', 'Verifikasi Order', data.message || `Status pesanan berhasil diubah menjadi ${status}`);
+              window.location.reload();
+            } else {
+              showAdminToast('error', 'Gagal Verifikasi', data.error || 'Gagal memproses verifikasi.');
+            }
+          } catch {
+            showAdminToast('error', 'Koneksi Gagal', 'Koneksi ke server backend gagal.');
+          }
+        };
+
+        window.loadEditProperty = function (propId) {
+          const item = initialProperties.find((p) => String(p.id) === String(propId));
+          if (!item) return;
+
+          window.switchSidebarTab('tab-properties');
+          const cat = (item.category || 'kos').toLowerCase();
+          document.getElementById('prop-id').value = item.id;
+          document.getElementById('prop-title').value = item.title || '';
+          categorySelect.value = cat;
+          updateDynamicCategoryFields(cat, false);
+          populateCategorySpecifications(cat, item.specifications || {});
+
+          document.getElementById('prop-block').value = item.block_or_unit || '';
+          document.getElementById('prop-price').value = item.price || '';
+          document.getElementById('prop-unit').value = item.price_unit || 'bulan';
+          document.getElementById('prop-status').value = normalizeStatus(item.status);
+          document.getElementById('prop-location').value = item.location || '';
+          document.getElementById('prop-description').value = item.description || '';
+          document.getElementById('prop-image').value = item.image_url || '';
+          syncCoverPreview();
+          fileNameLabel.textContent = 'Ganti foto sampul dari perangkat atau link URL';
+
+          const existingGallery = Array.isArray(item.gallery)
+            ? item.gallery
+            : (Array.isArray(item.specifications?.gallery) ? item.specifications.gallery : []);
+          galleryPhotosState = existingGallery.filter(Boolean);
+          renderGallerySlots();
+
+          document.getElementById('form-prop-heading').textContent = `Edit Unit: ${item.title}`;
+          document.getElementById('btn-submit-label').textContent = 'Simpan Perubahan Unit';
+          document.getElementById('btn-cancel-edit').classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        const btnCancelEdit = document.getElementById('btn-cancel-edit');
+        if (btnCancelEdit) {
+          btnCancelEdit.addEventListener('click', () => {
+            document.getElementById('prop-id').value = '';
+            document.getElementById('prop-agent-id').value = '';
+            document.getElementById('prop-agent-email').value = '';
+            document.getElementById('cms-property-form').reset();
+            updateDynamicCategoryFields('kos', true);
+            imgInput.value = '';
+            syncCoverPreview();
+            galleryPhotosState = [];
+            renderGallerySlots();
+            fileNameLabel.textContent = 'JPG, PNG, WebP (Maks. 5MB)';
+            setImageMode('upload');
+            document.getElementById('form-prop-heading').textContent = 'Posting Properti Baru ke Katalog';
+            document.getElementById('btn-submit-label').textContent = 'Posting ke Katalog Sekarang';
+            btnCancelEdit.classList.add('hidden');
+          });
+        }
+
+        const cmsForm = document.getElementById('cms-property-form');
+        if (cmsForm) {
+          cmsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const coverVal = (document.getElementById('prop-image').value || '').trim();
+            if (!coverVal) {
+              showAdminToast('error', 'Foto Sampul Wajib', 'Harap unggah atau masukkan minimal 1 Foto Sampul Utama sebelum memposting properti.');
+              return;
+            }
+
+            const btnSubmit = document.getElementById('btn-submit-property');
+            const btnLabel = document.getElementById('btn-submit-label');
+            const origLabel = btnLabel ? btnLabel.textContent : 'Posting ke Katalog Sekarang';
+
+            const id = document.getElementById('prop-id').value;
+            const category = categorySelect.value;
+            const titleVal = document.getElementById('prop-title').value.trim();
+            const cleanedGallery = galleryPhotosState.map((u) => String(u || '').trim()).filter(Boolean);
+
+            const payload = {
+              title: titleVal,
+              category: category,
+              block_or_unit: document.getElementById('prop-block').value.trim(),
+              price: Number(document.getElementById('prop-price').value),
+              price_unit: document.getElementById('prop-unit').value,
+              status: normalizeStatus(document.getElementById('prop-status').value),
+              location: document.getElementById('prop-location').value.trim(),
+              description: document.getElementById('prop-description').value.trim(),
+              specifications: collectCategorySpecifications(category, cleanedGallery),
+              image_url: coverVal,
+              gallery: cleanedGallery
+            };
+
+            const url = id ? `${API_BASE}/api/admin/properties/${id}` : `${API_BASE}/api/admin/properties`;
+            const method = id ? 'PUT' : 'POST';
+
+            if (btnSubmit) btnSubmit.disabled = true;
+            if (btnLabel) btnLabel.textContent = 'Mengirim ke Katalog...';
+
+            try {
+              const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              const data = await res.json().catch(() => ({}));
+
+              if (res.ok) {
+                const msg = id
+                  ? `Perubahan unit "${titleVal}" berhasil disimpan (${1 + cleanedGallery.length} foto).`
+                  : `Unit "${titleVal}" berhasil diposting ke katalog (${1 + cleanedGallery.length} foto).`;
+                queueToast('success', id ? 'Unit Diperbarui' : 'Terkirim ke Katalog', data.message || msg);
+                window.location.reload();
+              } else {
+                showAdminToast('error', 'Gagal Menyimpan Unit', data.error || 'Gagal menyimpan properti.');
+                if (btnSubmit) btnSubmit.disabled = false;
+                if (btnLabel) btnLabel.textContent = origLabel;
+              }
+            } catch {
+              showAdminToast('error', 'Koneksi Gagal', 'Gagal terhubung ke server backend.');
+              if (btnSubmit) btnSubmit.disabled = false;
+              if (btnLabel) btnLabel.textContent = origLabel;
+            }
+          });
+        }
+
+        window.removeProperty = async function (propId) {
+          const item = initialProperties.find((p) => String(p.id) === String(propId));
+          const propTitle = (item && item.title) || 'unit ini';
+          if (!confirm(`Hapus unit "${propTitle}" dari katalog?`)) return;
+          try {
+            const res = await fetch(`${API_BASE}/api/admin/properties/${propId}`, { method: 'DELETE' });
+            if (res.ok) {
+              queueToast('success', 'Unit Dihapus', `"${propTitle}" telah dihapus dari katalog.`);
+              window.location.reload();
+            } else {
+              const errData = await res.json().catch(() => ({}));
+              showAdminToast('error', 'Gagal Menghapus', errData.error || 'Gagal menghapus unit.');
+            }
+          } catch {
+            showAdminToast('error', 'Koneksi Gagal', 'Koneksi ke backend gagal.');
+          }
+        };
+      })();
+    </script>
+  </body>
+</html>

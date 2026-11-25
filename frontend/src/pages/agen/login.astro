@@ -1,0 +1,294 @@
+---
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Agen Properti — LapakProperti</title>
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar hideBreadcrumb />
+
+      <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+          <div class="text-center mb-6">
+            <a href="/" class="inline-flex items-center justify-center gap-2.5 font-extrabold text-xl tracking-tight text-slate-900 mb-3">
+              <span class="w-9 h-9 rounded-xl bg-[#059669] text-white flex items-center justify-center font-black text-base shadow-sm">
+                LP
+              </span>
+              <span>Lapak<span class="text-emerald-600">Properti</span></span>
+            </a>
+            <span class="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 mb-1">
+              Partner & Marketing Agent Portal
+            </span>
+            <h1 class="text-2xl font-extrabold text-slate-900">Login / Daftar Agen</h1>
+            <p class="text-xs text-slate-500 mt-1">
+              Pasarkan unit Kos, Rumah, & Kavling Tanah Anda dan terima calon pembeli langsung ke WhatsApp Anda.
+            </p>
+          </div>
+
+          <div id="agent-session-notice" class="hidden mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">
+            <p>Terdeteksi sesi agen aktif atas nama <strong id="agent-session-name">Agen</strong>.</p>
+            <div class="flex items-center gap-2">
+              <a href="/agen" class="px-3 py-1.5 rounded-lg bg-[#059669] text-white font-bold text-[11px]">
+                Lanjutkan ke Dashboard Agen &rarr;
+              </a>
+              <button type="button" id="btn-reset-agent-session" class="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-bold text-[11px] cursor-pointer">
+                Hapus Sesi & Login Ulang
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl mb-6 text-xs font-bold">
+            <button type="button" id="tab-agent-login" class="py-2 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer">
+              Login Agen
+            </button>
+            <button type="button" id="tab-agent-register" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">
+              Daftar Agen Baru
+            </button>
+          </div>
+
+          <div id="agent-alert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium"></div>
+
+          <form id="form-agent-login" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Email Agen *</label>
+              <input
+                type="email"
+                id="agent-login-email"
+                required
+                autocomplete="off"
+                placeholder="agen@email.com"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
+              <input
+                type="password"
+                id="agent-login-password"
+                required
+                placeholder="Masukkan password akun agen"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-sm"
+            >
+              Masuk ke Dashboard Agen
+            </button>
+          </form>
+
+          <form id="form-agent-register" class="space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nama Agen / Pemilik Kos *</label>
+              <input
+                type="text"
+                id="agent-reg-name"
+                required
+                placeholder="Contoh: Budi Santoso / Kos Griya Melati"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Nomor WhatsApp Aktif (Penerima Chat) *</label>
+              <input
+                type="tel"
+                id="agent-reg-phone"
+                required
+                placeholder="Contoh: 081234567890"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+              <input
+                type="email"
+                id="agent-reg-email"
+                required
+                placeholder="agen@email.com"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Buat Password *</label>
+              <input
+                type="password"
+                id="agent-reg-password"
+                required
+                minlength="6"
+                placeholder="Minimal 6 karakter"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
+            >
+              Daftar Akun Agen & Masuk
+            </button>
+          </form>
+
+          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+            <a href="/" class="hover:text-slate-900">&larr; Kembali ke Beranda</a>
+            <a href="/admin/login" class="font-bold text-slate-700 hover:text-[#059669] hover:underline">Login Admin CMS &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <Footer />
+
+    <script is:inline>
+      var API_BASE = 'http://localhost:5000';
+
+      var existingAgent = localStorage.getItem('lapak_agent');
+      if (existingAgent) {
+        try {
+          var parsed = JSON.parse(existingAgent);
+          var noticeEl = document.getElementById('agent-session-notice');
+          if (noticeEl) noticeEl.classList.remove('hidden');
+          var nameEl = document.getElementById('agent-session-name');
+          if (nameEl) nameEl.textContent = parsed.name || parsed.email || 'Agen';
+        } catch (err) {}
+      }
+
+      var resetBtn = document.getElementById('btn-reset-agent-session');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          localStorage.removeItem('lapak_agent');
+          var noticeEl = document.getElementById('agent-session-notice');
+          if (noticeEl) noticeEl.classList.add('hidden');
+        });
+      }
+
+      var tabLogin = document.getElementById('tab-agent-login');
+      var tabReg = document.getElementById('tab-agent-register');
+      var formLogin = document.getElementById('form-agent-login');
+      var formReg = document.getElementById('form-agent-register');
+      var alertBox = document.getElementById('agent-alert');
+
+      function showAlert(msg, isError) {
+        if (!alertBox) return;
+        alertBox.textContent = msg;
+        alertBox.className = isError
+          ? 'mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200'
+          : 'mb-4 p-3 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
+        alertBox.classList.remove('hidden');
+      }
+
+      if (tabLogin) {
+        tabLogin.addEventListener('click', function () {
+          if (alertBox) alertBox.classList.add('hidden');
+          tabLogin.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+          tabLogin.classList.remove('text-slate-600');
+          if (tabReg) {
+            tabReg.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+            tabReg.classList.add('text-slate-600');
+          }
+          if (formLogin) formLogin.classList.remove('hidden');
+          if (formReg) formReg.classList.add('hidden');
+        });
+      }
+
+      if (tabReg) {
+        tabReg.addEventListener('click', function () {
+          if (alertBox) alertBox.classList.add('hidden');
+          tabReg.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+          tabReg.classList.remove('text-slate-600');
+          if (tabLogin) {
+            tabLogin.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+            tabLogin.classList.add('text-slate-600');
+          }
+          if (formReg) formReg.classList.remove('hidden');
+          if (formLogin) formLogin.classList.add('hidden');
+        });
+      }
+
+      if (formLogin) {
+        formLogin.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var email = document.getElementById('agent-login-email').value.trim();
+          var password = document.getElementById('agent-login-password').value;
+
+          try {
+            var res = await fetch(API_BASE + '/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, password: password })
+            });
+            var data = await res.json();
+
+            if (!res.ok) {
+              showAlert(data.error || 'Email atau password agen salah.', true);
+              return;
+            }
+
+            var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
+            var agentSession = Object.assign({}, data.user, {
+              role: 'AGENT',
+              phone: phoneDirectory[email] || data.user.phone || ''
+            });
+
+            localStorage.setItem('lapak_agent', JSON.stringify(agentSession));
+            showAlert('Login berhasil! Mengalihkan ke Dashboard Agen...', false);
+            setTimeout(function () {
+              window.location.href = '/agen';
+            }, 500);
+          } catch (err) {
+            showAlert('Gagal terhubung ke server backend (pastikan port 5000 aktif).', true);
+          }
+        });
+      }
+
+      if (formReg) {
+        formReg.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var name = document.getElementById('agent-reg-name').value.trim();
+          var phone = document.getElementById('agent-reg-phone').value.trim();
+          var email = document.getElementById('agent-reg-email').value.trim();
+          var password = document.getElementById('agent-reg-password').value;
+
+          try {
+            var res = await fetch(API_BASE + '/api/auth/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: name, email: email, password: password, phone: phone })
+            });
+            var data = await res.json();
+
+            if (!res.ok) {
+              showAlert(data.error || 'Pendaftaran agen gagal.', true);
+              return;
+            }
+
+            var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
+            phoneDirectory[email] = phone;
+            localStorage.setItem('lp_agent_phones', JSON.stringify(phoneDirectory));
+
+            var agentSession = Object.assign({}, data.user, {
+              role: 'AGENT',
+              phone: phone
+            });
+
+            localStorage.setItem('lapak_agent', JSON.stringify(agentSession));
+            showAlert('Pendaftaran agen berhasil! Mengalihkan ke Dashboard Agen...', false);
+            setTimeout(function () {
+              window.location.href = '/agen';
+            }, 500);
+          } catch (err) {
+            showAlert('Gagal terhubung ke server backend (pastikan port 5000 aktif).', true);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

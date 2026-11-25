@@ -1,0 +1,218 @@
+---
+interface Props {
+  active?: 'beranda' | 'tentang' | 'katalog' | 'galeri' | 'blog' | 'kontak' | 'pesanan';
+}
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const { active } = Astro.props;
+
+// href: '/blog' otomatis merujuk ke src/pages/blog/index.astro
+const navLinks = [
+  { key: 'beranda', label: 'Beranda', href: '/' },
+  { key: 'tentang', label: 'Tentang', href: '/tentang' },
+  { key: 'katalog', label: 'Katalog', href: '/katalog' },
+  { key: 'galeri', label: 'Galeri', href: '/galeri' },
+  { key: 'blog', label: 'Blog', href: '/blog' },
+  { key: 'kontak', label: 'Kontak', href: '/kontak' }
+];
+
+const currentPath: string = Astro.url.pathname.replace(/\/+$/, '') || '/';
+
+// Deteksi otomatis menu aktif jika props `active` tidak diisi manual
+const firstSegment = currentPath.split('/').filter(Boolean)[0] || 'beranda';
+const currentActive = (active ||
+  (firstSegment === 'property' ? 'katalog' : firstSegment)) as Props['active'];
+---
+
+<header class="bg-[#0F172A]/95 backdrop-blur-md text-white py-3.5 shadow-lg sticky top-0 z-50 border-b border-slate-800/90">
+  <div class="max-w-6xl mx-auto px-4 flex justify-between items-center gap-4">
+    <!-- LOGO BRANDING -->
+    <a href="/" class="flex items-center gap-3 group shrink-0">
+      <div class="w-10 h-10 bg-white rounded-xl p-1 flex items-center justify-center shadow-sm overflow-hidden ring-1 ring-slate-200/30 group-hover:ring-2 group-hover:ring-emerald-400 transition-all duration-200">
+        <img
+          src="/assets/img/logo.webp"
+          alt="Logo LapakProperti"
+          width="36"
+          height="36"
+          class="w-full h-full object-contain"
+        />
+      </div>
+      <div>
+        <span class="block text-lg font-extrabold tracking-tight leading-none text-white">
+          Lapak<span class="text-emerald-400">Properti</span>
+        </span>
+        <span class="block text-[10px] text-slate-400 font-medium mt-0.5">
+          Hunian & Kavling Terverifikasi
+        </span>
+      </div>
+    </a>
+
+    <!-- DESKTOP NAVBAR (MURNI UNTUK PEMBELI) -->
+    <nav aria-label="Navigasi Utama" class="hidden md:flex items-center gap-1">
+      {navLinks.map((item) => (
+        <a
+          href={item.href}
+          class={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
+            currentActive === item.key
+              ? 'bg-emerald-600 text-white shadow-xs shadow-emerald-950/40'
+              : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+          }`}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <!-- LONCENG NOTIFIKASI PESANAN + MOBILE MENU -->
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <button
+          type="button"
+          id="notif-bell-btn"
+          aria-label="Notifikasi Pesanan Saya"
+          class={`relative inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+            currentActive === 'pesanan'
+              ? 'bg-emerald-600 border-emerald-500 text-white'
+              : 'bg-slate-800/90 hover:bg-slate-700 border-slate-700 text-slate-200'
+          }`}
+        >
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="hidden sm:inline">Pesanan Saya</span>
+          <span id="notif-badge" class="hidden px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-extrabold leading-none animate-pulse">
+            0
+          </span>
+        </button>
+
+        <!-- DROPDOWN NOTIFIKASI -->
+        <div
+          id="notif-dropdown"
+          class="hidden absolute right-0 mt-2.5 w-80 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50"
+        >
+          <div class="px-4 py-3 bg-[#0F172A] text-white flex items-center justify-between">
+            <span class="text-xs font-extrabold">Notifikasi Pengajuan Anda</span>
+            <a href="/pesanan" class="text-[11px] text-emerald-400 hover:underline font-semibold">Lacak WA/NIK &rarr;</a>
+          </div>
+          <div id="notif-list" class="max-h-72 overflow-y-auto divide-y divide-slate-100 text-xs">
+            <div class="p-4 text-center text-slate-400">Belum ada riwayat pengajuan di browser ini.</div>
+          </div>
+          <div class="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+            <a href="/pesanan" class="block w-full py-2 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition">
+              Buka Semua Riwayat / Lacak Pesanan
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOBILE MENU BUTTON -->
+      <button
+        type="button"
+        id="mobile-menu-btn"
+        aria-label="Buka Menu Navigasi"
+        class="md:hidden p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-white border border-slate-700 cursor-pointer transition"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MOBILE DROPDOWN MENU -->
+  <div id="mobile-menu" class="hidden md:hidden px-4 pt-3 pb-2 border-t border-slate-800 mt-3 space-y-1">
+    {navLinks.map((item) => (
+      <a
+        href={item.href}
+        class={`block px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${
+          currentActive === item.key
+            ? 'bg-emerald-600 text-white'
+            : 'text-slate-300 hover:text-white hover:bg-slate-800'
+        }`}
+      >
+        {item.label}
+      </a>
+    ))}
+    <a
+      href="/pesanan"
+      class={`block px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${
+        currentActive === 'pesanan'
+          ? 'bg-emerald-600 text-white'
+          : 'text-emerald-400 hover:bg-slate-800'
+      }`}
+    >
+      Pesanan & Notifikasi Saya
+    </a>
+  </div>
+</header>
+
+<script is:inline define:vars={{ apiUrl: API_URL }}>
+  const API_BASE = apiUrl || 'http://localhost:5000';
+
+  document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+    document.getElementById('mobile-menu')?.classList.toggle('hidden');
+  });
+
+  const bellBtn = document.getElementById('notif-bell-btn');
+  const notifDropdown = document.getElementById('notif-dropdown');
+  const notifBadge = document.getElementById('notif-badge');
+  const notifList = document.getElementById('notif-list');
+
+  bellBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notifDropdown?.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!notifDropdown?.contains(e.target) && !bellBtn?.contains(e.target)) {
+      notifDropdown?.classList.add('hidden');
+    }
+  });
+
+  async function loadBuyerNotifications() {
+    const savedIds = JSON.parse(localStorage.getItem('lp_my_orders') || '[]');
+    if (!savedIds.length) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/track?ids=${savedIds.join(',')}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const orders = await res.json();
+
+      if (orders.length > 0 && notifBadge && notifList) {
+        notifBadge.textContent = String(orders.length);
+        notifBadge.classList.remove('hidden');
+
+        notifList.innerHTML = orders.map((o) => {
+          const title = o.properties?.title || 'Unit Properti';
+          let statusLabel = 'Menunggu Verifikasi Penjual';
+          let badgeColor = 'bg-amber-100 text-amber-800';
+
+          if (o.status === 'APPROVED') {
+            statusLabel = 'DISETUJUI! Klik untuk Bayar';
+            badgeColor = 'bg-emerald-100 text-emerald-800 font-extrabold';
+          } else if (o.status === 'PAID') {
+            statusLabel = 'LUNAS • Lihat E-Receipt';
+            badgeColor = 'bg-blue-100 text-blue-800';
+          } else if (o.status === 'REJECTED') {
+            statusLabel = 'Pengajuan Ditolak';
+            badgeColor = 'bg-rose-100 text-rose-800';
+          }
+
+          return `
+            <a href="/order/${o.id}" class="block p-3.5 hover:bg-slate-50 transition">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <span class="font-mono text-[10px] font-bold text-slate-400">#${String(o.id).slice(0, 8)}</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${statusLabel}</span>
+              </div>
+              <p class="font-bold text-slate-900 line-clamp-1">${title}</p>
+              <span class="text-[11px] text-emerald-700 font-semibold">Klik untuk buka detail &rarr;</span>
+            </a>
+          `;
+        }).join('');
+      }
+    } catch {}
+  }
+
+  loadBuyerNotifications();
+  setInterval(loadBuyerNotifications, 6000);
+</script>

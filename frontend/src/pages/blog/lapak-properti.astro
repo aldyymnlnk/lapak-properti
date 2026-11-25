@@ -1,0 +1,730 @@
+---
+// src/pages/blog/lapak-properti.astro
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+
+const pageTitle = "Lapak Properti Terpercaya untuk Jual Beli Rumah";
+const pageDesc = "Cari lapak properti terpercaya untuk jual beli rumah dan tanah. Pelajari ciri iklan aman, alur transaksi, dan panduannya. Cek listing sekarang juga!";
+const publishDate = "2026-11-21";
+const publishIsoDate = "2026-11-21T08:00:00+07:00";
+const publishDisplayDate = "21 November 2026 • 08:00 WIB";
+const pageSlug = "/blog/lapak-properti";
+const pageUrl = `https://lapakproperty.web.id${pageSlug}`;
+const ogImageUrl = "https://lapakproperty.web.id/assets/img/lapak-properti-terpercaya.webp";
+const secondImageUrl = "https://lapakproperty.web.id/assets/img/alur-jual-beli-properti-sampai-akta.webp";
+const authorName = "Aldi Rionaldi Simanullang";
+const keywordsList = "lapak properti, lapak properti online, jual beli rumah, cari rumah dijual, pasang iklan properti, cek legalitas properti, biaya jual beli rumah, tips beli rumah pertama";
+
+const schemaArticle = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": `${pageUrl}#article`,
+      "isPartOf": { "@id": pageUrl },
+      "headline": pageTitle,
+      "description": pageDesc,
+      "keywords": keywordsList,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": pageUrl
+      },
+      "image": [
+        ogImageUrl,
+        secondImageUrl
+      ],
+      "inLanguage": "id-ID",
+      "datePublished": publishIsoDate,
+      "dateModified": publishIsoDate,
+      "author": {
+        "@type": "Person",
+        "name": authorName
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Lapak Properti",
+        "url": "https://lapakproperty.web.id/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://lapakproperty.web.id/assets/img/lapak-properti-terpercaya.webp"
+        }
+      }
+    },
+    {
+      "@type": "HowTo",
+      "@id": `${pageUrl}#howto`,
+      "name": "Cara jual beli properti lewat lapak properti dari iklan sampai akta",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Tentukan anggaran dan kebutuhan",
+          "text": "Hitung kemampuan bayar, termasuk pajak dan jasa PPAT di luar harga properti."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Cari dan survei properti",
+          "text": "Saring listing, pilih tiga sampai lima kandidat, lalu kunjungi lokasi pada jam berbeda."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Cek legalitas dokumen",
+          "text": "Periksa sertifikat, PBG, dan bukti pembayaran PBB bersama penjual."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Negosiasi dan tanda jadi",
+          "text": "Sepakati harga dan tuangkan dalam surat tanda jadi atau perjanjian pengikatan jual beli."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Bayar pajak dan biaya",
+          "text": "Penjual membayar PPh final, pembeli membayar BPHTB sesuai ketentuan daerah."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Tanda tangani akta dan balik nama",
+          "text": "Akta ditandatangani di hadapan PPAT, lalu sertifikat dibalik nama di kantor pertanahan."
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Apa itu lapak properti?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Lapak properti adalah platform iklan online yang mempertemukan penjual, agen, dan pembeli rumah, tanah, ruko, serta apartemen. Penjual mengunggah data dan foto, sedangkan pembeli menyaring pilihan berdasarkan lokasi dan harga. Platform tidak menggantikan notaris atau PPAT, sehingga pengecekan dokumen dan akta tetap dilakukan terpisah."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah aman membeli properti dari iklan online?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Aman selama kamu memverifikasi sendiri data iklan. Lakukan survei langsung, minta salinan sertifikat dan bukti PBB, lalu cocokkan nama pemilik dengan identitas penjual. Jangan transfer tanda jadi sebelum dokumen diperlihatkan dan nilai transaksi tercatat dalam perjanjian tertulis. Kebiasaan tersebut menurunkan risiko penipuan secara signifikan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Berapa biaya pasang iklan di lapak properti?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Biaya pasang iklan berbeda di setiap platform. Ada yang gratis untuk fitur dasar dan ada yang berbayar untuk penonjolan iklan. Cek ketentuan terbaru di halaman Pasang Iklan Lapak Properti sebelum mendaftar, lalu bandingkan manfaatnya dengan target pembeli yang kamu cari."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Dokumen apa yang harus dicek sebelum membeli rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Periksa sertifikat (SHM atau HGB), Persetujuan Bangunan Gedung (PBG) atau IMB lama, bukti pembayaran PBB, dan identitas pemilik. Pastikan nama di sertifikat sama dengan nama penjual. Keaslian sertifikat dapat dicek lewat kantor pertanahan setempat sebelum akta ditandatangani. Dokumen yang lengkap juga mempercepat proses akta dan balik nama."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Siapa yang membayar pajak jual beli rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Penjual membayar PPh final, umumnya 2,5 persen dari nilai pengalihan atau 1 persen untuk rumah sederhana. Pembeli membayar BPHTB dengan tarif maksimal 5 persen setelah dikurangi NPOPTKP. Pembagian biaya notaris sebaiknya dicatat tertulis sejak awal. Simpan bukti setor karena PPAT memerlukannya saat menyusun akta."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bagaimana cara menghubungi penjual dengan aman?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Gunakan kanal kontak yang tercantum di iklan, jelaskan kebutuhan dengan singkat, dan ajukan jadwal survei di lokasi pada siang hari. Hindari membagikan data pribadi seperti KTP atau rekening sebelum bertemu langsung. Ajak keluarga atau teman saat survei agar keputusan lebih objektif."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": "https://lapakproperty.web.id/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://lapakproperty.web.id/blog"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Lapak Properti Terpercaya untuk Jual Beli Rumah",
+          "item": pageUrl
+        }
+      ]
+    }
+  ]
+};
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle} — LapakProperti</title>
+    <meta name="description" content={pageDesc} />
+    <meta name="keywords" content={keywordsList} />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Social Meta -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:image:alt" content="Pembeli dan penjual meninjau iklan di lapak properti online lewat laptop" />
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content={publishIsoDate} />
+    <meta property="article:modified_time" content={publishIsoDate} />
+    <meta property="article:section" content="Panduan Properti" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaArticle)} />
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="blog" />
+
+      <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+          <!-- KONTEN UTAMA (KIRI) -->
+          <article class="lg:col-span-8 bg-white p-6 md:p-10 rounded-3xl border border-slate-200/90 space-y-8 shadow-sm">
+
+            <header class="space-y-4">
+              <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-500">
+                <span class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-full uppercase">Artikel Pilar</span>
+                <time datetime={publishIsoDate}>{publishDisplayDate}</time>
+                <span>•</span>
+                <span>Oleh <strong class="text-slate-800">{authorName}</strong></span>
+              </div>
+              <h1 class="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                {pageTitle}
+              </h1>
+              <p class="text-slate-600 text-sm md:text-base leading-relaxed">
+                {pageDesc}
+              </p>
+            </header>
+
+            <!-- Gambar 1 -->
+            <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+              <img
+                src="/assets/img/lapak-properti-terpercaya.webp"
+                alt="Pembeli dan penjual meninjau iklan di lapak properti online lewat laptop"
+                class="w-full h-auto max-h-[420px] object-cover"
+                loading="eager"
+              />
+              <figcaption class="text-center text-slate-500 text-xs p-2.5 bg-slate-50 border-t border-slate-200">
+                Pembeli dan penjual meninjau iklan di lapak properti online lewat laptop.
+              </figcaption>
+            </figure>
+
+            <!-- TOC -->
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+              <button type="button" id="toc-toggle" class="w-full flex justify-between items-center text-emerald-700 font-bold text-sm cursor-pointer">
+                <span>Daftar Isi Panduan</span>
+                <span id="toc-icon" class="text-xs font-bold text-emerald-600" style="font-variant-emoji: text;">▼</span>
+              </button>
+              <div id="toc-content" class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-200">
+                <ul class="space-y-1.5 list-disc list-inside">
+                  <li><a href="#apa-itu-lapak-properti" class="hover:text-emerald-700 transition-colors">1. Apa Itu Lapak Properti dan Bagaimana Cara Kerjanya?</a></li>
+                  <li><a href="#cara-memilih-lapak-properti" class="hover:text-emerald-700 transition-colors">2. Bagaimana Cara Memilih Lapak Properti yang Aman?</a></li>
+                  <li><a href="#alur-jual-beli-properti" class="hover:text-emerald-700 transition-colors">3. Bagaimana Alur Jual Beli Properti dari Iklan sampai Akta?</a></li>
+                  <li><a href="#panduan-lanjutan" class="hover:text-emerald-700 transition-colors">4. Panduan Lanjutan Lapak Properti untuk Penjual dan Pembeli</a></li>
+                  <li><a href="#faq-section" class="hover:text-emerald-700 transition-colors">5. Pertanyaan Umum tentang Lapak Properti</a></li>
+                  <li><a href="#langkah-selanjutnya" class="hover:text-emerald-700 transition-colors">6. Langkah Selanjutnya Memanfaatkan Lapak Properti</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="space-y-8 text-slate-700 text-sm md:text-base leading-relaxed">
+              <div class="space-y-4">
+                <p>
+                  <strong>Lapak properti</strong> adalah platform iklan online tempat pemilik, agen, dan pembeli bertemu untuk jual beli rumah, tanah, ruko, dan apartemen dengan data yang bisa dicek.
+                </p>
+                <p>
+                  Memilih lapak properti yang tepat menentukan apakah proses jual beli berjalan aman, cepat, dan transparan. Iklan yang lengkap dengan foto, harga, luas, dan status legalitas mengurangi risiko salah paham antara penjual dan pembeli sebelum survei dilakukan.
+                </p>
+                <p>
+                  Panduan ini merangkum cara kerja lapak properti online, ciri iklan yang layak dipercaya, dan alur dari survei sampai akta jual beli. Kamu juga akan menemukan tiga panduan lanjutan: <a href="/blog/cara-pasang-iklan-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cara pasang iklan properti</a>, <a href="/blog/cek-legalitas-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cek legalitas properti</a>, dan <a href="/blog/biaya-jual-beli-rumah" class="text-emerald-700 font-semibold underline hover:text-emerald-800">biaya jual beli rumah</a>.
+                </p>
+              </div>
+
+              <section id="apa-itu-lapak-properti" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Apa Itu Lapak Properti dan Bagaimana Cara Kerjanya?</h2>
+                <p>
+                  Lapak properti bekerja sebagai etalase digital: penjual mengunggah iklan, pembeli mencari dan menyaring pilihan, lalu keduanya berkomunikasi langsung sebelum survei dan transaksi di hadapan PPAT.
+                </p>
+                <p>
+                  Berbeda dengan pasar konvensional, platform ini memungkinkan pembeli membandingkan puluhan listing dalam satu sesi tanpa mendatangi setiap lokasi. Pembeli yang ingin cari rumah dijual cukup menyaring berdasarkan kota, kisaran harga, tipe properti, luas tanah, dan jumlah kamar melalui <a href="/katalog" class="text-emerald-700 font-semibold underline hover:text-emerald-800">katalog properti yang dijual</a>. Setelah menemukan kandidat, pembeli menghubungi penjual untuk meminta informasi tambahan dan menjadwalkan survei.
+                </p>
+                <p>
+                  Platform hanya mempertemukan kedua pihak. Kesepakatan harga, pengecekan dokumen, dan penandatanganan akta tetap dilakukan antara penjual dan pembeli dengan bantuan notaris atau PPAT. Karena itu, pembeli perlu memverifikasi data iklan secara mandiri.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Jenis Properti yang Biasa Diiklankan di Lapak Properti</h3>
+                <p>
+                  Tabel berikut merangkum jenis properti yang paling sering muncul, siapa yang cocok membelinya, dan hal utama yang perlu dicek.
+                </p>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                  <table class="w-full text-left text-xs md:text-sm border-collapse">
+                    <thead class="bg-[#0F172A] text-white">
+                      <tr>
+                        <th class="p-3.5 font-bold">Jenis properti</th>
+                        <th class="p-3.5 font-bold">Cocok untuk</th>
+                        <th class="p-3.5 font-bold">Hal yang perlu dicek</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Rumah tapak</td>
+                        <td class="p-3.5">Hunian keluarga</td>
+                        <td class="p-3.5">Luas tanah, jenis sertifikat, dan PBG</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">Tanah kavling</td>
+                        <td class="p-3.5">Investasi atau bangun sendiri</td>
+                        <td class="p-3.5">Peruntukan lahan, akses jalan, dan status SHM</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Ruko</td>
+                        <td class="p-3.5">Usaha dan kantor</td>
+                        <td class="p-3.5">Sisa masa HGB, izin usaha, dan lokasi</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">Apartemen</td>
+                        <td class="p-3.5">Hunian perkotaan</td>
+                        <td class="p-3.5">Status hak atas satuan rumah susun dan biaya servis bulanan</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Kos dan kontrakan</td>
+                        <td class="p-3.5">Investasi sewa</td>
+                        <td class="p-3.5">Tingkat hunian dan izin lingkungan</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Siapa yang Memakai Lapak Properti?</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li><strong>Pemilik rumah:</strong> memasang iklan untuk menjual atau menyewakan tanpa harus menunggu kenalan.</li>
+                  <li><strong>Agen properti:</strong> memperluas jangkauan listing dan menjaring calon pembeli baru.</li>
+                  <li><strong>Pembeli rumah:</strong> membandingkan harga dan lokasi sebelum memutuskan survei.</li>
+                  <li><strong>Investor:</strong> memantau tanah, ruko, dan kos yang berpotensi naik nilainya.</li>
+                </ul>
+                <p>
+                  Untuk tips beli rumah pertama, mulailah dari anggaran dan kebutuhan harian, bukan dari tampilan rumah. Tetapkan batas cicilan dan siapkan dana pajak sebelum menghubungi penjual.
+                </p>
+              </section>
+
+              <section id="cara-memilih-lapak-properti" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Cara Memilih Lapak Properti yang Aman?</h2>
+                <p>
+                  Lapak properti yang aman menampilkan data lengkap, foto asli, identitas penjual yang jelas, dan tidak meminta uang muka sebelum kamu melihat properti serta dokumennya langsung.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Uji Lima Penanda Iklan Layak Dipercaya</h3>
+                <p>
+                  Lapak Properti merangkum pengecekan iklan ke dalam Uji Lima Penanda, yaitu daftar periksa sederhana yang dipakai sebelum kamu menghubungi penjual:
+                </p>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li><strong>Penanda data:</strong> harga, luas tanah, luas bangunan, dan alamat tertulis lengkap.</li>
+                  <li><strong>Penanda foto:</strong> foto asli dan terbaru, bukan gambar render atau milik iklan lain.</li>
+                  <li><strong>Penanda legalitas:</strong> jenis sertifikat dan status PBG disebutkan di iklan.</li>
+                  <li><strong>Penanda penjual:</strong> nama dan kanal kontak jelas, serta bersedia bertemu di lokasi.</li>
+                  <li><strong>Penanda harga:</strong> harga masuk akal dibanding properti sejenis di sekitar lokasi.</li>
+                </ul>
+                <p>Iklan yang lolos kelima penanda layak masuk daftar survei.</p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Tanda Bahaya yang Perlu Diwaspadai</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>Harga jauh di bawah pasaran tanpa alasan yang masuk akal.</li>
+                  <li>Penjual menolak survei langsung dan hanya mau komunikasi lewat pesan.</li>
+                  <li>Permintaan transfer tanda jadi sebelum dokumen diperlihatkan.</li>
+                  <li>Sertifikat bukan atas nama penjual dan tidak ada surat kuasa.</li>
+                  <li>Foto yang sama muncul di banyak iklan dengan alamat berbeda.</li>
+                </ul>
+                <p>
+                  Jika menemukan dua tanda atau lebih, hentikan komunikasi dan cari listing lain. Pelajari pemeriksaan dokumen lebih rinci di panduan <a href="/blog/cek-legalitas-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cek legalitas properti</a>.
+                </p>
+              </section>
+
+              <!-- BACA JUGA BOX SISIPAN -->
+              <div class="my-6">
+                <a
+                  href="/blog/cek-legalitas-properti"
+                  class="block bg-emerald-50/70 hover:bg-emerald-50 border-l-4 border-emerald-600 p-5 rounded-2xl border border-emerald-200 transition-all shadow-sm group"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider block mb-1">BACA JUGA PANDUAN LEGALITAS</span>
+                      <h4 class="text-slate-900 font-bold text-sm md:text-base group-hover:text-emerald-700 transition-colors">
+                        Cek Legalitas Properti Sebelum Beli Rumah atau Tanah &rarr;
+                      </h4>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <section id="alur-jual-beli-properti" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Alur Jual Beli Properti dari Iklan sampai Akta?</h2>
+                <p>
+                  Alur jual beli properti terdiri dari enam tahap: anggaran, survei, cek legalitas, negosiasi dan tanda jadi, pembayaran pajak, lalu akta jual beli di hadapan PPAT.
+                </p>
+
+                <!-- Gambar 2 -->
+                <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+                  <img
+                    src="/assets/img/alur-jual-beli-properti-sampai-akta.webp"
+                    alt="Alur jual beli properti dari survei sampai akta jual beli di PPAT"
+                    class="w-full h-auto max-h-[380px] object-cover"
+                    loading="lazy"
+                  />
+                  <figcaption class="text-center text-slate-500 text-xs p-2.5 bg-slate-50 border-t border-slate-200">
+                    Alur jual beli properti dari survei sampai akta jual beli di PPAT.
+                  </figcaption>
+                </figure>
+
+                <p>
+                  Urutan ini berlaku untuk hampir semua transaksi jual beli rumah, baik antar-individu maupun lewat agen. Menjalankannya secara berurutan mencegah pembayaran dilakukan sebelum dokumen jelas.
+                </p>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                  <table class="w-full text-left text-xs md:text-sm border-collapse">
+                    <thead class="bg-[#0F172A] text-white">
+                      <tr>
+                        <th class="p-3.5 font-bold">Tahap</th>
+                        <th class="p-3.5 font-bold">Dokumen atau bukti</th>
+                        <th class="p-3.5 font-bold">Pihak yang terlibat</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">1. Anggaran dan kebutuhan</td>
+                        <td class="p-3.5">Catatan dana, simulasi cicilan</td>
+                        <td class="p-3.5">Pembeli</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">2. Survei properti</td>
+                        <td class="p-3.5">Foto lokasi, catatan kondisi bangunan</td>
+                        <td class="p-3.5">Pembeli dan penjual</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">3. Cek legalitas</td>
+                        <td class="p-3.5">Sertifikat, PBG, bukti PBB, identitas</td>
+                        <td class="p-3.5">Pembeli dan PPAT</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">4. Negosiasi dan tanda jadi</td>
+                        <td class="p-3.5">Surat tanda jadi atau PPJB</td>
+                        <td class="p-3.5">Pembeli dan penjual</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">5. Pajak dan biaya</td>
+                        <td class="p-3.5">Bukti setor PPh final dan BPHTB</td>
+                        <td class="p-3.5">Penjual dan pembeli</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">6. Akta dan balik nama</td>
+                        <td class="p-3.5">Akta jual beli, permohonan balik nama</td>
+                        <td class="p-3.5">PPAT dan kantor pertanahan</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li><strong>Tentukan anggaran dan kebutuhan:</strong> hitung kemampuan bayar, termasuk pajak dan jasa PPAT di luar harga properti.</li>
+                  <li><strong>Cari dan survei properti:</strong> saring listing, pilih tiga sampai lima kandidat, lalu kunjungi lokasi pada jam berbeda.</li>
+                  <li><strong>Cek legalitas dokumen:</strong> periksa sertifikat, PBG, dan bukti pembayaran PBB bersama penjual.</li>
+                  <li><strong>Negosiasi dan tanda jadi:</strong> sepakati harga dan tuangkan dalam surat tanda jadi atau perjanjian pengikatan jual beli.</li>
+                  <li><strong>Bayar pajak dan biaya:</strong> penjual membayar PPh final, pembeli membayar BPHTB sesuai ketentuan daerah.</li>
+                  <li><strong>Tanda tangani akta dan balik nama:</strong> akta ditandatangani di hadapan PPAT, lalu sertifikat dibalik nama di kantor pertanahan.</li>
+                </ol>
+                <p>
+                  Tahap ketiga dan kelima paling sering membuat transaksi tertunda. Pelajari rinciannya di panduan <a href="/blog/cek-legalitas-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cek legalitas properti</a> dan <a href="/blog/biaya-jual-beli-rumah" class="text-emerald-700 font-semibold underline hover:text-emerald-800">biaya jual beli rumah</a>.
+                </p>
+              </section>
+
+              <section id="panduan-lanjutan" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Panduan Lanjutan Lapak Properti untuk Penjual dan Pembeli</h2>
+                <p>
+                  Tiga panduan lanjutan ini membahas pemasangan iklan, pengecekan legalitas, dan rincian biaya transaksi, sehingga penjual maupun pembeli memahami tahapan sebelum bertemu di hadapan PPAT.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <span class="text-[11px] font-bold uppercase text-emerald-700">Untuk Penjual</span>
+                    <h3 class="text-base font-bold text-slate-900">Cara Pasang Iklan Properti agar Cepat Laku</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      Bahas persiapan data, penentuan harga, foto, dan deskripsi yang membuat calon pembeli menghubungi lebih cepat.
+                    </p>
+                    <a href="/blog/cara-pasang-iklan-properti" class="inline-block text-xs font-bold text-emerald-700 hover:underline pt-1">
+                      Baca cara pasang iklan properti &rarr;
+                    </a>
+                  </div>
+
+                  <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <span class="text-[11px] font-bold uppercase text-emerald-700">Untuk Pembeli</span>
+                    <h3 class="text-base font-bold text-slate-900">Cek Legalitas Properti Sebelum Membayar</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      Panduan ini menjelaskan perbedaan SHM dan HGB, status PBG, serta cara memeriksa keaslian sertifikat.
+                    </p>
+                    <a href="/blog/cek-legalitas-properti" class="inline-block text-xs font-bold text-emerald-700 hover:underline pt-1">
+                      Mulai dari cek legalitas properti &rarr;
+                    </a>
+                  </div>
+
+                  <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <span class="text-[11px] font-bold uppercase text-emerald-700">Untuk Keduanya</span>
+                    <h3 class="text-base font-bold text-slate-900">Biaya Jual Beli Rumah yang Perlu Disiapkan</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                      Pajak penjual, BPHTB pembeli, jasa PPAT, dan biaya balik nama dijelaskan lengkap dengan contoh simulasi.
+                    </p>
+                    <a href="/blog/biaya-jual-beli-rumah" class="inline-block text-xs font-bold text-emerald-700 hover:underline pt-1">
+                      Lihat biaya jual beli rumah &rarr;
+                    </a>
+                  </div>
+                </div>
+              </section>
+
+              <section id="langkah-selanjutnya" class="space-y-3">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Langkah Selanjutnya Memanfaatkan Lapak Properti</h2>
+                <p>
+                  Mulai dari tujuan: cari properti lewat daftar listing atau pasang iklan propertimu, lalu terapkan Uji Lima Penanda dan cek legalitas sebelum menyepakati harga.
+                </p>
+                <p>
+                  Lapak properti mempercepat pertemuan penjual dan pembeli, tetapi keputusan akhir tetap bergantung pada data yang sudah kamu verifikasi. Gunakan daftar periksa di panduan ini dan libatkan notaris atau PPAT sejak tahap kesepakatan harga.
+                </p>
+                <p>
+                  Lihat pilihan terbaru di halaman <a href="/katalog" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Cari Properti Lapak Properti</a>, atau <a href="/agen/login" class="text-emerald-700 font-semibold underline hover:text-emerald-800">pasang iklan properti</a> sekarang. Butuh bantuan memilih langkah? Konsultasi lewat halaman <a href="/kontak" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Kontak</a> atau hubungi admin lewat WhatsApp.
+                </p>
+                <p class="text-xs text-slate-500 pt-2">
+                  <strong>Sumber rujukan:</strong> <a href="https://pajak.go.id/id/artikel/mau-beli-tanah-apa-saja-pajaknya" target="_blank" rel="noopener noreferrer" class="underline hover:text-emerald-700">Kementerian Keuangan: Mau Beli Tanah, Apa Saja Pajaknya?</a>; Peraturan Pemerintah No. 34 Tahun 2016; Undang-Undang No. 5 Tahun 1960 (UUPA); <a href="https://lapakproperty.web.id/" class="underline hover:text-emerald-700">halaman resmi Lapak Properti</a>.
+                </p>
+              </section>
+            </div>
+
+            <!-- KOTAK AUTHOR (PENULIS) -->
+            <div class="my-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center gap-5">
+              <div class="w-16 h-16 rounded-full bg-emerald-600/15 border border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xl shrink-0">
+                AR
+              </div>
+              <div class="space-y-1 text-center sm:text-left">
+                <div class="flex items-center justify-center sm:justify-start gap-2">
+                  <h4 class="text-slate-900 font-bold text-base">{authorName}</h4>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-300">Verified Author</span>
+                </div>
+                <p class="text-slate-600 text-xs leading-relaxed">
+                  Menulis panduan jual beli dan pemasaran properti dengan merujuk ketentuan resmi pertanahan dan perpajakan. Fokus konten mencakup keamanan transaksi, pengecekan dokumen, dan penyusunan iklan properti yang informatif.
+                </p>
+              </div>
+            </div>
+
+            <!-- CTA PROMO WHATSAPP -->
+            <div class="bg-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 text-center space-y-4 shadow-xl text-white">
+              <h3 class="text-xl font-bold">Konsultasi Jual Beli &amp; Pasang Iklan di Lapak Properti</h3>
+              <p class="text-slate-300 text-xs md:text-sm max-w-lg mx-auto">
+                Butuh arahan memilih unit rumah, tanah, atau ingin memasarkan properti Anda dengan aman? Hubungi admin resmi Lapak Properti sekarang.
+              </p>
+              <div class="flex flex-wrap justify-center gap-3 pt-1">
+                <a
+                  href="/kontak"
+                  class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg text-xs md:text-sm"
+                >
+                  <span>Hubungi Admin via WhatsApp</span>
+                </a>
+                <a
+                  href="/katalog"
+                  class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl border border-slate-700 transition-all text-xs md:text-sm"
+                >
+                  <span>Lihat Katalog Properti</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- FAQ ACCORDION SECTION -->
+            <section id="faq-section" class="border-t border-slate-200 pt-8 space-y-4">
+              <h3 class="text-xl font-bold text-slate-900">Pertanyaan Umum tentang Lapak Properti</h3>
+              <p class="text-slate-600 text-xs md:text-sm leading-relaxed">
+                Jawaban ringkas atas pertanyaan yang paling sering diajukan pembeli maupun penjual sebelum bertransaksi di lapak properti online.
+              </p>
+              <div class="space-y-3">
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Apa itu lapak properti?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Lapak properti adalah platform iklan online yang mempertemukan penjual, agen, dan pembeli rumah, tanah, ruko, serta apartemen. Penjual mengunggah data dan foto, sedangkan pembeli menyaring pilihan berdasarkan lokasi dan harga. Platform tidak menggantikan notaris atau PPAT, sehingga pengecekan dokumen dan akta tetap dilakukan terpisah.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Apakah aman membeli properti dari iklan online?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Aman selama kamu memverifikasi sendiri data iklan. Lakukan survei langsung, minta salinan sertifikat dan bukti PBB, lalu cocokkan nama pemilik dengan identitas penjual. Jangan transfer tanda jadi sebelum dokumen diperlihatkan dan nilai transaksi tercatat dalam perjanjian tertulis. Kebiasaan tersebut menurunkan risiko penipuan secara signifikan.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Berapa biaya pasang iklan di lapak properti?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Biaya pasang iklan berbeda di setiap platform. Ada yang gratis untuk fitur dasar dan ada yang berbayar untuk penonjolan iklan. Cek ketentuan terbaru di halaman Pasang Iklan Lapak Properti sebelum mendaftar, lalu bandingkan manfaatnya dengan target pembeli yang kamu cari.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Dokumen apa yang harus dicek sebelum membeli rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Periksa sertifikat (SHM atau HGB), Persetujuan Bangunan Gedung (PBG) atau IMB lama, bukti pembayaran PBB, dan identitas pemilik. Pastikan nama di sertifikat sama dengan nama penjual. Keaslian sertifikat dapat dicek lewat kantor pertanahan setempat sebelum akta ditandatangani. Dokumen yang lengkap juga mempercepat proses akta dan balik nama.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Siapa yang membayar pajak jual beli rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Penjual membayar PPh final, umumnya 2,5 persen dari nilai pengalihan atau 1 persen untuk rumah sederhana. Pembeli membayar BPHTB dengan tarif maksimal 5 persen setelah dikurangi NPOPTKP. Pembagian biaya notaris sebaiknya dicatat tertulis sejak awal. Simpan bukti setor karena PPAT memerlukannya saat menyusun akta.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Bagaimana cara menghubungi penjual dengan aman?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Gunakan kanal kontak yang tercantum di iklan, jelaskan kebutuhan dengan singkat, dan ajukan jadwal survei di lokasi pada siang hari. Hindari membagikan data pribadi seperti KTP atau rekening sebelum bertemu langsung. Ajak keluarga atau teman saat survei agar keputusan lebih objektif.
+                  </p>
+                </details>
+              </div>
+            </section>
+
+          </article>
+
+          <!-- SIDEBAR (KANAN) -->
+          <aside class="lg:col-span-4 space-y-6">
+            <div class="sticky top-24 space-y-6">
+
+              <!-- Box Fast Contact -->
+              <div class="bg-[#0F172A] text-white p-6 rounded-3xl border border-slate-800 space-y-4 shadow-lg">
+                <span class="inline-block px-2.5 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full text-[11px] font-semibold">
+                  Layanan Lapak Properti
+                </span>
+                <h4 class="font-bold text-base">Cari Unit atau Pasang Iklan?</h4>
+                <p class="text-slate-300 text-xs leading-relaxed">
+                  Temukan listing rumah, tanah, dan kos terverifikasi atau konsultasikan kebutuhan propertimu dengan tim kami.
+                </p>
+                <div class="space-y-2.5">
+                  <a
+                    href="/katalog"
+                    class="block text-center bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all"
+                  >
+                    Jelajahi Katalog Properti
+                  </a>
+                  <a
+                    href="/kontak"
+                    class="block text-center bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 rounded-xl border border-slate-700 text-xs transition-all"
+                  >
+                    Konsultasi via Halaman Kontak
+                  </a>
+                </div>
+              </div>
+
+              <!-- Card Artikel Rekomendasi (3 Cluster Terkait) -->
+              <div class="bg-white p-6 rounded-3xl border border-slate-200/90 space-y-4 shadow-sm">
+                <h4 class="text-slate-900 font-bold text-base border-b border-slate-200 pb-3">Artikel Rekomendasi</h4>
+
+                <div class="space-y-4">
+                  <div class="space-y-2 group">
+                    <img src="/assets/img/cara-pasang-iklan-properti-cepat-laku.webp" alt="Pemilik rumah memotret ruang tamu untuk cara pasang iklan properti agar cepat laku" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Penjual • 22 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/cara-pasang-iklan-properti">
+                        Cara Pasang Iklan Properti agar Cepat Laku
+                      </a>
+                    </h5>
+                  </div>
+
+                  <div class="space-y-2 group pt-2 border-t border-slate-100">
+                    <img src="/assets/img/cek-legalitas-properti-sertifikat-tanah.webp" alt="Pembeli memeriksa sertifikat tanah dalam proses cek legalitas properti" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Legalitas • 23 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/cek-legalitas-properti">
+                        Cek Legalitas Properti Sebelum Beli Rumah atau Tanah
+                      </a>
+                    </h5>
+                  </div>
+
+                  <div class="space-y-2 group pt-2 border-t border-slate-100">
+                    <img src="/assets/img/biaya-jual-beli-rumah-pajak-dan-notaris.webp" alt="Rincian biaya jual beli rumah berupa BPHTB, PPh final, dan biaya notaris" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Biaya • 24 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/biaya-jual-beli-rumah">
+                        Biaya Jual Beli Rumah yang Wajib Kamu Siapkan
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+        </div>
+      </section>
+    </div>
+
+    <Footer />
+  </body>
+</html>
+
+<script>
+  const tocToggle = document.getElementById('toc-toggle');
+  const tocContent = document.getElementById('toc-content');
+  const tocIcon = document.getElementById('toc-icon');
+
+  if (tocToggle && tocContent) {
+    tocToggle.addEventListener('click', () => {
+      if (tocContent.style.display === 'none') {
+        tocContent.style.display = 'block';
+        if (tocIcon) {
+          tocIcon.textContent = '▼';
+        }
+      } else {
+        tocContent.style.display = 'none';
+        if (tocIcon) {
+          tocIcon.textContent = '▸';
+        }
+      }
+    });
+  }
+</script>

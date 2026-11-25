@@ -1,0 +1,648 @@
+---
+// src/pages/blog/cara-pasang-iklan-properti.astro
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+
+const pageTitle = "Cara Pasang Iklan Properti agar Cepat Laku";
+const pageDesc = "Bingung cara pasang iklan properti? Ikuti langkah foto, deskripsi, dan harga agar rumahmu cepat laku. Pasang iklan di Lapak Properti sekarang juga!";
+const publishDate = "2026-11-22";
+const publishIsoDate = "2026-11-22T10:00:00+07:00";
+const publishDisplayDate = "22 November 2026 • 10:00 WIB";
+const pageSlug = "/blog/cara-pasang-iklan-properti";
+const pageUrl = `https://lapakproperty.web.id${pageSlug}`;
+const ogImageUrl = "https://lapakproperty.web.id/assets/img/cara-pasang-iklan-properti-cepat-laku.webp";
+const secondImageUrl = "https://lapakproperty.web.id/assets/img/contoh-foto-dan-deskripsi-iklan-rumah.webp";
+const authorName = "Aldi Rionaldi Simanullang";
+const keywordsList = "cara pasang iklan properti, iklan properti online, foto properti, deskripsi iklan rumah, harga jual rumah, jual rumah cepat laku, lapak properti, tips jual rumah";
+
+const schemaArticle = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": `${pageUrl}#article`,
+      "isPartOf": { "@id": pageUrl },
+      "headline": pageTitle,
+      "description": pageDesc,
+      "keywords": keywordsList,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": pageUrl
+      },
+      "image": [
+        ogImageUrl,
+        secondImageUrl
+      ],
+      "inLanguage": "id-ID",
+      "datePublished": publishIsoDate,
+      "dateModified": publishIsoDate,
+      "author": {
+        "@type": "Person",
+        "name": authorName
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Lapak Properti",
+        "url": "https://lapakproperty.web.id/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://lapakproperty.web.id/assets/img/lapak-properti-terpercaya.webp"
+        }
+      }
+    },
+    {
+      "@type": "HowTo",
+      "@id": `${pageUrl}#howto`,
+      "name": "Cara pasang iklan properti di Lapak Properti",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Buat akun",
+          "text": "Daftar atau masuk ke akun Lapak Properti lalu pilih menu pasang iklan."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Isi data properti",
+          "text": "Masukkan jenis properti, alamat, luas tanah, luas bangunan, jumlah kamar, harga, dan status sertifikat."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Unggah foto",
+          "text": "Pilih foto terang dan rapi, lalu susun urutan dari tampak depan sampai kamar mandi."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Tulis deskripsi",
+          "text": "Gunakan rumus lima bagian: judul, spesifikasi, lokasi, legalitas, serta harga dan kontak."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Tinjau dan tayangkan",
+          "text": "Periksa ulang semua data, lalu tayangkan iklan agar muncul di hasil pencarian."
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Berapa jumlah foto ideal untuk iklan properti?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sekitar 8 sampai 15 foto sudah cukup untuk rumah tapak. Prioritaskan tampak depan, ruang utama, dapur, kamar tidur, kamar mandi, dan halaman. Foto yang jelas dan terang lebih penting daripada jumlah yang banyak, sehingga hindari gambar buram atau duplikat. Foto pertama sebaiknya tampak depan karena menjadi gambar sampul iklan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah harga harus dicantumkan di iklan?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sebaiknya ya. Iklan yang mencantumkan harga atau kisaran harga lebih dipercaya dan menyaring pembeli yang anggarannya sesuai, sehingga percakapan berikutnya lebih efisien. Jika harga masih bisa dinegosiasi, tuliskan keterangan bahwa harga masih terbuka untuk penawaran. Pembeli yang serius biasanya tetap bertanya, tetapi percakapannya jadi lebih terarah."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bagaimana cara menentukan harga jual rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Bandingkan lima listing sejenis dalam radius dua kilometer, hitung harga per meter persegi, lalu sesuaikan dengan kondisi dan usia bangunan. Pertimbangkan juga ruang negosiasi yang wajar. Konsultasi dengan agen atau penilai bila nilai properti besar. Perbarui perhitungan bila ada properti pembanding baru yang lebih relevan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Seberapa sering iklan properti perlu diperbarui?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Perbarui iklan setiap kali ada perubahan harga, foto baru, atau status properti. Tinjau juga performa iklan setiap beberapa minggu. Jika iklan sepi peminat, periksa ulang harga, kualitas foto, dan kelengkapan deskripsi sebelum menurunkan harga. Perubahan kecil pada judul sering cukup untuk menaikkan jumlah pesan masuk."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Bagaimana menghindari penipuan dari calon pembeli?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Jangan menyerahkan dokumen asli sebelum akta, dan cek mutasi rekening sendiri, bukan hanya bukti transfer berupa tangkapan layar. Lakukan transaksi di hadapan PPAT dan hindari pembeli yang mendesak pembayaran atau meminta pengiriman sertifikat lewat kurir. Catat nama dan kontak pembeli agar mudah dilacak bila terjadi masalah."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah boleh memakai agen untuk memasarkan rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Boleh. Agen membantu menjangkau lebih banyak calon pembeli dan mengatur survei, tetapi biasanya meminta komisi. Sepakati besaran komisi, durasi kerja sama, dan hak eksklusif secara tertulis sebelum agen memasang iklan atas nama kamu. Pilih agen yang aktif membalas pesan dan memahami wilayah lokasi rumahmu."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": "https://lapakproperty.web.id/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://lapakproperty.web.id/blog"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Cara Pasang Iklan Properti agar Cepat Laku",
+          "item": pageUrl
+        }
+      ]
+    }
+  ]
+};
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle} — LapakProperti</title>
+    <meta name="description" content={pageDesc} />
+    <meta name="keywords" content={keywordsList} />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Social Meta -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:image:alt" content="Pemilik rumah memotret ruang tamu untuk cara pasang iklan properti agar cepat laku" />
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content={publishIsoDate} />
+    <meta property="article:modified_time" content={publishIsoDate} />
+    <meta property="article:section" content="Panduan Penjual" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaArticle)} />
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="blog" />
+
+      <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+          <!-- KONTEN UTAMA (KIRI) -->
+          <article class="lg:col-span-8 bg-white p-6 md:p-10 rounded-3xl border border-slate-200/90 space-y-8 shadow-sm">
+
+            <header class="space-y-4">
+              <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-500">
+                <span class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-full uppercase">Panduan Penjual</span>
+                <time datetime={publishIsoDate}>{publishDisplayDate}</time>
+                <span>•</span>
+                <span>Oleh <strong class="text-slate-800">{authorName}</strong></span>
+              </div>
+              <h1 class="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                {pageTitle}
+              </h1>
+              <p class="text-slate-600 text-sm md:text-base leading-relaxed">
+                {pageDesc}
+              </p>
+            </header>
+
+            <!-- Gambar 1 -->
+            <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+              <img
+                src="/assets/img/cara-pasang-iklan-properti-cepat-laku.webp"
+                alt="Pemilik rumah memotret ruang tamu untuk cara pasang iklan properti agar cepat laku"
+                class="w-full h-auto max-h-[420px] object-cover"
+                loading="eager"
+              />
+              <figcaption class="text-center text-slate-500 text-xs p-2.5 bg-slate-50 border-t border-slate-200">
+                Pemilik rumah memotret ruang tamu untuk cara pasang iklan properti agar cepat laku.
+              </figcaption>
+            </figure>
+
+            <!-- TOC -->
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+              <button type="button" id="toc-toggle" class="w-full flex justify-between items-center text-emerald-700 font-bold text-sm cursor-pointer">
+                <span>Daftar Isi Panduan</span>
+                <span id="toc-icon" class="text-xs font-bold text-emerald-600" style="font-variant-emoji: text;">▼</span>
+              </button>
+              <div id="toc-content" class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-200">
+                <ul class="space-y-1.5 list-disc list-inside">
+                  <li><a href="#persiapan-iklan" class="hover:text-emerald-700 transition-colors">1. Apa yang Harus Disiapkan Sebelum Memasang Iklan Properti?</a></li>
+                  <li><a href="#foto-dan-deskripsi" class="hover:text-emerald-700 transition-colors">2. Bagaimana Foto dan Deskripsi Iklan yang Membuat Pembeli Menghubungi?</a></li>
+                  <li><a href="#langkah-pasang-iklan" class="hover:text-emerald-700 transition-colors">3. Bagaimana Cara Pasang Iklan di Lapak Properti?</a></li>
+                  <li><a href="#mengelola-calon-pembeli" class="hover:text-emerald-700 transition-colors">4. Bagaimana Mengelola Calon Pembeli setelah Iklan Tayang?</a></li>
+                  <li><a href="#faq-section" class="hover:text-emerald-700 transition-colors">5. Pertanyaan Umum tentang Cara Pasang Iklan Properti</a></li>
+                  <li><a href="#langkah-selanjutnya" class="hover:text-emerald-700 transition-colors">6. Langkah Selanjutnya Memasang Iklan Properti</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="space-y-8 text-slate-700 text-sm md:text-base leading-relaxed">
+              <div class="space-y-4">
+                <p>
+                  <strong>Cara pasang iklan properti</strong> yang efektif dimulai dari data lengkap, harga sesuai pasar, foto terang, dan deskripsi jujur yang menjawab pertanyaan calon pembeli.
+                </p>
+                <p>
+                  Banyak iklan rumah gagal bukan karena propertinya jelek, melainkan karena informasinya kurang. Calon pembeli membuka puluhan listing dalam sekali cari, sehingga iklan yang tidak mencantumkan harga, legalitas, atau foto jelas biasanya dilewati begitu saja.
+                </p>
+                <p>
+                  Panduan ini membahas persiapan data, cara menentukan harga, aturan foto dan deskripsi, langkah pemasangan di Lapak Properti, serta tips jual rumah setelah iklan tayang. Untuk gambaran besar proses transaksi, baca juga <a href="/blog/lapak-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">panduan lapak properti</a>.
+                </p>
+              </div>
+
+              <section id="persiapan-iklan" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Apa yang Harus Disiapkan Sebelum Memasang Iklan Properti?</h2>
+                <p>
+                  Sebelum memasang iklan, siapkan data fisik properti, salinan dokumen legalitas, riwayat pembayaran PBB, dan harga pembanding supaya listing langsung kredibel di mata pembeli.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Mengumpulkan Data dan Dokumen Dasar</h3>
+                <p>
+                  Data yang lengkap membuat iklan properti online terasa meyakinkan dan mengurangi pertanyaan berulang. Kumpulkan hal-hal berikut sebelum membuka halaman pemasangan:
+                </p>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>Luas tanah dan luas bangunan sesuai yang tertulis di sertifikat.</li>
+                  <li>Jumlah kamar tidur, kamar mandi, garasi, dan lantai.</li>
+                  <li>Daya listrik, sumber air, dan kondisi jalan di depan rumah.</li>
+                  <li>Jenis sertifikat, nama pemilik, serta status PBG atau IMB bila ada.</li>
+                  <li>Bukti pembayaran PBB tahun terakhir.</li>
+                </ul>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Menentukan Harga Jual dengan Data Pembanding</h3>
+                <p>
+                  Harga jual rumah yang terlalu tinggi membuat iklan sepi peminat, sedangkan harga terlalu rendah merugikan penjual. Carilah lima listing sejenis dalam radius dua kilometer, lalu hitung harga per meter persegi dari masing-masing.
+                </p>
+                <p>
+                  Sesuaikan angka itu dengan kondisi rumahmu: usia bangunan, kelengkapan renovasi, dan akses jalan. Banyak penjual menyisakan ruang negosiasi, misalnya 5 sampai 10 persen, tetapi tetap mencantumkan harga yang masuk akal sejak awal.
+                </p>
+              </section>
+
+              <section id="foto-dan-deskripsi" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Foto dan Deskripsi Iklan yang Membuat Pembeli Menghubungi?</h2>
+                <p>
+                  Foto terang dari sudut lebar dan deskripsi yang menyebut lokasi, spesifikasi, legalitas, serta harga secara jelas membuat calon pembeli lebih cepat menghubungi penjual.
+                </p>
+
+                <!-- Gambar 2 -->
+                <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+                  <img
+                    src="/assets/img/contoh-foto-dan-deskripsi-iklan-rumah.webp"
+                    alt="Contoh foto properti dan deskripsi iklan rumah yang lengkap di lapak properti"
+                    class="w-full h-auto max-h-[380px] object-cover"
+                    loading="lazy"
+                  />
+                  <figcaption class="text-center text-slate-500 text-xs p-2.5 bg-slate-50 border-t border-slate-200">
+                    Contoh foto properti dan deskripsi iklan rumah yang lengkap di lapak properti.
+                  </figcaption>
+                </figure>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Aturan Foto Properti yang Rapi</h3>
+                <p>
+                  Foto properti adalah hal pertama yang dinilai pembeli. Foto gelap atau berantakan membuat rumah terkesan tidak terawat meskipun kondisinya baik.
+                </p>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>Ambil foto siang hari dengan cahaya alami dan semua lampu menyala.</li>
+                  <li>Rapikan ruangan dan singkirkan barang pribadi sebelum memotret.</li>
+                  <li>Foto tampak depan, ruang tamu, dapur, kamar tidur, kamar mandi, dan halaman.</li>
+                  <li>Gunakan orientasi lanskap dengan sudut lebar agar ruangan terlihat luas.</li>
+                  <li>Jangan mengedit berlebihan karena pembeli akan kecewa saat survei.</li>
+                </ul>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Rumus Deskripsi Lima Bagian</h3>
+                <p>
+                  Lapak Properti menyarankan Rumus Deskripsi Lima Bagian agar deskripsi iklan rumah mudah dibaca dan lengkap:
+                </p>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li><strong>Judul:</strong> tipe properti, lokasi, dan satu keunggulan, misalnya Rumah 2 Lantai 3 Kamar Tidur, SHM, Siap Huni.</li>
+                  <li><strong>Spesifikasi:</strong> luas, kamar, listrik, air, dan kondisi bangunan.</li>
+                  <li><strong>Lokasi:</strong> jarak ke sekolah, pasar, jalan utama, dan transportasi umum.</li>
+                  <li><strong>Legalitas:</strong> jenis sertifikat, status PBG, dan bukti PBB.</li>
+                  <li><strong>Harga dan kontak:</strong> harga, cara survei, dan kanal komunikasi.</li>
+                </ul>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                  <table class="w-full text-left text-xs md:text-sm border-collapse">
+                    <thead class="bg-[#0F172A] text-white">
+                      <tr>
+                        <th class="p-3.5 font-bold">Kesalahan umum</th>
+                        <th class="p-3.5 font-bold">Dampak</th>
+                        <th class="p-3.5 font-bold">Perbaikan</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Harga tidak dicantumkan</td>
+                        <td class="p-3.5">Pembeli ragu dan bertanya berulang</td>
+                        <td class="p-3.5">Cantumkan harga atau kisaran harga</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">Foto gelap atau buram</td>
+                        <td class="p-3.5">Iklan dilewati begitu saja</td>
+                        <td class="p-3.5">Foto ulang pada siang hari</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Legalitas tidak disebut</td>
+                        <td class="p-3.5">Pembeli curiga dan menunda</td>
+                        <td class="p-3.5">Tulis jenis sertifikat dan status PBG</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">Deskripsi berlebihan</td>
+                        <td class="p-3.5">Pembeli kecewa saat survei</td>
+                        <td class="p-3.5">Tulis kondisi apa adanya</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <!-- BACA JUGA BOX SISIPAN -->
+              <div class="my-6">
+                <a
+                  href="/blog/lapak-properti"
+                  class="block bg-emerald-50/70 hover:bg-emerald-50 border-l-4 border-emerald-600 p-5 rounded-2xl border border-emerald-200 transition-all shadow-sm group"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider block mb-1">BACA JUGA PANDUAN UTAMA</span>
+                      <h4 class="text-slate-900 font-bold text-sm md:text-base group-hover:text-emerald-700 transition-colors">
+                        Lapak Properti Terpercaya untuk Jual Beli Rumah &rarr;
+                      </h4>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <section id="langkah-pasang-iklan" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Cara Pasang Iklan di Lapak Properti?</h2>
+                <p>
+                  Pasang iklan di Lapak Properti dengan membuat akun, mengisi data properti, mengunggah foto, menulis deskripsi, lalu meninjau dan menayangkan iklan agar muncul di hasil pencarian.
+                </p>
+                <p>
+                  Setelah semua bahan siap, proses pemasangan hanya memakan waktu singkat. Buka halaman <a href="/agen/login" class="text-emerald-700 font-semibold underline hover:text-emerald-800">pasang iklan properti</a> lalu ikuti urutan berikut:
+                </p>
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li><strong>Buat akun:</strong> daftar atau masuk, lalu pilih menu pasang iklan.</li>
+                  <li><strong>Isi data properti:</strong> jenis, alamat, luas, jumlah kamar, harga, dan status sertifikat.</li>
+                  <li><strong>Unggah foto:</strong> susun urutan dari tampak depan sampai kamar mandi.</li>
+                  <li><strong>Tulis deskripsi:</strong> gunakan Rumus Deskripsi Lima Bagian.</li>
+                  <li><strong>Tinjau dan tayangkan:</strong> periksa ulang data sebelum iklan tampil.</li>
+                </ol>
+                <p>
+                  Perbarui iklan secara berkala, misalnya saat harga berubah atau ada foto baru, supaya listing tetap relevan di hasil pencarian.
+                </p>
+              </section>
+
+              <section id="mengelola-calon-pembeli" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Mengelola Calon Pembeli setelah Iklan Tayang?</h2>
+                <p>
+                  Balas pesan calon pembeli dalam hitungan jam, jadwalkan survei pada hari yang sama bila mungkin, dan catat setiap penawaran agar negosiasi tidak membingungkan.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Menjawab Pesan Pertama dengan Cepat dan Jelas</h3>
+                <p>
+                  Pembeli biasanya menghubungi beberapa penjual sekaligus. Balasan cepat yang menjawab pertanyaan harga, legalitas, dan jadwal survei membuat kamu lebih mudah dipilih. Siapkan jawaban singkat untuk pertanyaan yang sering muncul.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Mengatur Survei dan Negosiasi dengan Aman</h3>
+                <p>
+                  Temui calon pembeli di lokasi pada siang hari dan jangan bersedia menyerahkan dokumen asli sebelum transaksi di hadapan PPAT. Waspadai bukti transfer yang hanya berupa tangkapan layar; selalu cek mutasi rekening sendiri.
+                </p>
+                <p>
+                  Saat harga sudah disepakati, siapkan dokumen untuk proses berikutnya. Pahami <a href="/blog/cek-legalitas-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cek legalitas properti</a> dari sisi pembeli dan <a href="/blog/biaya-jual-beli-rumah" class="text-emerald-700 font-semibold underline hover:text-emerald-800">biaya jual beli rumah</a> agar tidak ada kejutan di tahap akta.
+                </p>
+              </section>
+
+              <section id="langkah-selanjutnya" class="space-y-3">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Langkah Selanjutnya Memasang Iklan Properti</h2>
+                <p>
+                  Siapkan data dan foto hari ini, tentukan harga dari pembanding, lalu tayangkan iklan agar calon pembeli yang sesuai segera menemukan propertimu di Lapak Properti.
+                </p>
+                <p>
+                  Iklan yang lengkap, jujur, dan rapi adalah kunci jual rumah cepat laku. Terapkan rumus deskripsi dan aturan foto di panduan ini, lalu pantau pesan masuk setiap hari.
+                </p>
+                <p>
+                  Siap memasarkan propertimu? <a href="/agen/login" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Pasang iklan properti</a> sekarang, atau <a href="/kontak" class="text-emerald-700 font-semibold underline hover:text-emerald-800">konsultasi lewat halaman Kontak</a> bila perlu bantuan menyusun deskripsi. Kamu juga bisa hubungi admin lewat WhatsApp.
+                </p>
+                <p class="text-xs text-slate-500 pt-2">
+                  <strong>Sumber rujukan:</strong> <a href="/blog/lapak-properti" class="underline hover:text-emerald-700">Artikel pilar Lapak Properti</a>; <a href="https://lapakproperty.web.id/" class="underline hover:text-emerald-700">halaman resmi Lapak Properti</a>.
+                </p>
+              </section>
+            </div>
+
+            <!-- KOTAK AUTHOR (PENULIS) -->
+            <div class="my-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center gap-5">
+              <div class="w-16 h-16 rounded-full bg-emerald-600/15 border border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xl shrink-0">
+                AR
+              </div>
+              <div class="space-y-1 text-center sm:text-left">
+                <div class="flex items-center justify-center sm:justify-start gap-2">
+                  <h4 class="text-slate-900 font-bold text-base">{authorName}</h4>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-300">Verified Author</span>
+                </div>
+                <p class="text-slate-600 text-xs leading-relaxed">
+                  Menulis panduan jual beli dan pemasaran properti dengan merujuk ketentuan resmi pertanahan dan perpajakan. Fokus konten mencakup keamanan transaksi, pengecekan dokumen, dan penyusunan iklan properti yang informatif.
+                </p>
+              </div>
+            </div>
+
+            <!-- CTA PROMO WHATSAPP -->
+            <div class="bg-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 text-center space-y-4 shadow-xl text-white">
+              <h3 class="text-xl font-bold">Siap Tayangkan Listing Properti Anda Hari Ini?</h3>
+              <p class="text-slate-300 text-xs md:text-sm max-w-lg mx-auto">
+                Masuk ke dashboard agen untuk mengunggah unit rumah, tanah, atau kos Anda, atau konsultasikan strategi pemasaran bersama admin Lapak Properti.
+              </p>
+              <div class="flex flex-wrap justify-center gap-3 pt-1">
+                <a
+                  href="/agen/login"
+                  class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg text-xs md:text-sm"
+                >
+                  <span>Pasang Iklan Sekarang</span>
+                </a>
+                <a
+                  href="/kontak"
+                  class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl border border-slate-700 transition-all text-xs md:text-sm"
+                >
+                  <span>Hubungi Admin via WhatsApp</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- FAQ ACCORDION SECTION -->
+            <section id="faq-section" class="border-t border-slate-200 pt-8 space-y-4">
+              <h3 class="text-xl font-bold text-slate-900">Pertanyaan Umum tentang Cara Pasang Iklan Properti</h3>
+              <p class="text-slate-600 text-xs md:text-sm leading-relaxed">
+                Jawaban singkat untuk pertanyaan yang sering muncul seputar foto, harga, pembaruan listing, dan keamanan transaksi penjual.
+              </p>
+              <div class="space-y-3">
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Berapa jumlah foto ideal untuk iklan properti?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Sekitar 8 sampai 15 foto sudah cukup untuk rumah tapak. Prioritaskan tampak depan, ruang utama, dapur, kamar tidur, kamar mandi, dan halaman. Foto yang jelas dan terang lebih penting daripada jumlah yang banyak, sehingga hindari gambar buram atau duplikat. Foto pertama sebaiknya tampak depan karena menjadi gambar sampul iklan.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Apakah harga harus dicantumkan di iklan?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Sebaiknya ya. Iklan yang mencantumkan harga atau kisaran harga lebih dipercaya dan menyaring pembeli yang anggarannya sesuai, sehingga percakapan berikutnya lebih efisien. Jika harga masih bisa dinegosiasi, tuliskan keterangan bahwa harga masih terbuka untuk penawaran. Pembeli yang serius biasanya tetap bertanya, tetapi percakapannya jadi lebih terarah.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Bagaimana cara menentukan harga jual rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Bandingkan lima listing sejenis dalam radius dua kilometer, hitung harga per meter persegi, lalu sesuaikan dengan kondisi dan usia bangunan. Pertimbangkan juga ruang negosiasi yang wajar. Konsultasi dengan agen atau penilai bila nilai properti besar. Perbarui perhitungan bila ada properti pembanding baru yang lebih relevan.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Seberapa sering iklan properti perlu diperbarui?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Perbarui iklan setiap kali ada perubahan harga, foto baru, atau status properti. Tinjau juga performa iklan setiap beberapa minggu. Jika iklan sepi peminat, periksa ulang harga, kualitas foto, dan kelengkapan deskripsi sebelum menurunkan harga. Perubahan kecil pada judul sering cukup untuk menaikkan jumlah pesan masuk.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Bagaimana menghindari penipuan dari calon pembeli?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Jangan menyerahkan dokumen asli sebelum akta, dan cek mutasi rekening sendiri, bukan hanya bukti transfer berupa tangkapan layar. Lakukan transaksi di hadapan PPAT dan hindari pembeli yang mendesak pembayaran atau meminta pengiriman sertifikat lewat kurir. Catat nama dan kontak pembeli agar mudah dilacak bila terjadi masalah.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Apakah boleh memakai agen untuk memasarkan rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Boleh. Agen membantu menjangkau lebih banyak calon pembeli dan mengatur survei, tetapi biasanya meminta komisi. Sepakati besaran komisi, durasi kerja sama, dan hak eksklusif secara tertulis sebelum agen memasang iklan atas nama kamu. Pilih agen yang aktif membalas pesan dan memahami wilayah lokasi rumahmu.
+                  </p>
+                </details>
+              </div>
+            </section>
+
+          </article>
+
+          <!-- SIDEBAR (KANAN) -->
+          <aside class="lg:col-span-4 space-y-6">
+            <div class="sticky top-24 space-y-6">
+
+              <!-- Box Fast Contact -->
+              <div class="bg-[#0F172A] text-white p-6 rounded-3xl border border-slate-800 space-y-4 shadow-lg">
+                <span class="inline-block px-2.5 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full text-[11px] font-semibold">
+                  Portal Agen &amp; Pemilik
+                </span>
+                <h4 class="font-bold text-base">Pasang Iklan Properti Anda</h4>
+                <p class="text-slate-300 text-xs leading-relaxed">
+                  Jangkau pembeli serius dengan data properti yang lengkap dan langsung terhubung ke WhatsApp Anda.
+                </p>
+                <div class="space-y-2.5">
+                  <a
+                    href="/agen/login"
+                    class="block text-center bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all"
+                  >
+                    Pasang Iklan Sekarang
+                  </a>
+                  <a
+                    href="/kontak"
+                    class="block text-center bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 rounded-xl border border-slate-700 text-xs transition-all"
+                  >
+                    Konsultasi via Halaman Kontak
+                  </a>
+                </div>
+              </div>
+
+              <!-- Card Artikel Rekomendasi (Pilar + 2 Cluster Lainnya) -->
+              <div class="bg-white p-6 rounded-3xl border border-slate-200/90 space-y-4 shadow-sm">
+                <h4 class="text-slate-900 font-bold text-base border-b border-slate-200 pb-3">Artikel Rekomendasi</h4>
+
+                <div class="space-y-4">
+                  <div class="space-y-2 group">
+                    <img src="/assets/img/lapak-properti-terpercaya.webp" alt="Pembeli dan penjual meninjau iklan di lapak properti online lewat laptop" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Artikel Pilar • 21 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/lapak-properti">
+                        Lapak Properti Terpercaya untuk Jual Beli Rumah
+                      </a>
+                    </h5>
+                  </div>
+
+                  <div class="space-y-2 group pt-2 border-t border-slate-100">
+                    <img src="/assets/img/cek-legalitas-properti-sertifikat-tanah.webp" alt="Pembeli memeriksa sertifikat tanah dalam proses cek legalitas properti" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Legalitas • 23 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/cek-legalitas-properti">
+                        Cek Legalitas Properti Sebelum Beli Rumah atau Tanah
+                      </a>
+                    </h5>
+                  </div>
+
+                  <div class="space-y-2 group pt-2 border-t border-slate-100">
+                    <img src="/assets/img/biaya-jual-beli-rumah-pajak-dan-notaris.webp" alt="Rincian biaya jual beli rumah berupa BPHTB, PPh final, dan biaya notaris" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Biaya • 24 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/biaya-jual-beli-rumah">
+                        Biaya Jual Beli Rumah yang Wajib Kamu Siapkan
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+        </div>
+      </section>
+    </div>
+
+    <Footer />
+  </body>
+</html>
+
+<script>
+  const tocToggle = document.getElementById('toc-toggle');
+  const tocContent = document.getElementById('toc-content');
+  const tocIcon = document.getElementById('toc-icon');
+
+  if (tocToggle && tocContent) {
+    tocToggle.addEventListener('click', () => {
+      if (tocContent.style.display === 'none') {
+        tocContent.style.display = 'block';
+        if (tocIcon) {
+          tocIcon.textContent = '▼';
+        }
+      } else {
+        tocContent.style.display = 'none';
+        if (tocIcon) {
+          tocIcon.textContent = '▸';
+        }
+      }
+    });
+  }
+</script>

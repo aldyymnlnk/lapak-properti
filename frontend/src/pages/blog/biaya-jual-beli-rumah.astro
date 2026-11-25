@@ -1,0 +1,661 @@
+---
+// src/pages/blog/biaya-jual-beli-rumah.astro
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+
+const pageTitle = "Biaya Jual Beli Rumah yang Wajib Kamu Siapkan";
+const pageDesc = "Hitung biaya jual beli rumah lengkap: BPHTB, PPh final, notaris, dan balik nama. Lihat contoh simulasi dan siapkan dananya. Baca panduannya sekarang!";
+const publishDate = "2026-11-24";
+const publishIsoDate = "2026-11-24T18:00:00+07:00";
+const publishDisplayDate = "24 November 2026 • 18:00 WIB";
+const pageSlug = "/blog/biaya-jual-beli-rumah";
+const pageUrl = `https://lapakproperty.web.id${pageSlug}`;
+const ogImageUrl = "https://lapakproperty.web.id/assets/img/biaya-jual-beli-rumah-pajak-dan-notaris.webp";
+const secondImageUrl = "https://lapakproperty.web.id/assets/img/simulasi-pajak-bphtb-dan-pph-final-rumah.webp";
+const authorName = "Aldi Rionaldi Simanullang";
+const keywordsList = "biaya jual beli rumah, pajak jual beli rumah, BPHTB, pph final penjual, biaya notaris dan ppat, biaya balik nama, NPOPTKP, hitung biaya beli rumah";
+
+const schemaArticle = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": `${pageUrl}#article`,
+      "isPartOf": { "@id": pageUrl },
+      "headline": pageTitle,
+      "description": pageDesc,
+      "keywords": keywordsList,
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": pageUrl
+      },
+      "image": [
+        ogImageUrl,
+        secondImageUrl
+      ],
+      "inLanguage": "id-ID",
+      "datePublished": publishIsoDate,
+      "dateModified": publishIsoDate,
+      "author": {
+        "@type": "Person",
+        "name": authorName
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Lapak Properti",
+        "url": "https://lapakproperty.web.id/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://lapakproperty.web.id/assets/img/lapak-properti-terpercaya.webp"
+        }
+      }
+    },
+    {
+      "@type": "HowTo",
+      "@id": `${pageUrl}#howto`,
+      "name": "Cara menghitung biaya jual beli rumah",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Tentukan nilai transaksi",
+          "text": "Catat harga jual yang disepakati dan bandingkan dengan NJOP untuk menentukan NPOP."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Hitung PPh final penjual",
+          "text": "Kalikan nilai pengalihan dengan 2,5 persen, atau 1 persen untuk rumah sederhana."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Hitung BPHTB pembeli",
+          "text": "Kurangi NPOP dengan NPOPTKP daerah, lalu kalikan dengan tarif BPHTB."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Tambahkan biaya PPAT dan balik nama",
+          "text": "Minta rincian tertulis dari PPAT untuk honorarium dan biaya administrasi."
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Sepakati pembagian biaya",
+          "text": "Tuangkan pembagian biaya dalam kesepakatan tertulis sebelum tanda jadi."
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Siapa yang membayar pajak jual beli rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Penjual membayar PPh final atas pengalihan hak, sedangkan pembeli membayar BPHTB. Keduanya dibayar sebelum akta ditandatangani di hadapan PPAT. Pembagian biaya lain, seperti honorarium PPAT dan balik nama, bergantung pada kesepakatan tertulis kedua pihak. Catat pembagian itu bersama saksi agar tidak diperdebatkan di kemudian hari."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Berapa tarif PPh final penjual rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Tarif PPh final penjual adalah 2,5 persen dari nilai pengalihan untuk transaksi umum dan 1 persen untuk rumah sederhana atau rumah susun sederhana, sesuai PP 34/2016. Tarif 5 persen dari aturan lama sudah tidak berlaku lagi, jadi pastikan PPAT memakai tarif terbaru."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apa itu NPOPTKP dalam perhitungan BPHTB?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "NPOPTKP adalah Nilai Perolehan Objek Pajak Tidak Kena Pajak, yaitu batas nilai yang dikurangkan dari NPOP sebelum BPHTB dihitung. Besarannya ditetapkan pemerintah daerah. Karena berbeda tiap daerah, tanyakan angka terbaru ke PPAT atau kantor pajak daerah setempat. Hasil pengecekan itu menjadi dasar perhitungan yang akurat bagi kedua pihak."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Berapa biaya notaris dan PPAT untuk jual beli rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Honorarium PPAT atau notaris berbeda-beda dan umumnya bergantung pada nilai transaksi serta kompleksitas akta. Tidak ada satu angka yang berlaku untuk semua kantor. Minta rincian tertulis dan bandingkan beberapa penawaran sebelum menunjuk PPAT yang akan menangani akta jual beli. Kejelasan biaya sejak awal mencegah perselisihan menjelang akta."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Berapa biaya balik nama sertifikat rumah?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Biaya balik nama mencakup biaya pengecekan dan pendaftaran peralihan hak di kantor pertanahan, dan umumnya ditanggung pembeli. Besarannya bergantung pada nilai tanah dan ketentuan yang berlaku. Tanyakan estimasi kepada PPAT sejak awal agar bisa dimasukkan ke anggaran. Estimasi biaya yang jelas membantu kamu menyusun anggaran lebih akurat."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Apakah pajak dibayar sebelum atau sesudah akta?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PPh final dan BPHTB dibayar sebelum akta jual beli ditandatangani. PPAT biasanya meminta bukti setor kedua pajak itu sebagai syarat pembuatan akta. Karena itu, siapkan dana pajak sejak tahap negosiasi, bukan menunggu jadwal akta. Pembayaran tepat waktu mencegah penundaan jadwal akta."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Beranda",
+          "item": "https://lapakproperty.web.id/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://lapakproperty.web.id/blog"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Biaya Jual Beli Rumah yang Wajib Kamu Siapkan",
+          "item": pageUrl
+        }
+      ]
+    }
+  ]
+};
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle} — LapakProperti</title>
+    <meta name="description" content={pageDesc} />
+    <meta name="keywords" content={keywordsList} />
+    <link rel="canonical" href={pageUrl} />
+
+    <!-- Open Graph / Social Meta -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:image:alt" content="Rincian biaya jual beli rumah berupa BPHTB, PPh final, dan biaya notaris" />
+    <meta property="og:type" content="article" />
+    <meta property="article:published_time" content={publishIsoDate} />
+    <meta property="article:modified_time" content={publishIsoDate} />
+    <meta property="article:section" content="Panduan Biaya" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemaArticle)} />
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="blog" />
+
+      <section class="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+
+          <!-- KONTEN UTAMA (KIRI) -->
+          <article class="lg:col-span-8 bg-white p-6 md:p-10 rounded-3xl border border-slate-200/90 space-y-8 shadow-sm">
+
+            <header class="space-y-4">
+              <div class="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-500">
+                <span class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-full uppercase">Panduan Biaya</span>
+                <time datetime={publishIsoDate}>{publishDisplayDate}</time>
+                <span>•</span>
+                <span>Oleh <strong class="text-slate-800">{authorName}</strong></span>
+              </div>
+              <h1 class="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                {pageTitle}
+              </h1>
+              <p class="text-slate-600 text-sm md:text-base leading-relaxed">
+                {pageDesc}
+              </p>
+            </header>
+
+            <!-- Gambar 1 -->
+            <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+              <img
+                src="/assets/img/biaya-jual-beli-rumah-pajak-dan-notaris.webp"
+                alt="Rincian biaya jual beli rumah berupa BPHTB, PPh final, dan biaya notaris"
+                class="w-full h-auto max-h-[420px] object-cover"
+                loading="eager"
+              />
+              <figcaption class="text-center text-slate-500 text-xs p-2.5 bg-slate-50 border-t border-slate-200">
+                Rincian biaya jual beli rumah berupa BPHTB, PPh final, dan biaya notaris.
+              </figcaption>
+            </figure>
+
+            <!-- TOC -->
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+              <button type="button" id="toc-toggle" class="w-full flex justify-between items-center text-emerald-700 font-bold text-sm cursor-pointer">
+                <span>Daftar Isi Panduan</span>
+                <span id="toc-icon" class="text-xs font-bold text-emerald-600" style="font-variant-emoji: text;">▼</span>
+              </button>
+              <div id="toc-content" class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-200">
+                <ul class="space-y-1.5 list-disc list-inside">
+                  <li><a href="#komponen-biaya" class="hover:text-emerald-700 transition-colors">1. Apa Saja Komponen Biaya Jual Beli Rumah?</a></li>
+                  <li><a href="#cara-menghitung-pajak" class="hover:text-emerald-700 transition-colors">2. Bagaimana Cara Menghitung BPHTB dan PPh Final?</a></li>
+                  <li><a href="#menyiapkan-dana" class="hover:text-emerald-700 transition-colors">3. Bagaimana Menyiapkan Dana dan Menyepakati Pembagian Biaya?</a></li>
+                  <li><a href="#faq-section" class="hover:text-emerald-700 transition-colors">4. Pertanyaan Umum tentang Biaya Jual Beli Rumah</a></li>
+                  <li><a href="#langkah-selanjutnya" class="hover:text-emerald-700 transition-colors">5. Langkah Selanjutnya Menyiapkan Biaya Transaksi</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="space-y-8 text-slate-700 text-sm md:text-base leading-relaxed">
+              <div class="space-y-4">
+                <p>
+                  <strong>Biaya jual beli rumah</strong> meliputi PPh final penjual, BPHTB pembeli, jasa PPAT, serta biaya pengecekan dan balik nama yang bergantung pada nilai transaksi dan daerah.
+                </p>
+                <p>
+                  Banyak pembeli pertama menyiapkan dana hanya sebesar harga rumah, lalu kaget saat tagihan pajak dan jasa PPAT muncul menjelang akta. Penjual pun sering lupa bahwa ada pajak penghasilan yang harus dibayar sebelum akta ditandatangani.
+                </p>
+                <p>
+                  Panduan ini membantu kamu menghitung biaya beli rumah dari kedua sisi, lengkap dengan contoh simulasi. Gambaran transaksi secara utuh ada di <a href="/blog/lapak-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">panduan lapak properti</a>. Angka dalam contoh bersifat ilustrasi dan perlu dikonfirmasi ke PPAT serta pemerintah daerah.
+                </p>
+              </div>
+
+              <section id="komponen-biaya" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Apa Saja Komponen Biaya Jual Beli Rumah?</h2>
+                <p>
+                  Ada empat komponen utama: pajak penjual, pajak pembeli, honorarium PPAT atau notaris, dan biaya administrasi pendaftaran peralihan hak di kantor pertanahan.
+                </p>
+                <p>
+                  Tabel berikut merangkum siapa yang umumnya menanggung tiap komponen. Pembagian ini bisa berbeda, sehingga selalu sepakati secara tertulis.
+                </p>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                  <table class="w-full text-left text-xs md:text-sm border-collapse">
+                    <thead class="bg-[#0F172A] text-white">
+                      <tr>
+                        <th class="p-3.5 font-bold">Komponen</th>
+                        <th class="p-3.5 font-bold">Umumnya ditanggung</th>
+                        <th class="p-3.5 font-bold">Keterangan</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">PPh final</td>
+                        <td class="p-3.5">Penjual</td>
+                        <td class="p-3.5">2,5 persen dari nilai pengalihan, atau 1 persen untuk rumah sederhana</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">BPHTB</td>
+                        <td class="p-3.5">Pembeli</td>
+                        <td class="p-3.5">Tarif maksimal 5 persen dari NPOP dikurangi NPOPTKP, ditetapkan daerah</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Jasa PPAT atau notaris</td>
+                        <td class="p-3.5">Sesuai kesepakatan</td>
+                        <td class="p-3.5">Honorarium akta berbeda tiap PPAT, minta rincian tertulis</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">Pengecekan sertifikat dan balik nama</td>
+                        <td class="p-3.5">Pembeli, umumnya</td>
+                        <td class="p-3.5">Biaya administrasi dan PNBP di kantor pertanahan</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Biaya lain</td>
+                        <td class="p-3.5">Sesuai kesepakatan</td>
+                        <td class="p-3.5">Komisi agen dan biaya pencoretan hak tanggungan bila ada</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Pajak Jual Beli Rumah yang Dibayar Penjual</h3>
+                <p>
+                  Penjual membayar pajak penghasilan final atas pengalihan hak tanah dan bangunan. Besaran PPh final penjual mengacu pada PP 34/2016, yaitu 2,5 persen dari nilai pengalihan untuk transaksi umum dan 1 persen untuk rumah sederhana atau rumah susun sederhana.
+                </p>
+                <p>
+                  Pembayaran dilakukan sebelum akta jual beli ditandatangani, dan bukti setornya diserahkan kepada PPAT. Tarif lama 5 persen sudah tidak berlaku lagi.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Pajak yang Dibayar Pembeli: BPHTB</h3>
+                <p>
+                  Pembeli membayar Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB). Tarifnya ditetapkan maksimal 5 persen, dengan besaran pastinya diatur masing-masing daerah. BPHTB dibayar sebelum akta ditandatangani di hadapan PPAT.
+                </p>
+              </section>
+
+              <section id="cara-menghitung-pajak" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Cara Menghitung BPHTB dan PPh Final?</h2>
+                <p>
+                  Hitung BPHTB dengan tarif dikalikan selisih NPOP dan NPOPTKP, lalu PPh final penjual 2,5 persen dari nilai pengalihan atau 1 persen untuk rumah sederhana.
+                </p>
+
+                <!-- Gambar 2 -->
+                <figure class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-100">
+                  <img
+                    src="/assets/img/simulasi-pajak-bphtb-dan-pph-final-rumah.webp"
+                    alt="Simulasi perhitungan pajak jual beli rumah untuk penjual dan pembeli"
+                    class="w-full h-auto max-h-[380px] object-cover"
+                    loading="lazy"
+                  />
+                  <figcaption class="text-center text-slate-500 text-xs p-2.5 bg-slate-50 border-t border-slate-200">
+                    Simulasi perhitungan pajak jual beli rumah untuk penjual dan pembeli.
+                  </figcaption>
+                </figure>
+
+                <p>
+                  Rumusnya sederhana: BPHTB terutang sama dengan tarif dikalikan (NPOP dikurangi NPOPTKP). NPOP adalah harga transaksi, tetapi bila lebih kecil dari NJOP maka dasar yang dipakai adalah NJOP. NPOPTKP adalah batas nilai yang tidak dikenai pajak dan ditetapkan masing-masing daerah.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Contoh Simulasi Rumah Rp 800 Juta</h3>
+                <p>
+                  Contoh berikut memakai NPOPTKP ilustrasi Rp 80 juta dan tarif BPHTB 5 persen. Angka asli di daerahmu bisa berbeda, jadi gunakan tabel ini hanya untuk gambaran.
+                </p>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                  <table class="w-full text-left text-xs md:text-sm border-collapse">
+                    <thead class="bg-[#0F172A] text-white">
+                      <tr>
+                        <th class="p-3.5 font-bold">Komponen</th>
+                        <th class="p-3.5 font-bold">Perhitungan</th>
+                        <th class="p-3.5 font-bold">Hasil</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">NPOP (harga transaksi)</td>
+                        <td class="p-3.5">Harga yang disepakati</td>
+                        <td class="p-3.5 font-semibold">Rp 800.000.000</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">NPOPTKP (ilustrasi)</td>
+                        <td class="p-3.5">Ditetapkan daerah</td>
+                        <td class="p-3.5">Rp 80.000.000</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">Dasar BPHTB</td>
+                        <td class="p-3.5">800 juta dikurangi 80 juta</td>
+                        <td class="p-3.5">Rp 720.000.000</td>
+                      </tr>
+                      <tr class="bg-slate-50/70">
+                        <td class="p-3.5 font-semibold text-slate-900">BPHTB pembeli</td>
+                        <td class="p-3.5">5 persen dari 720 juta</td>
+                        <td class="p-3.5 font-bold text-emerald-700">Rp 36.000.000</td>
+                      </tr>
+                      <tr>
+                        <td class="p-3.5 font-semibold text-slate-900">PPh final penjual</td>
+                        <td class="p-3.5">2,5 persen dari 800 juta</td>
+                        <td class="p-3.5 font-bold text-emerald-700">Rp 20.000.000</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p>
+                  Total pajak dalam contoh ini Rp 56 juta, belum termasuk honorarium PPAT, biaya pengecekan sertifikat, dan biaya balik nama. Gunakan pola ini untuk hitung biaya beli rumah sesuai harga dan daerahmu.
+                </p>
+
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 pt-2">Mengapa Angka Setiap Daerah Berbeda</h3>
+                <p>
+                  NPOPTKP dan tarif BPHTB ditetapkan pemerintah daerah, sehingga rumah dengan harga sama bisa memiliki tagihan berbeda di dua kota. NJOP juga berbeda di tiap lokasi. Selalu konfirmasi angka final ke PPAT atau kantor pajak daerah sebelum menyiapkan dana.
+                </p>
+              </section>
+
+              <!-- BACA JUGA BOX SISIPAN -->
+              <div class="my-6">
+                <a
+                  href="/blog/cara-pasang-iklan-properti"
+                  class="block bg-emerald-50/70 hover:bg-emerald-50 border-l-4 border-emerald-600 p-5 rounded-2xl border border-emerald-200 transition-all shadow-sm group"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="text-xs font-bold text-emerald-700 uppercase tracking-wider block mb-1">BACA JUGA PANDUAN PENJUAL</span>
+                      <h4 class="text-slate-900 font-bold text-sm md:text-base group-hover:text-emerald-700 transition-colors">
+                        Cara Pasang Iklan Properti agar Cepat Laku &rarr;
+                      </h4>
+                    </div>
+                  </div>
+                </a>
+              </div>
+
+              <section id="menyiapkan-dana" class="space-y-4">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Bagaimana Menyiapkan Dana dan Menyepakati Pembagian Biaya?</h2>
+                <p>
+                  Siapkan dana cadangan di atas harga properti, sepakati pembagian biaya tertulis sebelum tanda jadi, dan minta rincian tagihan dari PPAT agar tidak ada biaya mendadak.
+                </p>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>Sisihkan dana cadangan di atas harga properti untuk pajak, PPAT, dan balik nama.</li>
+                  <li>Minta simulasi biaya tertulis dari PPAT sebelum negosiasi harga final.</li>
+                  <li>Tuangkan pembagian biaya dalam surat tanda jadi atau perjanjian pengikatan jual beli.</li>
+                  <li>Simpan semua bukti setor pajak sebagai arsip pribadi.</li>
+                  <li>Bagi penjual, siapkan dana PPh final sebelum akta dijadwalkan.</li>
+                </ul>
+                <p>
+                  Biaya notaris dan PPAT berbeda tiap kantor, jadi bandingkan penawaran dan tanyakan komponen yang sudah termasuk. Biaya balik nama dihitung setelah akta, sehingga tanyakan estimasinya sejak awal.
+                </p>
+                <p>
+                  Sebelum menyiapkan dana, pastikan dokumen aman lewat panduan <a href="/blog/cek-legalitas-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cek legalitas properti</a>. Penjual yang ingin properti cepat terjual dapat membaca <a href="/blog/cara-pasang-iklan-properti" class="text-emerald-700 font-semibold underline hover:text-emerald-800">cara pasang iklan properti</a>.
+                </p>
+              </section>
+
+              <section id="langkah-selanjutnya" class="space-y-3">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-900">Langkah Selanjutnya Menyiapkan Biaya Transaksi</h2>
+                <p>
+                  Hitung PPh final dan BPHTB dengan simulasi, minta rincian dari PPAT, lalu sisihkan dana cadangan sebelum menyetujui harga akhir jual beli rumah.
+                </p>
+                <p>
+                  Memahami biaya sejak awal membuat negosiasi lebih realistis dan mencegah transaksi batal di tengah jalan. Gunakan contoh simulasi dalam panduan ini sebagai titik awal, lalu sesuaikan dengan angka resmi di daerahmu.
+                </p>
+                <p>
+                  Mulai cari properti yang sesuai anggaranmu di halaman <a href="/katalog" class="text-emerald-700 font-semibold underline hover:text-emerald-800">Cari Properti</a>, atau <a href="/kontak" class="text-emerald-700 font-semibold underline hover:text-emerald-800">konsultasi lewat halaman Kontak</a> bila butuh arahan. Kamu juga bisa hubungi admin lewat WhatsApp.
+                </p>
+                <p class="text-xs text-slate-500 pt-2">
+                  <strong>Sumber rujukan:</strong> <a href="https://pajak.go.id/id/artikel/mau-beli-tanah-apa-saja-pajaknya" target="_blank" rel="noopener noreferrer" class="underline hover:text-emerald-700">Kementerian Keuangan: Mau Beli Tanah, Apa Saja Pajaknya?</a>; Peraturan Pemerintah No. 34 Tahun 2016; <a href="/blog/lapak-properti" class="underline hover:text-emerald-700">Artikel pilar Lapak Properti</a>; <a href="https://lapakproperty.web.id/" class="underline hover:text-emerald-700">halaman resmi Lapak Properti</a>.
+                </p>
+              </section>
+            </div>
+
+            <!-- KOTAK AUTHOR (PENULIS) -->
+            <div class="my-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center gap-5">
+              <div class="w-16 h-16 rounded-full bg-emerald-600/15 border border-emerald-500 flex items-center justify-center text-emerald-700 font-bold text-xl shrink-0">
+                AR
+              </div>
+              <div class="space-y-1 text-center sm:text-left">
+                <div class="flex items-center justify-center sm:justify-start gap-2">
+                  <h4 class="text-slate-900 font-bold text-base">{authorName}</h4>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-300">Verified Author</span>
+                </div>
+                <p class="text-slate-600 text-xs leading-relaxed">
+                  Menulis panduan jual beli dan pemasaran properti dengan merujuk ketentuan resmi pertanahan dan perpajakan. Fokus konten mencakup keamanan transaksi, pengecekan dokumen, dan penyusunan iklan properti yang informatif.
+                </p>
+              </div>
+            </div>
+
+            <!-- CTA PROMO WHATSAPP -->
+            <div class="bg-[#0F172A] border border-slate-800 rounded-3xl p-6 md:p-8 text-center space-y-4 shadow-xl text-white">
+              <h3 class="text-xl font-bold">Cari Properti Sesuai Anggaran Anda di Lapak Properti</h3>
+              <p class="text-slate-300 text-xs md:text-sm max-w-lg mx-auto">
+                Filter listing rumah, tanah, dan kos berdasarkan harga terbaik agar dana pembelian dan biaya pajak tetap terkendali.
+              </p>
+              <div class="flex flex-wrap justify-center gap-3 pt-1">
+                <a
+                  href="/katalog"
+                  class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl transition-all shadow-lg text-xs md:text-sm"
+                >
+                  <span>Cari Properti Sekarang</span>
+                </a>
+                <a
+                  href="/kontak"
+                  class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3 rounded-xl border border-slate-700 transition-all text-xs md:text-sm"
+                >
+                  <span>Hubungi Admin via WhatsApp</span>
+                </a>
+              </div>
+            </div>
+
+            <!-- FAQ ACCORDION SECTION -->
+            <section id="faq-section" class="border-t border-slate-200 pt-8 space-y-4">
+              <h3 class="text-xl font-bold text-slate-900">Pertanyaan Umum tentang Biaya Jual Beli Rumah</h3>
+              <p class="text-slate-600 text-xs md:text-sm leading-relaxed">
+                Jawaban ringkas untuk pertanyaan seputar PPh final, BPHTB, NPOPTKP, honorarium PPAT, dan waktu pembayaran pajak transaksi properti.
+              </p>
+              <div class="space-y-3">
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Siapa yang membayar pajak jual beli rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Penjual membayar PPh final atas pengalihan hak, sedangkan pembeli membayar BPHTB. Keduanya dibayar sebelum akta ditandatangani di hadapan PPAT. Pembagian biaya lain, seperti honorarium PPAT dan balik nama, bergantung pada kesepakatan tertulis kedua pihak. Catat pembagian itu bersama saksi agar tidak diperdebatkan di kemudian hari.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Berapa tarif PPh final penjual rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Tarif PPh final penjual adalah 2,5 persen dari nilai pengalihan untuk transaksi umum dan 1 persen untuk rumah sederhana atau rumah susun sederhana, sesuai PP 34/2016. Tarif 5 persen dari aturan lama sudah tidak berlaku lagi, jadi pastikan PPAT memakai tarif terbaru.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Apa itu NPOPTKP dalam perhitungan BPHTB?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    NPOPTKP adalah Nilai Perolehan Objek Pajak Tidak Kena Pajak, yaitu batas nilai yang dikurangkan dari NPOP sebelum BPHTB dihitung. Besarannya ditetapkan pemerintah daerah. Karena berbeda tiap daerah, tanyakan angka terbaru ke PPAT atau kantor pajak daerah setempat. Hasil pengecekan itu menjadi dasar perhitungan yang akurat bagi kedua pihak.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Berapa biaya notaris dan PPAT untuk jual beli rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Honorarium PPAT atau notaris berbeda-beda dan umumnya bergantung pada nilai transaksi serta kompleksitas akta. Tidak ada satu angka yang berlaku untuk semua kantor. Minta rincian tertulis dan bandingkan beberapa penawaran sebelum menunjuk PPAT yang akan menangani akta jual beli. Kejelasan biaya sejak awal mencegah perselisihan menjelang akta.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Berapa biaya balik nama sertifikat rumah?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    Biaya balik nama mencakup biaya pengecekan dan pendaftaran peralihan hak di kantor pertanahan, dan umumnya ditanggung pembeli. Besarannya bergantung pada nilai tanah dan ketentuan yang berlaku. Tanyakan estimasi kepada PPAT sejak awal agar bisa dimasukkan ke anggaran. Estimasi biaya yang jelas membantu kamu menyusun anggaran lebih akurat.
+                  </p>
+                </details>
+
+                <details class="bg-slate-50 p-4 rounded-xl border border-slate-200 group cursor-pointer">
+                  <summary class="text-xs md:text-sm font-semibold text-slate-900 flex justify-between items-center list-none select-none">
+                    <span>Apakah pajak dibayar sebelum atau sesudah akta?</span>
+                    <span class="text-emerald-600 text-xs group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <p class="text-slate-600 text-xs mt-2 border-t border-slate-200 pt-2 leading-relaxed">
+                    PPh final dan BPHTB dibayar sebelum akta jual beli ditandatangani. PPAT biasanya meminta bukti setor kedua pajak itu sebagai syarat pembuatan akta. Karena itu, siapkan dana pajak sejak tahap negosiasi, bukan menunggu jadwal akta. Pembayaran tepat waktu mencegah penundaan jadwal akta.
+                  </p>
+                </details>
+              </div>
+            </section>
+
+          </article>
+
+          <!-- SIDEBAR (KANAN) -->
+          <aside class="lg:col-span-4 space-y-6">
+            <div class="sticky top-24 space-y-6">
+
+              <!-- Box Fast Contact -->
+              <div class="bg-[#0F172A] text-white p-6 rounded-3xl border border-slate-800 space-y-4 shadow-lg">
+                <span class="inline-block px-2.5 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 rounded-full text-[11px] font-semibold">
+                  Perencanaan Anggaran
+                </span>
+                <h4 class="font-bold text-base">Cari Unit Sesuai Anggaranmu</h4>
+                <p class="text-slate-300 text-xs leading-relaxed">
+                  Gunakan filter harga di katalog Lapak Properti untuk menemukan rumah atau tanah kavling yang sesuai kesiapan dana.
+                </p>
+                <div class="space-y-2.5">
+                  <a
+                    href="/katalog"
+                    class="block text-center bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all"
+                  >
+                    Cari Properti di Katalog
+                  </a>
+                  <a
+                    href="/kontak"
+                    class="block text-center bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-2.5 rounded-xl border border-slate-700 text-xs transition-all"
+                  >
+                    Konsultasi via Halaman Kontak
+                  </a>
+                </div>
+              </div>
+
+              <!-- Card Artikel Rekomendasi (Pilar + 2 Cluster Lainnya) -->
+              <div class="bg-white p-6 rounded-3xl border border-slate-200/90 space-y-4 shadow-sm">
+                <h4 class="text-slate-900 font-bold text-base border-b border-slate-200 pb-3">Artikel Rekomendasi</h4>
+
+                <div class="space-y-4">
+                  <div class="space-y-2 group">
+                    <img src="/assets/img/lapak-properti-terpercaya.webp" alt="Pembeli dan penjual meninjau iklan di lapak properti online lewat laptop" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Artikel Pilar • 21 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/lapak-properti">
+                        Lapak Properti Terpercaya untuk Jual Beli Rumah
+                      </a>
+                    </h5>
+                  </div>
+
+                  <div class="space-y-2 group pt-2 border-t border-slate-100">
+                    <img src="/assets/img/cara-pasang-iklan-properti-cepat-laku.webp" alt="Pemilik rumah memotret ruang tamu untuk cara pasang iklan properti agar cepat laku" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Penjual • 22 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/cara-pasang-iklan-properti">
+                        Cara Pasang Iklan Properti agar Cepat Laku
+                      </a>
+                    </h5>
+                  </div>
+
+                  <div class="space-y-2 group pt-2 border-t border-slate-100">
+                    <img src="/assets/img/cek-legalitas-properti-sertifikat-tanah.webp" alt="Pembeli memeriksa sertifikat tanah dalam proses cek legalitas properti" class="w-full h-28 object-cover rounded-xl border border-slate-200" loading="lazy" />
+                    <span class="text-[10px] font-mono text-emerald-700 font-bold uppercase">Panduan Legalitas • 23 Nov 2026</span>
+                    <h5 class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors leading-snug">
+                      <a href="/blog/cek-legalitas-properti">
+                        Cek Legalitas Properti Sebelum Beli Rumah atau Tanah
+                      </a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+        </div>
+      </section>
+    </div>
+
+    <Footer />
+  </body>
+</html>
+
+<script>
+  const tocToggle = document.getElementById('toc-toggle');
+  const tocContent = document.getElementById('toc-content');
+  const tocIcon = document.getElementById('toc-icon');
+
+  if (tocToggle && tocContent) {
+    tocToggle.addEventListener('click', () => {
+      if (tocContent.style.display === 'none') {
+        tocContent.style.display = 'block';
+        if (tocIcon) {
+          tocIcon.textContent = '▼';
+        }
+      } else {
+        tocContent.style.display = 'none';
+        if (tocIcon) {
+          tocIcon.textContent = '▸';
+        }
+      }
+    });
+  }
+</script>

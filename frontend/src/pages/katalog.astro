@@ -1,0 +1,393 @@
+---
+export const prerender = false;
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+
+let properties = [];
+try {
+  const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
+  if (res.ok) {
+    const data = await res.json();
+    properties = Array.isArray(data) ? data : [];
+  }
+} catch {
+  properties = [];
+}
+
+function getQuickSpecs(item: any): string[] {
+  const cat = (item.category || '').toLowerCase();
+  const s = item.specifications && typeof item.specifications === 'object' ? item.specifications : {};
+  const badges: string[] = [];
+
+  if (item.block_or_unit && item.block_or_unit !== '-') badges.push(item.block_or_unit);
+
+  if (cat === 'kos') {
+    if (s.kos_type) badges.push(s.kos_type);
+    if (s.bathroom) badges.push(s.bathroom.replace(' + Water Heater', ''));
+  } else if (cat === 'rumah') {
+    if (s.land_area) badges.push(`LT ${s.land_area}`);
+    if (s.bedrooms) badges.push(s.bedrooms);
+    if (s.legality) badges.push(s.legality.split('•')[0].trim());
+  } else if (cat === 'tanah') {
+    if (s.land_area) badges.push(`Luas ${s.land_area}`);
+    if (s.certificate) badges.push(s.certificate.split('(')[0].trim());
+  }
+
+  return badges.slice(0, 3);
+}
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Katalog Properti — LapakProperti</title>
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="katalog" />
+
+      <!-- HERO SECTION RATA TENGAH -->
+      <section class="bg-[#0F172A] text-white py-14 px-4 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto text-center">
+          <span class="inline-block px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-3">
+            Daftar Unit Terverifikasi
+          </span>
+          <h1 class="text-3xl md:text-4xl font-extrabold">Katalog Properti Lengkap</h1>
+          <p class="text-slate-300 text-xs sm:text-sm mt-2.5 max-w-2xl mx-auto leading-relaxed">
+            Cari dan filter unit Kos, Rumah, atau Kavling Tanah sesuai kebutuhan lokasi dan anggaran Anda.
+          </p>
+
+          <div class="mt-6 max-w-xl mx-auto bg-white p-1.5 rounded-xl flex gap-2 shadow-lg">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Cari lokasi, nama unit, SHM, atau fasilitas..."
+              class="w-full px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none"
+            />
+            <button id="search-btn" class="bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2 rounded-lg cursor-pointer">
+              Cari
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="max-w-6xl mx-auto px-4 py-10">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <p class="text-xs text-slate-500">
+              Menampilkan <span id="visible-count" class="font-bold text-slate-900">{properties.length}</span> unit properti.
+            </p>
+            <button
+              type="button"
+              id="refresh-btn"
+              class="px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer"
+            >
+              Muat Ulang Data
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button data-filter="all" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0F172A] text-white border border-slate-800 cursor-pointer">
+              Semua (<span id="all-count">{properties.length}</span>)
+            </button>
+            <button data-filter="kos" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
+              Kos
+            </button>
+            <button data-filter="rumah" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
+              Rumah
+            </button>
+            <button data-filter="tanah" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
+              Tanah
+            </button>
+          </div>
+        </div>
+
+        <div id="catalog-container">
+          {properties.length > 0 ? (
+            <div>
+              <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {properties.map((item: any) => {
+                  const stLower = String(item.status || 'available').toLowerCase();
+                  const isBooked = stLower === 'booked' || stLower === 'sold';
+                  const quickSpecs = getQuickSpecs(item);
+                  const searchMeta = `${item.title || ''} ${item.location || ''} ${item.block_or_unit || ''} ${JSON.stringify(item.specifications || {})}`.toLowerCase();
+                  const extraGallery = Array.isArray(item.gallery)
+                    ? item.gallery
+                    : (Array.isArray(item.specifications?.gallery) ? item.specifications.gallery : []);
+                  const totalPhotos = (item.image_url ? 1 : 0) + extraGallery.filter(Boolean).length;
+
+                  return (
+                    <article
+                      data-category={(item.category || '').toLowerCase()}
+                      data-search={searchMeta}
+                      class="property-card bg-white rounded-xl shadow-xs hover:shadow-md border border-slate-200 overflow-hidden flex flex-col justify-between transition"
+                    >
+                      <div>
+                        <div class="relative h-48 bg-slate-200 overflow-hidden">
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.title}
+                              class={`w-full h-full object-cover transition duration-300 ${isBooked ? 'opacity-85' : 'hover:scale-105'}`}
+                            />
+                          ) : (
+                            <div class="w-full h-full flex items-center justify-center text-xs font-bold text-slate-400">
+                              Belum Ada Foto Sampul
+                            </div>
+                          )}
+                          <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                            <span class={`text-[11px] font-bold px-2.5 py-1 rounded-md text-white ${
+                              item.category === 'kos' ? 'bg-indigo-600' :
+                              item.category === 'rumah' ? 'bg-blue-600' : 'bg-amber-600'
+                            }`}>
+                              {(item.category || 'PROPERTI').toUpperCase()}
+                            </span>
+                            <span class={`text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}`}>
+                              {isBooked ? 'TERKUNCI' : 'TERSEDIA'}
+                            </span>
+                          </div>
+                          {totalPhotos > 1 && (
+                            <span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/75 text-white text-[10px] font-bold">
+                              {totalPhotos} Foto
+                            </span>
+                          )}
+                        </div>
+
+                        <div class="p-5">
+                          <h2 class="text-base font-bold text-slate-900 line-clamp-1">{item.title}</h2>
+                          <p class="text-slate-500 text-xs mt-1 truncate">{item.location}</p>
+
+                          {quickSpecs.length > 0 && (
+                            <div class="flex flex-wrap gap-1.5 mt-3">
+                              {quickSpecs.map((badge) => (
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80">
+                                  {badge}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          <div class="mt-4 pt-3 border-t border-slate-100">
+                            <span class="text-[11px] text-slate-400 block">Harga Ditawarkan:</span>
+                            <p class="text-base font-extrabold text-[#059669]">
+                              Rp {Number(item.price || 0).toLocaleString('id-ID')}
+                              <span class="text-xs font-normal text-slate-500">/{item.price_unit || 'bulan'}</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="p-5 pt-0">
+                        <a
+                          href={`/property/${item.id}`}
+                          class={`flex items-center justify-center gap-2 w-full font-semibold text-xs py-2.5 rounded-lg transition ${
+                            isBooked ? 'bg-slate-200 hover:bg-slate-300 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
+                          }`}
+                        >
+                          {isBooked ? 'Lihat Detail (Sudah Terkunci)' : 'Detail & Ajukan Booking'}
+                        </a>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div id="no-results" class="hidden text-center py-16 bg-white rounded-xl border border-slate-200 mt-4">
+                <h3 class="text-sm font-bold text-slate-700">Unit Properti Tidak Ditemukan</h3>
+                <p class="text-xs text-slate-400 mt-1">Coba kata kunci lokasi lain atau pilih kategori Semua.</p>
+              </div>
+            </div>
+          ) : (
+            <div id="empty-state" class="text-center py-16 bg-white rounded-xl border border-slate-200">
+              <h3 class="text-sm font-bold text-slate-700">Belum Ada Properti Terdaftar</h3>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
+      const filterButtons = document.querySelectorAll('.filter-btn');
+      const searchInput = document.getElementById('search-input');
+      const searchBtn = document.getElementById('search-btn');
+      const refreshBtn = document.getElementById('refresh-btn');
+      const visibleCountEl = document.getElementById('visible-count');
+      const allCountEl = document.getElementById('all-count');
+      const noResultsEl = document.getElementById('no-results');
+      const catalogContainer = document.getElementById('catalog-container');
+      let currentCategory = 'all';
+
+      function getCards() {
+        return document.querySelectorAll('.property-card');
+      }
+
+      function applyFilter() {
+        const cards = getCards();
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        let count = 0;
+
+        cards.forEach((card) => {
+          const cat = card.getAttribute('data-category') || '';
+          const meta = card.getAttribute('data-search') || '';
+          const match = (currentCategory === 'all' || cat === currentCategory) && (query === '' || meta.includes(query));
+          card.style.display = match ? 'flex' : 'none';
+          if (match) count++;
+        });
+
+        if (visibleCountEl) visibleCountEl.textContent = String(count);
+        if (noResultsEl) noResultsEl.classList.toggle('hidden', !(count === 0 && cards.length > 0));
+      }
+
+      function buildQuickSpecs(item) {
+        const cat = (item.category || '').toLowerCase();
+        const s = item.specifications && typeof item.specifications === 'object' ? item.specifications : {};
+        const badges = [];
+        if (item.block_or_unit && item.block_or_unit !== '-') badges.push(item.block_or_unit);
+        if (cat === 'kos') {
+          if (s.kos_type) badges.push(s.kos_type);
+          if (s.bathroom) badges.push(String(s.bathroom).replace(' + Water Heater', ''));
+        } else if (cat === 'rumah') {
+          if (s.land_area) badges.push(`LT ${s.land_area}`);
+          if (s.bedrooms) badges.push(s.bedrooms);
+          if (s.legality) badges.push(String(s.legality).split('•')[0].trim());
+        } else if (cat === 'tanah') {
+          if (s.land_area) badges.push(`Luas ${s.land_area}`);
+          if (s.certificate) badges.push(String(s.certificate).split('(')[0].trim());
+        }
+        return badges.slice(0, 3);
+      }
+
+      function renderCards(items) {
+        if (!catalogContainer) return;
+        const list = Array.isArray(items) ? items : [];
+        if (allCountEl) allCountEl.textContent = String(list.length);
+
+        if (list.length === 0) {
+          catalogContainer.innerHTML = `
+            <div id="empty-state" class="text-center py-16 bg-white rounded-xl border border-slate-200">
+              <h3 class="text-sm font-bold text-slate-700">Belum Ada Properti Terdaftar</h3>
+            </div>
+          `;
+          if (visibleCountEl) visibleCountEl.textContent = '0';
+          return;
+        }
+
+        const cardsHtml = list.map((item) => {
+          const stLower = String(item.status || 'available').toLowerCase();
+          const isBooked = stLower === 'booked' || stLower === 'sold';
+          const cat = (item.category || '').toLowerCase();
+          const quickSpecs = buildQuickSpecs(item);
+          const searchMeta = `${item.title || ''} ${item.location || ''} ${item.block_or_unit || ''} ${JSON.stringify(item.specifications || {})}`
+            .toLowerCase()
+            .replace(/"/g, '&quot;');
+          const catColor = cat === 'kos' ? 'bg-indigo-600' : cat === 'rumah' ? 'bg-blue-600' : 'bg-amber-600';
+          const badgesHtml = quickSpecs.length > 0
+            ? `<div class="flex flex-wrap gap-1.5 mt-3">${quickSpecs.map((b) => `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80">${b}</span>`).join('')}</div>`
+            : '';
+
+          const extraGallery = Array.isArray(item.gallery)
+            ? item.gallery
+            : (Array.isArray(item.specifications?.gallery) ? item.specifications.gallery : []);
+          const totalPhotos = (item.image_url ? 1 : 0) + extraGallery.filter(Boolean).length;
+
+          const coverHtml = item.image_url
+            ? `<img src="${item.image_url}" alt="${item.title || ''}" class="w-full h-full object-cover transition duration-300 ${isBooked ? 'opacity-85' : 'hover:scale-105'}" />`
+            : `<div class="w-full h-full flex items-center justify-center text-xs font-bold text-slate-400">Belum Ada Foto Sampul</div>`;
+
+          return `
+            <article
+              data-category="${cat}"
+              data-search="${searchMeta}"
+              class="property-card bg-white rounded-xl shadow-xs hover:shadow-md border border-slate-200 overflow-hidden flex flex-col justify-between transition"
+            >
+              <div>
+                <div class="relative h-48 bg-slate-200 overflow-hidden">
+                  ${coverHtml}
+                  <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-md text-white ${catColor}">
+                      ${(item.category || 'PROPERTI').toUpperCase()}
+                    </span>
+                    <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}">
+                      ${isBooked ? 'TERKUNCI' : 'TERSEDIA'}
+                    </span>
+                  </div>
+                  ${totalPhotos > 1 ? `<span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/75 text-white text-[10px] font-bold">${totalPhotos} Foto</span>` : ''}
+                </div>
+
+                <div class="p-5">
+                  <h2 class="text-base font-bold text-slate-900 line-clamp-1">${item.title || ''}</h2>
+                  <p class="text-slate-500 text-xs mt-1 truncate">${item.location || ''}</p>
+                  ${badgesHtml}
+                  <div class="mt-4 pt-3 border-t border-slate-100">
+                    <span class="text-[11px] text-slate-400 block">Harga Ditawarkan:</span>
+                    <p class="text-base font-extrabold text-[#059669]">
+                      Rp ${Number(item.price || 0).toLocaleString('id-ID')}
+                      <span class="text-xs font-normal text-slate-500">/${item.price_unit || 'bulan'}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-5 pt-0">
+                <a
+                  href="/property/${item.id}"
+                  class="flex items-center justify-center gap-2 w-full font-semibold text-xs py-2.5 rounded-lg transition ${
+                    isBooked ? 'bg-slate-200 hover:bg-slate-300 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
+                  }"
+                >
+                  ${isBooked ? 'Lihat Detail (Sudah Terkunci)' : 'Detail & Ajukan Booking'}
+                </a>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        catalogContainer.innerHTML = `
+          <div>
+            <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${cardsHtml}</div>
+            <div id="no-results" class="hidden text-center py-16 bg-white rounded-xl border border-slate-200 mt-4">
+              <h3 class="text-sm font-bold text-slate-700">Unit Properti Tidak Ditemukan</h3>
+              <p class="text-xs text-slate-400 mt-1">Coba kata kunci lokasi lain atau pilih kategori Semua.</p>
+            </div>
+          </div>
+        `;
+        applyFilter();
+      }
+
+      async function fetchLiveProperties() {
+        try {
+          const res = await fetch(`${apiUrl}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          renderCards(data);
+        } catch {}
+      }
+
+      filterButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterButtons.forEach((b) => {
+            b.classList.remove('bg-[#0F172A]', 'text-white', 'border-slate-800');
+            b.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+          });
+          btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+          btn.classList.add('bg-[#0F172A]', 'text-white', 'border-slate-800');
+          currentCategory = btn.getAttribute('data-filter') || 'all';
+          applyFilter();
+        });
+      });
+
+      searchInput?.addEventListener('input', applyFilter);
+      searchBtn?.addEventListener('click', applyFilter);
+      refreshBtn?.addEventListener('click', fetchLiveProperties);
+      window.addEventListener('focus', fetchLiveProperties);
+    </script>
+  </body>
+</html>

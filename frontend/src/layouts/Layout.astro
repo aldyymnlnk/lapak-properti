@@ -1,0 +1,185 @@
+---
+import Navbar, { type BreadcrumbItem } from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  active?: 'beranda' | 'tentang' | 'katalog' | 'galeri' | 'blog' | 'kontak' | 'pesanan';
+  breadcrumbs?: BreadcrumbItem[];
+  hideBreadcrumb?: boolean;
+}
+
+const {
+  title = 'LapakProperti — Marketplace & Verifikasi Hunian Terpercaya',
+  description = 'Platform marketplace properti kos, rumah, dan tanah dengan sistem verifikasi ketersediaan dua arah.',
+  active,
+  breadcrumbs,
+  hideBreadcrumb = false
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+const isAdminRoute = currentPath.startsWith('/admin');
+const isAgentRoute = currentPath.startsWith('/agen');
+const isLoginPage = currentPath === '/admin/login' || currentPath === '/agen/login';
+---
+
+<!doctype html>
+<html lang="id" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+
+    <!-- FAVICON & APP ICON -->
+    <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg" />
+    <link rel="apple-touch-icon" href="/assets/img/logo.webp" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+    
+    {/* NAVBAR KONDISIONAL: BERBEDA ANTARA PEMBELI VS PENJUAL CMS */}
+    {!isLoginPage && !isAgentRoute && (
+      isAdminRoute ? (
+        /* ================= NAVBAR KHUSUS PORTAL PENJUAL / CMS ================= */
+        <header class="sticky top-0 z-40 bg-slate-900 text-white border-b border-slate-800 shadow-sm">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <a href="/admin" class="flex items-center gap-2.5 font-extrabold text-lg tracking-tight">
+                <span class="w-9 h-9 rounded-xl bg-white p-1 flex items-center justify-center overflow-hidden shadow-xs">
+                  <img src="/assets/img/logo.webp" alt="Logo LapakProperti" class="w-full h-full object-contain" />
+                </span>
+                <span>CMS <span class="text-emerald-400">Mitra</span></span>
+              </a>
+
+              <nav class="hidden md:flex items-center gap-2 text-sm font-medium">
+                <a
+                  href="/admin"
+                  class={`px-3.5 py-2 rounded-lg transition ${
+                    currentPath === '/admin' || currentPath === '/admin/'
+                      ? 'bg-slate-800 text-emerald-400 font-semibold'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  Verifikasi Pesanan
+                </a>
+                <a
+                  href="/admin/properties"
+                  class={`px-3.5 py-2 rounded-lg transition ${
+                    currentPath.startsWith('/admin/properties')
+                      ? 'bg-slate-800 text-emerald-400 font-semibold'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  Kelola Katalog Properti
+                </a>
+              </nav>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <a
+                href="/"
+                target="_blank"
+                class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition"
+              >
+                Lihat Web Pembeli ↗
+              </a>
+              <button
+                type="button"
+                id="btn-admin-logout"
+                class="text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white transition cursor-pointer"
+              >
+                Keluar
+              </button>
+            </div>
+          </div>
+
+          {/* Navigasi Mobile CMS */}
+          <div class="flex md:hidden border-t border-slate-800 px-4 py-2 gap-2 text-xs font-semibold bg-slate-900/95">
+            <a
+              href="/admin"
+              class={`flex-1 text-center py-1.5 rounded-lg ${
+                currentPath === '/admin' || currentPath === '/admin/'
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'text-slate-300'
+              }`}
+            >
+              Verifikasi Pesanan
+            </a>
+            <a
+              href="/admin/properties"
+              class={`flex-1 text-center py-1.5 rounded-lg ${
+                currentPath.startsWith('/admin/properties')
+                  ? 'bg-emerald-500/20 text-emerald-400'
+                  : 'text-slate-300'
+              }`}
+            >
+              Kelola Katalog
+            </a>
+          </div>
+        </header>
+      ) : (
+        /* ================= NAVBAR KHUSUS HALAMAN PUBLIK / PEMBELI ================= */
+        <Navbar
+          active={active}
+          breadcrumbs={breadcrumbs}
+          hideBreadcrumb={hideBreadcrumb}
+        />
+      )
+    )}
+
+    {/* KONTEN UTAMA */}
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    {/* FOOTER */}
+    {!isLoginPage && !isAgentRoute && (
+      isAdminRoute ? (
+        <footer class="bg-white border-t border-slate-200 mt-16">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>
+              <span class="font-bold text-slate-800">LapakProperti</span> — Sistem Marketplace & Verifikasi Properti Dua Arah.
+            </div>
+            <div class="flex items-center gap-5">
+              <a href="/" class="hover:text-slate-800 transition">Beranda</a>
+              <a href="/layanan" class="hover:text-slate-800 transition">Cara Booking</a>
+              <a href="/admin/login" class="font-semibold text-emerald-700 hover:underline">
+                Login Penjual / CMS →
+              </a>
+            </div>
+          </div>
+        </footer>
+      ) : (
+        <Footer />
+      )
+    )}
+
+    {/* SCRIPT PROTEKSI SESI & LOGOUT ADMIN */}
+    <script>
+      const path = window.location.pathname;
+      const isProtectedAdmin = path.startsWith('/admin') && path !== '/admin/login';
+
+      if (isProtectedAdmin && !localStorage.getItem('lapak_seller')) {
+        window.location.href = '/admin/login';
+      }
+
+      const logoutBtn = document.getElementById('btn-admin-logout');
+      logoutBtn?.addEventListener('click', () => {
+        localStorage.removeItem('lapak_seller');
+        window.location.href = '/';
+      });
+    </script>
+  </body>
+</html>

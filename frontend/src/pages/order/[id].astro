@@ -1,0 +1,354 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const { id } = Astro.params;
+---
+
+<Layout title={`Status Pesanan #${String(id).slice(0, 8)} — LapakProperti`}>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+
+    <!-- Tombol Kembali & Salin ID -->
+    <div class="flex items-center justify-between mb-6">
+      <a href="/katalog" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-700 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Kembali ke Katalog Properti</span>
+      </a>
+      <button
+        type="button"
+        id="btn-copy-id"
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-2xs transition cursor-pointer"
+      >
+        <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+        </svg>
+        <span id="copy-id-label">Salin ID Pesanan</span>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-box" class="bg-white rounded-2xl border border-slate-200 p-10 text-center shadow-xs">
+      <div class="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-sm font-semibold text-slate-600">Memuat status pesanan Anda...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-box" class="hidden bg-rose-50 border border-rose-200 rounded-2xl p-8 text-center">
+      <h2 class="text-lg font-extrabold text-rose-800 mb-1">Pesanan Tidak Ditemukan</h2>
+      <p id="error-msg" class="text-xs text-rose-600 mb-4">ID pesanan tidak valid atau server backend belum aktif.</p>
+      <a href="/katalog" class="inline-block bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-lg">
+        Cari Properti Lain
+      </a>
+    </div>
+
+    <!-- Konten Utama Order -->
+    <div id="order-content" class="hidden space-y-6">
+
+      <!-- KARTU STATUS VERIFIKASI DUA ARAH -->
+      <div id="status-banner" class="rounded-2xl p-6 border shadow-xs transition-all">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider opacity-80">
+            ID PESANAN: #{String(id).slice(0, 8)}
+          </span>
+          <span id="status-badge" class="px-3 py-1 rounded-full text-xs font-extrabold tracking-wide">
+            LOADING
+          </span>
+        </div>
+        <h1 id="status-title" class="text-xl sm:text-2xl font-extrabold mb-1">Memeriksa Status...</h1>
+        <p id="status-desc" class="text-xs sm:text-sm opacity-90 leading-relaxed"></p>
+      </div>
+
+      <!-- STEPPER ALUR TRANSAKSI (FSM) -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div id="step-1" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
+            1. Pengajuan & KTP
+          </div>
+          <div id="step-2" class="p-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-semibold">
+            2. ACC Admin
+          </div>
+          <div id="step-3" class="p-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 font-semibold">
+            3. Pembayaran & Kunci Unit
+          </div>
+        </div>
+      </div>
+
+      <!-- RINCIAN UNIT & PEMESAN -->
+      <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+        <div class="p-5 sm:p-6 flex flex-col sm:flex-row gap-5 border-b border-slate-100">
+          <div id="prop-image-wrap" class="w-full sm:w-44 h-32 rounded-xl overflow-hidden bg-slate-100 shrink-0 flex items-center justify-center border border-slate-200">
+            <img id="prop-image" src="" alt="Foto Properti" class="w-full h-full object-cover hidden" />
+            <span id="prop-no-image" class="text-[11px] font-bold text-slate-400">Tanpa Foto</span>
+          </div>
+          <div class="flex-1">
+            <span id="prop-category" class="inline-block uppercase text-[10px] font-extrabold px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-700 mb-1.5">
+              PROPERTI
+            </span>
+            <h2 id="prop-title" class="text-lg font-extrabold text-slate-900 leading-snug">-</h2>
+            <p id="prop-location" class="text-xs text-slate-500 mt-1">-</p>
+            <div class="mt-3 pt-3 border-t border-slate-100 flex items-baseline justify-between">
+              <span class="text-xs text-slate-500">Total Tagihan Booking:</span>
+              <span id="prop-price" class="text-lg font-black text-emerald-700">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-5 sm:p-6 bg-slate-50/60 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div>
+            <span class="text-slate-400 block mb-0.5">Nama Pemesan</span>
+            <strong id="buyer-name" class="text-slate-800 text-sm">-</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block mb-0.5">Nomor WhatsApp</span>
+            <strong id="buyer-phone" class="text-slate-800 font-mono text-sm">-</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block mb-0.5">NIK KTP</span>
+            <strong id="buyer-nik" class="text-slate-800 font-mono text-sm">-</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 block mb-0.5">Waktu Pengajuan</span>
+            <strong id="order-date" class="text-slate-700 font-medium">-</strong>
+          </div>
+          <div class="sm:col-span-2">
+            <span class="text-slate-400 block mb-0.5">Catatan Tambahan</span>
+            <p id="buyer-notes" class="text-slate-700 font-medium">-</p>
+          </div>
+        </div>
+
+        <!-- AREA AKSI PEMBAYARAN VIA WHATSAPP + SANDBOX (MUNCUL HANYA SAAT APPROVED) -->
+        <div id="payment-section" class="hidden p-5 sm:p-6 bg-emerald-50/70 border-t border-emerald-200 space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-extrabold text-emerald-900">Pengajuan Sudah Di-ACC Admin!</h3>
+              <p class="text-xs text-emerald-700 mt-0.5">
+                Lanjutkan instruksi pembayaran dan kirim bukti/konfirmasi langsung ke WhatsApp penjual/agen, atau tandai lunas (Sandbox).
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <button
+              type="button"
+              id="btn-pay-wa"
+              class="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm transition cursor-pointer"
+            >
+              <span>Bayar & Konfirmasi via WhatsApp</span>
+            </button>
+
+            <button
+              type="button"
+              id="btn-pay-now"
+              class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-emerald-400 font-extrabold text-xs sm:text-sm shadow-sm transition cursor-pointer shrink-0"
+            >
+              <span>Tandai Lunas (Sandbox)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- BUKTI LUNAS & LOCK STOCK (MUNCUL SAAT PAID) -->
+        <div id="paid-section" class="hidden p-5 sm:p-6 bg-blue-50/80 border-t border-blue-200 text-center space-y-3">
+          <div>
+            <p class="text-sm font-extrabold text-blue-900">
+              Pembayaran Lunas & Unit Resmi Dikunci (BOOKED)
+            </p>
+            <p class="text-xs text-blue-700 mt-1">
+              Status unit di katalog publik telah otomatis terkunci sehingga tidak dapat dipesan pembeli lain.
+            </p>
+          </div>
+          <button
+            type="button"
+            onclick="window.print()"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition cursor-pointer"
+          >
+            <span>Cetak / Simpan Bukti Transaksi</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</Layout>
+
+<script is:inline define:vars={{ orderId: id, apiUrl: API_URL }}>
+  const API_BASE = apiUrl || 'http://localhost:5000';
+  let pollingTimer = null;
+  let latestOrder = null;
+
+  const loadingBox = document.getElementById('loading-box');
+  const errorBox = document.getElementById('error-box');
+  const orderContent = document.getElementById('order-content');
+
+  document.getElementById('btn-copy-id')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(orderId);
+      const label = document.getElementById('copy-id-label');
+      if (label) {
+        label.textContent = 'ID Berhasil Disalin';
+        setTimeout(() => {
+          label.textContent = 'Salin ID Pesanan';
+        }, 2000);
+      }
+    } catch {
+      alert(`ID Pesanan Anda: ${orderId}`);
+    }
+  });
+
+  function getSellerWaNumber(prop) {
+    const specs = prop && typeof prop.specifications === 'object' ? prop.specifications : {};
+    const raw = String(specs.seller_phone || prop?.seller_phone || '081234567890').trim();
+    return raw.replace(/^0/, '62').replace(/[^0-9]/g, '') || '6281234567890';
+  }
+
+  function renderOrder(order) {
+    latestOrder = order;
+    loadingBox.classList.add('hidden');
+    errorBox.classList.add('hidden');
+    orderContent.classList.remove('hidden');
+
+    const prop = order.properties || {};
+    const imgEl = document.getElementById('prop-image');
+    const noImgEl = document.getElementById('prop-no-image');
+    if (prop.image_url) {
+      imgEl.src = prop.image_url;
+      imgEl.classList.remove('hidden');
+      noImgEl.classList.add('hidden');
+    } else {
+      imgEl.classList.add('hidden');
+      noImgEl.classList.remove('hidden');
+    }
+
+    document.getElementById('prop-category').textContent = `${prop.category || 'PROPERTI'} ${prop.block_or_unit && prop.block_or_unit !== '-' ? '• ' + prop.block_or_unit : ''}`;
+    document.getElementById('prop-title').textContent = prop.title || 'Unit Properti';
+    document.getElementById('prop-location').textContent = prop.location || '-';
+    document.getElementById('prop-price').textContent = `Rp ${Number(order.total_price || prop.price || 0).toLocaleString('id-ID')}`;
+
+    document.getElementById('buyer-name').textContent = order.buyer_name || '-';
+    document.getElementById('buyer-phone').textContent = order.buyer_phone || '-';
+    document.getElementById('buyer-nik').textContent = order.buyer_nik || '-';
+    document.getElementById('order-date').textContent = order.created_at
+      ? new Date(order.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+      : '-';
+    document.getElementById('buyer-notes').textContent = order.notes || '-';
+
+    const banner = document.getElementById('status-banner');
+    const badge = document.getElementById('status-badge');
+    const title = document.getElementById('status-title');
+    const desc = document.getElementById('status-desc');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+    const paySection = document.getElementById('payment-section');
+    const paidSection = document.getElementById('paid-section');
+
+    paySection.classList.add('hidden');
+    paidSection.classList.add('hidden');
+
+    if (order.status === 'PENDING_VERIFICATION') {
+      banner.className = 'rounded-2xl p-6 border shadow-xs bg-amber-50 border-amber-200 text-amber-950';
+      badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-amber-200 text-amber-900';
+      badge.textContent = 'MENUNGGU VERIFIKASI ADMIN';
+      title.textContent = 'Menunggu ACC & Verifikasi KTP Admin';
+      desc.textContent = 'Pengajuan Anda sudah diterima sistem. Pembayaran ditahan sementara hingga Admin memverifikasi KTP/NIK & ketersediaan unit (otomatis refresh tiap 4 detik).';
+      step2.className = 'p-3 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-bold';
+    } else if (order.status === 'APPROVED') {
+      banner.className = 'rounded-2xl p-6 border shadow-xs bg-emerald-50 border-emerald-200 text-emerald-950';
+      badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-600 text-white';
+      badge.textContent = 'DISETUJUI (APPROVED)';
+      title.textContent = 'Pengajuan Di-ACC — Silakan Lakukan Pembayaran';
+      desc.textContent = 'Admin telah menyetujui pengajuan Anda. Kirim konfirmasi pembayaran ke WhatsApp penjual/agen di bawah ini.';
+      step2.className = 'p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold';
+      step3.className = 'p-3 rounded-xl bg-amber-100 border border-amber-300 text-amber-900 font-bold';
+      paySection.classList.remove('hidden');
+    } else if (order.status === 'PAID') {
+      banner.className = 'rounded-2xl p-6 border shadow-xs bg-blue-50 border-blue-200 text-blue-950';
+      badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-blue-600 text-white';
+      badge.textContent = 'LUNAS & UNIT TERKUNCI (PAID)';
+      title.textContent = 'Transaksi Selesai! Unit Properti Telah Dikunci';
+      desc.textContent = 'Terima kasih. Pembayaran Anda telah tercatat dan status unit di katalog otomatis berubah menjadi BOOKED.';
+      step2.className = 'p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold';
+      step3.className = 'p-3 rounded-xl bg-blue-600 border border-blue-700 text-white font-bold';
+      paidSection.classList.remove('hidden');
+      if (pollingTimer) clearInterval(pollingTimer);
+    } else if (order.status === 'REJECTED') {
+      banner.className = 'rounded-2xl p-6 border shadow-xs bg-rose-50 border-rose-200 text-rose-950';
+      badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-rose-600 text-white';
+      badge.textContent = 'DITOLAK (REJECTED)';
+      title.textContent = 'Maaf, Unit Tidak Tersedia / Pengajuan Ditolak';
+      desc.textContent = 'Admin menginformasikan bahwa unit ini tidak tersedia atau verifikasi tidak sesuai. Anda tidak dikenakan biaya apa pun.';
+      step2.className = 'p-3 rounded-xl bg-rose-100 border border-rose-300 text-rose-900 font-bold';
+      if (pollingTimer) clearInterval(pollingTimer);
+    }
+  }
+
+  document.getElementById('btn-pay-wa')?.addEventListener('click', () => {
+    if (!latestOrder) return;
+    const prop = latestOrder.properties || {};
+    const waTarget = getSellerWaNumber(prop);
+    const amountFormatted = `Rp ${Number(latestOrder.total_price || prop.price || 0).toLocaleString('id-ID')}`;
+    const msg =
+      `Halo, pengajuan booking saya sudah di-ACC Admin. Saya ingin melanjutkan proses pembayaran:\n\n` +
+      `• ID Pesanan: *#${String(latestOrder.id).slice(0, 8)}*\n` +
+      `• Unit: *${prop.title || 'Unit Properti'}*\n` +
+      `• Nama Pemesan: ${latestOrder.buyer_name || '-'}\n` +
+      `• NIK KTP: ${latestOrder.buyer_nik || '-'}\n` +
+      `• Nominal: *${amountFormatted}*\n` +
+      `• Link Status: ${window.location.href}`;
+
+    window.open(`https://wa.me/${waTarget}?text=${encodeURIComponent(msg)}`, '_blank');
+  });
+
+  async function fetchOrderStatus() {
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}`, { cache: 'no-store' });
+      if (!res.ok) {
+        loadingBox.classList.add('hidden');
+        errorBox.classList.remove('hidden');
+        if (pollingTimer) clearInterval(pollingTimer);
+        return;
+      }
+      const data = await res.json();
+      renderOrder(data);
+    } catch (err) {
+      console.error('Polling error:', err);
+    }
+  }
+
+  document.getElementById('btn-pay-now')?.addEventListener('click', async () => {
+    if (!confirm('Konfirmasi simulasi pembayaran Sandbox sekarang? Unit akan langsung dikunci (BOOKED) atas nama Anda.')) return;
+
+    const btn = document.getElementById('btn-pay-now');
+    btn.disabled = true;
+    btn.textContent = 'Memproses...';
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}/pay`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.message || 'Pembayaran berhasil!');
+        fetchOrderStatus();
+      } else {
+        alert(data.error || 'Gagal memproses pembayaran.');
+        btn.disabled = false;
+        btn.textContent = 'Tandai Lunas (Sandbox)';
+      }
+    } catch {
+      alert('Gagal terhubung ke server backend.');
+      btn.disabled = false;
+      btn.textContent = 'Tandai Lunas (Sandbox)';
+    }
+  });
+
+  fetchOrderStatus();
+  pollingTimer = setInterval(fetchOrderStatus, 4000);
+
+  window.addEventListener('beforeunload', () => {
+    if (pollingTimer) clearInterval(pollingTimer);
+  });
+</script>

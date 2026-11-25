@@ -1,0 +1,74 @@
+---
+export const prerender = false;
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+let properties: any[] = [];
+try {
+  const res = await fetch('http://localhost:5000/api/properties', { cache: 'no-store' });
+  if (res.ok) properties = await res.json();
+} catch {
+  properties = [];
+}
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galeri Properti — LapakProperti</title>
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="galeri" />
+
+      <!-- HERO SECTION RATA TENGAH -->
+      <section class="bg-[#0F172A] text-white py-14 px-4 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto text-center">
+          <span class="inline-block px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-3">
+            Dokumentasi Visual Unit
+          </span>
+          <h1 class="text-3xl md:text-4xl font-extrabold">Galeri Unit & Kawasan Properti</h1>
+          <p class="text-slate-300 text-xs sm:text-sm mt-2.5 max-w-2xl mx-auto leading-relaxed">
+            Lihat visualisasi bangunan, fasilitas interior, dan lingkungan sekitar dari berbagai unit Kos, Rumah, dan Kavling Tanah di Malang Raya.
+          </p>
+        </div>
+      </section>
+
+      <main class="max-w-6xl mx-auto px-4 py-10">
+        {properties.length > 0 ? (
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {properties.map((item: any) => (
+              <a href={`/property/${item.id}`} class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition">
+                <div class="relative h-56 overflow-hidden bg-slate-200">
+                  <img
+                    src={item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
+                    alt={item.title}
+                    class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                  />
+                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/80 text-white text-[10px] font-bold uppercase">
+                    {item.category}
+                  </span>
+                </div>
+                <div class="p-4">
+                  <h2 class="text-sm font-bold text-slate-900 line-clamp-1">{item.title}</h2>
+                  <p class="text-xs text-slate-500 mt-0.5 truncate">{item.location}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-16 bg-white rounded-2xl border border-slate-200">
+            <h2 class="text-sm font-bold text-slate-700">Belum Ada Foto Galeri</h2>
+            <p class="text-xs text-slate-400 mt-1">Foto unit akan otomatis tampil setelah properti diposting ke katalog.</p>
+          </div>
+        )}
+      </main>
+    </div>
+
+    <Footer />
+  </body>
+</html>

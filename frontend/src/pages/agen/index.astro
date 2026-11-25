@@ -1,0 +1,1241 @@
+---
+export const prerender = false;
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+
+let allProperties: any[] = [];
+try {
+  const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
+  if (res.ok) {
+    const data = await res.json();
+    allProperties = Array.isArray(data) ? data : [];
+  }
+} catch {
+  allProperties = [];
+}
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Agen Properti — LapakProperti</title>
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col md:flex-row">
+
+    <!-- TOAST NOTIFIKASI PROFESIONAL -->
+    <div
+      id="agent-toast-container"
+      aria-live="polite"
+      class="fixed top-4 right-4 z-[9999] flex flex-col gap-2.5 max-w-sm w-[calc(100vw-2rem)] pointer-events-none"
+    ></div>
+
+    <!-- SIDEBAR NAVIGASI AGEN -->
+    <aside class="w-full md:w-64 bg-[#0F172A] text-white flex flex-col justify-between shrink-0 md:min-h-screen sticky top-0 z-40">
+      <div>
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+          <a href="/agen" class="flex items-center gap-3">
+            <span class="w-9 h-9 bg-[#059669] rounded-xl flex items-center justify-center font-black text-white text-base shadow-sm">
+              LP
+            </span>
+            <div>
+              <h1 class="text-sm font-extrabold tracking-tight leading-none">LapakProperti</h1>
+              <span class="text-[10px] text-emerald-400 font-semibold">Portal Mitra Agen</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="px-4 py-3 mx-3 mt-3 rounded-xl bg-slate-800/70 border border-slate-700/80 text-xs space-y-0.5">
+          <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Agen Terdaftar</span>
+          <strong id="sidebar-agent-name" class="text-white font-bold block truncate">Nama Agen</strong>
+          <span id="sidebar-agent-phone" class="text-[11px] text-slate-300 font-mono block truncate">WA: -</span>
+        </div>
+
+        <nav class="p-3 flex md:flex-col gap-1.5 overflow-x-auto text-xs font-semibold">
+          <button
+            type="button"
+            data-target="tab-agent-overview"
+            class="agent-nav-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <span>Ringkasan & Unit Saya</span>
+          </button>
+
+          <button
+            type="button"
+            data-target="tab-agent-form"
+            class="agent-nav-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <span>+ Pasang Iklan Properti</span>
+          </button>
+
+          <button
+            type="button"
+            data-target="tab-agent-profile"
+            class="agent-nav-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap cursor-pointer text-left"
+          >
+            <span>Profil & Kontak WhatsApp</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-4 border-t border-slate-800 hidden md:flex flex-col gap-2 text-xs">
+        <a
+          href="/katalog"
+          target="_blank"
+          class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition"
+        >
+          <span>Lihat Katalog Publik</span>
+        </a>
+        <button
+          type="button"
+          onclick="window.logoutAgent()"
+          class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white font-bold transition cursor-pointer"
+        >
+          <span>Logout Agen</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- AREA KONTEN UTAMA -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h2 id="agent-page-heading" class="text-base sm:text-lg font-extrabold text-slate-900">Ringkasan & Daftar Properti Saya</h2>
+          <p class="text-xs text-slate-500">Kelola unit Kos, Rumah, & Kavling Tanah yang Anda pasarkan.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            onclick="window.switchAgentTab('tab-agent-form')"
+            class="inline-flex items-center gap-1.5 text-xs bg-[#059669] hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold transition cursor-pointer shadow-xs"
+          >
+            <span>+ Pasang Unit Baru</span>
+          </button>
+          <button
+            type="button"
+            onclick="window.logoutAgent()"
+            class="md:hidden text-xs bg-rose-600 text-white px-3 py-2 rounded-xl font-bold"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <main class="p-4 sm:p-6 lg:p-8 flex-1 space-y-8">
+        <!-- MENU 1: RINGKASAN & UNIT SAYA -->
+        <section id="tab-agent-overview" class="agent-panel space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+              <span class="text-xs font-semibold text-slate-500">Total Iklan Saya</span>
+              <h3 id="stat-my-total" class="text-2xl font-black text-slate-900 mt-1">0 Unit</h3>
+              <span class="text-[11px] text-slate-400 mt-1 block">Terpublikasi di katalog</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-xs">
+              <span class="text-xs font-semibold text-emerald-700">Unit Tersedia (Available)</span>
+              <h3 id="stat-my-available" class="text-2xl font-black text-emerald-700 mt-1">0 Unit</h3>
+              <span class="text-[11px] text-emerald-600/80 mt-1 block">Siap menerima chat pembeli</span>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-rose-200 shadow-xs">
+              <span class="text-xs font-semibold text-rose-700">Unit Terisi / Terkunci</span>
+              <h3 id="stat-my-booked" class="text-2xl font-black text-rose-600 mt-1">0 Unit</h3>
+              <span class="text-[11px] text-rose-600/80 mt-1 block">Status BOOKED / SOLD</span>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-200">
+              <h3 class="text-base font-extrabold text-slate-800">Daftar Properti Milik Anda</h3>
+              <p class="text-xs text-slate-500">Klik tombol Status untuk mengunci/membuka ketersediaan unit secara instan.</p>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  <tr>
+                    <th class="px-5 py-3.5">Foto & Judul Unit</th>
+                    <th class="px-5 py-3.5">Kategori & Blok</th>
+                    <th class="px-5 py-3.5">Harga</th>
+                    <th class="px-5 py-3.5">Status (Klik Ubah)</th>
+                    <th class="px-5 py-3.5 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="my-properties-tbody" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="5" class="px-5 py-10 text-center text-slate-400">Memuat daftar properti Anda...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- MENU 2: FORM PASANG / EDIT IKLAN -->
+        <section id="tab-agent-form" class="agent-panel hidden space-y-6">
+          <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <div>
+                <h3 id="agent-form-heading" class="text-base font-extrabold text-slate-900">Pasang Iklan Properti Baru</h3>
+                <p class="text-xs text-slate-500">Wajib unggah minimal 1 Foto Sampul Utama, lalu tambahkan Foto Pendukung sesuai unit asli.</p>
+              </div>
+              <button
+                type="button"
+                id="btn-agent-cancel-edit"
+                class="hidden inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline cursor-pointer"
+              >
+                <span>Batal Edit ✕</span>
+              </button>
+            </div>
+
+            <form id="agent-property-form" class="grid grid-cols-1 lg:grid-cols-3 gap-6 text-xs">
+              <input type="hidden" id="aprop-id" value="" />
+
+              <div class="lg:col-span-2 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Nama / Judul Properti *</label>
+                    <input type="text" id="aprop-title" required placeholder="Contoh: Kos Putri Eksklusif Dekat Kampus UB"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Kategori Hunian *</label>
+                    <select id="aprop-category" required
+                      class="w-full px-3.5 py-2.5 rounded-xl border-2 border-emerald-500/60 bg-emerald-50/30 font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                      <option value="kos">Kos / Indekos</option>
+                      <option value="rumah">Rumah / Kontrakan</option>
+                      <option value="tanah">Tanah / Kavling</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label id="alabel-block" class="block font-bold text-slate-700 mb-1">Nomor Kamar / Tipe Kamar</label>
+                    <input type="text" id="aprop-block" placeholder="Contoh: Kamar B-04 (Lantai 1)"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Harga (Rupiah) *</label>
+                    <input type="number" id="aprop-price" required min="10000" placeholder="Contoh: 1500000"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Satuan Harga *</label>
+                    <select id="aprop-unit" required
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                      <option value="bulan">per Bulan</option>
+                      <option value="tahun">per Tahun</option>
+                      <option value="unit">per Unit / Jual Putus</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Status Unit</label>
+                    <select id="aprop-status"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                      <option value="available">available (Tersedia)</option>
+                      <option value="booked">booked (Terkunci / Terisi)</option>
+                      <option value="sold">sold (Terjual)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Alamat / Lokasi Lengkap *</label>
+                    <input type="text" id="aprop-location" required placeholder="Contoh: Jl. Soekarno Hatta, Lowokwaru, Malang"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nama Agen Penampil *</label>
+                    <input type="text" id="aprop-seller-name" required
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nomor WhatsApp Penerima Chat *</label>
+                    <input type="tel" id="aprop-seller-phone" required placeholder="081234567890"
+                      class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                  </div>
+                </div>
+
+                <!-- SPESIFIKASI DINAMIS -->
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span id="aspec-section-title" class="text-xs font-extrabold text-emerald-800 uppercase tracking-wider">
+                      Spesifikasi Khusus Kategori: KOS
+                    </span>
+                  </div>
+
+                  <!-- A. KOS -->
+                  <div id="aspec-kos" class="aspec-group grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Jenis Penghuni Kos</label>
+                      <select id="akos-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="Khusus Putri">Khusus Putri</option>
+                        <option value="Khusus Putra">Khusus Putra</option>
+                        <option value="Campur (Putra & Putri)">Campur (Putra & Putri)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Ukuran Kamar</label>
+                      <input type="text" id="akos-room-size" placeholder="Contoh: 3 x 4 Meter"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Kamar Mandi</label>
+                      <select id="akos-bathroom" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="Kamar Mandi Dalam">Kamar Mandi Dalam</option>
+                        <option value="Kamar Mandi Dalam + Water Heater">Kamar Mandi Dalam + Water Heater</option>
+                        <option value="Kamar Mandi Luar">Kamar Mandi Luar</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Sistem Listrik & Air</label>
+                      <select id="akos-electricity" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="Token Listrik Masing-masing">Token Listrik Masing-masing</option>
+                        <option value="Sudah Termasuk Listrik & Air">Sudah Termasuk Listrik & Air</option>
+                      </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-slate-700 mb-1">Fasilitas Kamar & Bersama</label>
+                      <input type="text" id="akos-facilities" placeholder="Contoh: AC, WiFi 100Mbps, Kasur, Lemari, Parkir Motor"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                  </div>
+
+                  <!-- B. RUMAH -->
+                  <div id="aspec-rumah" class="aspec-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Luas Tanah (LT)</label>
+                      <input type="text" id="arumah-lt" placeholder="Contoh: 120 m2"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Luas Bangunan (LB)</label>
+                      <input type="text" id="arumah-lb" placeholder="Contoh: 90 m2 (2 Lantai)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Jumlah Kamar Tidur</label>
+                      <input type="text" id="arumah-kt" placeholder="Contoh: 3 Kamar Tidur"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Jumlah Kamar Mandi</label>
+                      <input type="text" id="arumah-km" placeholder="Contoh: 2 Kamar Mandi"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Daya Listrik & Sumber Air</label>
+                      <input type="text" id="arumah-utilities" placeholder="Contoh: Listrik 2200W, Air PDAM"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Legalitas & Carport</label>
+                      <input type="text" id="arumah-legality" placeholder="Contoh: SHM, Carport 2 Mobil"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                  </div>
+
+                  <!-- C. TANAH -->
+                  <div id="aspec-tanah" class="aspec-group hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Total Luas Tanah</label>
+                      <input type="text" id="atanah-area" placeholder="Contoh: 150 m2"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Dimensi (Lebar x Panjang)</label>
+                      <input type="text" id="atanah-dimensions" placeholder="Contoh: 10 x 15 Meter"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Legalitas Sertifikat</label>
+                      <select id="atanah-certificate" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
+                        <option value="SHM (Sertifikat Hak Milik)">SHM (Sertifikat Hak Milik)</option>
+                        <option value="SHGB">SHGB</option>
+                        <option value="AJB / Petok D Siap SHM">AJB / Petok D Siap SHM</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block font-semibold text-slate-700 mb-1">Zona / Peruntukan Lahan</label>
+                      <input type="text" id="atanah-zoning" placeholder="Contoh: Zona Kuning (Perumahan)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                    <div class="sm:col-span-2">
+                      <label class="block font-semibold text-slate-700 mb-1">Lebar & Kondisi Akses Jalan</label>
+                      <input type="text" id="atanah-road" placeholder="Contoh: Jalan Paving 6 Meter (2 Mobil Papasan)"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Deskripsi Lengkap & Keunggulan Lokasi *</label>
+                  <textarea id="aprop-description" rows="3" required placeholder="Jelaskan jarak ke kampus/jalan raya, aturan kos, atau kondisi lingkungan sekitar..."
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
+                </div>
+              </div>
+
+              <!-- Kolom Kanan: 1. Foto Sampul (Wajib) + 2. Galeri Foto Pendukung Dinamis -->
+              <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between space-y-5">
+                <div class="space-y-4">
+                  <!-- BAGIAN A: FOTO SAMPUL UTAMA (WAJIB) -->
+                  <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <label class="block font-extrabold text-slate-800">1. Foto Sampul Utama <span class="text-rose-600">*</span></label>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">Wajib</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-lg text-[11px] font-bold">
+                      <button type="button" id="amode-upload-btn" class="inline-flex items-center justify-center py-1.5 rounded-md bg-white text-slate-900 shadow-xs transition cursor-pointer">
+                        Upload File
+                      </button>
+                      <button type="button" id="amode-url-btn" class="inline-flex items-center justify-center py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition cursor-pointer">
+                        Link URL
+                      </button>
+                    </div>
+
+                    <div id="abox-upload-file">
+                      <label for="aprop-file"
+                        class="flex flex-col items-center justify-center w-full py-3 px-3 border-2 border-dashed border-emerald-400 bg-emerald-50/50 hover:bg-emerald-50 rounded-xl cursor-pointer transition text-center">
+                        <span class="text-xs font-bold text-emerald-700">+ Pilih Foto Sampul</span>
+                        <span id="afile-name-label" class="text-[10px] text-slate-500 mt-0.5">JPG, PNG, WebP (Maks. 5MB)</span>
+                      </label>
+                      <input type="file" id="aprop-file" accept="image/*" class="hidden" />
+                    </div>
+
+                    <div id="abox-input-url" class="hidden">
+                      <input type="text" id="aprop-image" placeholder="https://example.com/foto-sampul.jpg"
+                        class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+                    </div>
+
+                    <!-- Preview Sampul (Hanya tampil jika sudah ada foto) -->
+                    <div id="acover-preview-wrapper" class="hidden relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+                      <img id="aimage-preview" src="" alt="Preview Sampul" class="w-full h-36 object-cover" />
+                      <button
+                        type="button"
+                        id="abtn-remove-cover"
+                        title="Hapus Foto Sampul"
+                        class="absolute top-2 right-2 px-2 py-1 rounded-lg bg-rose-600/95 hover:bg-rose-700 text-white text-[10px] font-bold shadow cursor-pointer"
+                      >
+                        Hapus Sampul
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- BAGIAN B: FOTO PENDUKUNG DINAMIS (OPSIONAL, BISA TAMBAH & HAPUS) -->
+                  <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <div>
+                        <label class="block font-extrabold text-slate-800">2. Foto Pendukung</label>
+                        <span class="text-[10px] text-slate-500">Hanya foto yang ditambahkan yang tampil di katalog.</span>
+                      </div>
+                      <button
+                        type="button"
+                        id="abtn-add-gallery-slot"
+                        class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-emerald-400 text-[11px] font-bold transition cursor-pointer"
+                      >
+                        + Tambah Foto
+                      </button>
+                    </div>
+
+                    <div id="agallery-slots-container" class="space-y-2.5"></div>
+
+                    <p id="agallery-empty-hint" class="text-[11px] text-slate-400 italic text-center py-2 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                      Belum ada foto pendukung. Klik "+ Tambah Foto" jika ingin menambah sudut ruangan/lokasi lain.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  id="abtn-submit-prop"
+                  class="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-sm transition cursor-pointer"
+                >
+                  <span id="abtn-submit-label">Tayangkan ke Katalog Sekarang</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- MENU 3: PROFIL & WHATSAPP AGEN -->
+        <section id="tab-agent-profile" class="agent-panel hidden">
+          <div class="max-w-xl bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
+            <div class="border-b border-slate-100 pb-4">
+              <h3 class="text-base font-extrabold text-slate-900">Profil & Kontak WhatsApp Agen</h3>
+              <p class="text-xs text-slate-500">Perbarui nama agen dan nomor WhatsApp default Anda di database.</p>
+            </div>
+
+            <form id="agent-profile-form" class="space-y-4 text-xs">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Email Akun</label>
+                <input type="email" id="prof-email" disabled
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nama Agen / Nama Usaha Properti *</label>
+                <input type="text" id="prof-name" required
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nomor WhatsApp Bisnis *</label>
+                <input type="tel" id="prof-phone" required placeholder="081234567890"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold transition cursor-pointer">
+                Simpan Profil Agen
+              </button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script is:inline define:vars={{ serverProperties: allProperties, apiUrl: API_URL }}>
+      (function () {
+        var API_BASE = apiUrl || 'http://localhost:5000';
+        var ALLOWED_STATUSES = ['available', 'booked', 'sold'];
+        var TOAST_STORAGE_KEY = 'lp_agent_toast_next';
+
+        function escapeHtml(str) {
+          return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        function showAgentToast(type, title, message) {
+          var container = document.getElementById('agent-toast-container');
+          if (!container) return;
+
+          var isError = type === 'error';
+          var cardClass = isError
+            ? 'bg-white border-l-4 border-l-rose-600 border border-rose-200 text-slate-900'
+            : 'bg-white border-l-4 border-l-emerald-600 border border-emerald-200 text-slate-900';
+          var badgeClass = isError
+            ? 'bg-rose-100 text-rose-700'
+            : 'bg-emerald-100 text-emerald-700';
+          var badgeText = isError ? 'Gagal' : 'Berhasil';
+
+          var toast = document.createElement('div');
+          toast.className =
+            'pointer-events-auto rounded-xl shadow-lg p-3.5 flex items-start justify-between gap-3 transition-all duration-300 ' +
+            cardClass;
+
+          toast.innerHTML =
+            '<div class="min-w-0 flex-1 space-y-1">' +
+            '<div class="flex items-center gap-2">' +
+            '<span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ' +
+            badgeClass +
+            '">' +
+            badgeText +
+            '</span>' +
+            '<strong class="text-xs font-extrabold text-slate-900 truncate">' +
+            escapeHtml(title || (isError ? 'Terjadi Kesalahan' : 'Terkirim ke Katalog')) +
+            '</strong>' +
+            '</div>' +
+            '<p class="text-xs text-slate-600 leading-snug break-words">' +
+            escapeHtml(message || '') +
+            '</p>' +
+            '</div>' +
+            '<button type="button" aria-label="Tutup notifikasi" class="text-slate-400 hover:text-slate-700 text-xs font-bold px-1.5 py-0.5 rounded cursor-pointer">✕</button>';
+
+          var closeBtn = toast.querySelector('button');
+          function dismissToast() {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(12px)';
+            setTimeout(function () {
+              if (toast.parentNode) toast.parentNode.removeChild(toast);
+            }, 220);
+          }
+
+          if (closeBtn) closeBtn.addEventListener('click', dismissToast);
+          container.appendChild(toast);
+
+          setTimeout(dismissToast, isError ? 5500 : 4200);
+        }
+
+        function queueToastAfterReload(type, title, message) {
+          try {
+            sessionStorage.setItem(
+              TOAST_STORAGE_KEY,
+              JSON.stringify({ type: type, title: title, message: message })
+            );
+          } catch {}
+        }
+
+        function flushQueuedToast() {
+          try {
+            var raw = sessionStorage.getItem(TOAST_STORAGE_KEY);
+            if (!raw) return;
+            sessionStorage.removeItem(TOAST_STORAGE_KEY);
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.message) {
+              showAgentToast(parsed.type || 'success', parsed.title || 'Berhasil', parsed.message);
+            }
+          } catch {}
+        }
+
+        flushQueuedToast();
+
+        function normalizeStatus(val) {
+          var s = String(val || 'available').trim().toLowerCase();
+          return ALLOWED_STATUSES.indexOf(s) !== -1 ? s : 'available';
+        }
+
+        function compressImageFile(file, callback) {
+          if (!file) return;
+          if (file.size > 5 * 1024 * 1024) {
+            showAgentToast('error', 'Ukuran File Berlebih', 'Ukuran setiap foto maksimal 5MB.');
+            return;
+          }
+          var reader = new FileReader();
+          reader.onload = function (ev) {
+            var img = new Image();
+            img.onload = function () {
+              var canvas = document.createElement('canvas');
+              var maxW = 900;
+              var scale = img.width > maxW ? maxW / img.width : 1;
+              canvas.width = img.width * scale;
+              canvas.height = img.height * scale;
+              canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+              callback(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            img.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        var rawAgent = localStorage.getItem('lapak_agent');
+        if (!rawAgent) {
+          window.location.href = '/agen/login';
+          return;
+        }
+
+        var currentAgent = {};
+        try {
+          currentAgent = JSON.parse(rawAgent || '{}');
+        } catch (err) {
+          window.location.href = '/agen/login';
+          return;
+        }
+
+        function syncAgentProfileUI() {
+          var sName = document.getElementById('sidebar-agent-name');
+          var sPhone = document.getElementById('sidebar-agent-phone');
+          if (sName) sName.textContent = currentAgent.name || 'Agen Properti';
+          if (sPhone) sPhone.textContent = 'WA: ' + (currentAgent.phone || 'Belum diatur');
+
+          document.getElementById('prof-email').value = currentAgent.email || '';
+          document.getElementById('prof-name').value = currentAgent.name || '';
+          document.getElementById('prof-phone').value = currentAgent.phone || '';
+
+          if (!document.getElementById('aprop-id').value) {
+            document.getElementById('aprop-seller-name').value = currentAgent.name || '';
+            document.getElementById('aprop-seller-phone').value = currentAgent.phone || '';
+          }
+        }
+        syncAgentProfileUI();
+
+        window.logoutAgent = function () {
+          localStorage.removeItem('lapak_agent');
+          window.location.href = '/agen/login';
+        };
+
+        var agentEmailNorm = String(currentAgent.email || '').trim().toLowerCase();
+        var agentIdStr = currentAgent.id ? String(currentAgent.id) : '';
+
+        var myProperties = (serverProperties || []).filter(function (p) {
+          var specs = p.specifications || {};
+          var specEmail = String(specs.agent_email || '').trim().toLowerCase();
+          var specId = specs.agent_id ? String(specs.agent_id) : '';
+          var ownerId = p.owner_id ? String(p.owner_id) : '';
+
+          return (
+            (agentEmailNorm && specEmail === agentEmailNorm) ||
+            (agentIdStr && (specId === agentIdStr || ownerId === agentIdStr))
+          );
+        });
+
+        function renderMyProperties() {
+          var total = myProperties.length;
+          var avail = myProperties.filter(function (p) {
+            return normalizeStatus(p.status) === 'available';
+          }).length;
+          var booked = myProperties.filter(function (p) {
+            var st = normalizeStatus(p.status);
+            return st === 'booked' || st === 'sold';
+          }).length;
+
+          document.getElementById('stat-my-total').textContent = total + ' Unit';
+          document.getElementById('stat-my-available').textContent = avail + ' Unit';
+          document.getElementById('stat-my-booked').textContent = booked + ' Unit';
+
+          var tbody = document.getElementById('my-properties-tbody');
+          if (!tbody) return;
+
+          if (total === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="5" class="px-5 py-12 text-center space-y-2">' +
+              '<p class="text-slate-500 font-semibold">Anda belum memasang unit properti.</p>' +
+              '<button type="button" onclick="window.switchAgentTab(\'tab-agent-form\')" class="inline-flex px-4 py-2 rounded-xl bg-[#059669] text-white font-bold text-xs cursor-pointer">+ Pasang Unit Pertama Anda</button>' +
+              '</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = myProperties
+            .map(function (item) {
+              var st = normalizeStatus(item.status);
+              var isLocked = st === 'booked' || st === 'sold';
+              var statusClass = isLocked
+                ? 'bg-rose-100 hover:bg-rose-200 text-rose-700'
+                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-700';
+              var priceText = Number(item.price || 0).toLocaleString('id-ID');
+              var extraCount = Array.isArray(item.gallery)
+                ? item.gallery.length
+                : (Array.isArray(item.specifications && item.specifications.gallery) ? item.specifications.gallery.length : 0);
+
+              var thumbHtml = item.image_url
+                ? '<img src="' + escapeHtml(item.image_url) + '" alt="' + escapeHtml(item.title) + '" class="w-12 h-12 rounded-lg object-cover bg-slate-200 shrink-0" />'
+                : '<div class="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0">No Img</div>';
+
+              return (
+                '<tr class="hover:bg-slate-50/80 transition">' +
+                '<td class="px-5 py-4"><div class="flex items-center gap-3">' +
+                thumbHtml +
+                '<div><div class="font-bold text-slate-900">' + escapeHtml(item.title) + '</div>' +
+                '<div class="text-[11px] text-slate-500 line-clamp-1">' + escapeHtml(item.location) + '</div>' +
+                '<span class="inline-block mt-0.5 text-[10px] font-semibold text-emerald-700">Total Foto: ' + (1 + extraCount) + ' foto</span></div></div></td>' +
+                '<td class="px-5 py-4"><span class="uppercase font-bold text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700">' + escapeHtml(item.category) + '</span>' +
+                '<div class="text-[11px] text-slate-500 mt-1">' + escapeHtml(item.block_or_unit || '-') + '</div></td>' +
+                '<td class="px-5 py-4 font-bold text-slate-800">Rp ' + priceText + '/' + escapeHtml(item.price_unit) + '</td>' +
+                '<td class="px-5 py-4"><button type="button" onclick="window.toggleAgentPropStatus(\'' + escapeHtml(item.id) + '\', \'' + st + '\')" class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition ' + statusClass + '">' + st + ' (Ubah)</button></td>' +
+                '<td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-2">' +
+                '<a href="/property/' + escapeHtml(item.id) + '" target="_blank" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-[11px]">Lihat</a>' +
+                '<button type="button" onclick="window.editAgentProp(\'' + escapeHtml(item.id) + '\')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] cursor-pointer">Edit</button>' +
+                '<button type="button" onclick="window.deleteAgentProp(\'' + escapeHtml(item.id) + '\')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] cursor-pointer">Hapus</button>' +
+                '</div></td></tr>'
+              );
+            })
+            .join('');
+        }
+        renderMyProperties();
+
+        var agentHeadings = {
+          'tab-agent-overview': 'Ringkasan & Daftar Properti Saya',
+          'tab-agent-form': 'Pasang / Edit Iklan Properti',
+          'tab-agent-profile': 'Profil & Kontak WhatsApp Agen'
+        };
+
+        window.switchAgentTab = function (targetId) {
+          document.querySelectorAll('.agent-panel').forEach(function (p) {
+            p.classList.add('hidden');
+          });
+          var targetPanel = document.getElementById(targetId);
+          if (targetPanel) targetPanel.classList.remove('hidden');
+
+          document.querySelectorAll('.agent-nav-btn').forEach(function (btn) {
+            if (btn.getAttribute('data-target') === targetId) {
+              btn.classList.add('bg-emerald-600', 'text-white');
+              btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            } else {
+              btn.classList.remove('bg-emerald-600', 'text-white');
+              btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+            }
+          });
+
+          var headingEl = document.getElementById('agent-page-heading');
+          if (headingEl && agentHeadings[targetId]) headingEl.textContent = agentHeadings[targetId];
+        };
+
+        document.querySelectorAll('.agent-nav-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var target = btn.getAttribute('data-target');
+            if (target) window.switchAgentTab(target);
+          });
+        });
+
+        var catSelect = document.getElementById('aprop-category');
+        var unitSelect = document.getElementById('aprop-unit');
+        var labelBlock = document.getElementById('alabel-block');
+        var inputBlock = document.getElementById('aprop-block');
+        var specTitle = document.getElementById('aspec-section-title');
+
+        function updateAgentCategoryFields(cat, autoSetUnit) {
+          document.querySelectorAll('.aspec-group').forEach(function (el) {
+            el.classList.add('hidden');
+          });
+          var activeSpec = document.getElementById('aspec-' + cat);
+          if (activeSpec) activeSpec.classList.remove('hidden');
+
+          if (cat === 'kos') {
+            specTitle.textContent = 'Spesifikasi Khusus Kategori: KOS';
+            labelBlock.textContent = 'Nomor Kamar / Lantai';
+            inputBlock.placeholder = 'Contoh: Kamar A-01 (Lantai 1)';
+            if (autoSetUnit) unitSelect.value = 'bulan';
+          } else if (cat === 'rumah') {
+            specTitle.textContent = 'Spesifikasi Khusus Kategori: RUMAH';
+            labelBlock.textContent = 'Blok / Nomor Rumah';
+            inputBlock.placeholder = 'Contoh: Blok B2 No. 10';
+            if (autoSetUnit) unitSelect.value = 'tahun';
+          } else if (cat === 'tanah') {
+            specTitle.textContent = 'Spesifikasi Khusus Kategori: TANAH / KAVLING';
+            labelBlock.textContent = 'Nomor Kavling / Lot';
+            inputBlock.placeholder = 'Contoh: Kavling K-05';
+            if (autoSetUnit) unitSelect.value = 'unit';
+          }
+        }
+
+        if (catSelect) {
+          catSelect.addEventListener('change', function (e) {
+            updateAgentCategoryFields(e.target.value, true);
+          });
+        }
+
+        function collectAgentSpecs(cat, existingSpecs, cleanedGallery) {
+          var prev = existingSpecs && typeof existingSpecs === 'object' ? existingSpecs : {};
+          var base = {
+            agent_id: prev.agent_id || currentAgent.id || '',
+            agent_email: prev.agent_email || currentAgent.email || '',
+            seller_name: document.getElementById('aprop-seller-name').value.trim() || currentAgent.name || 'Agen Properti',
+            seller_phone: document.getElementById('aprop-seller-phone').value.trim() || currentAgent.phone || '',
+            gallery: cleanedGallery
+          };
+
+          if (cat === 'kos') {
+            return Object.assign({}, prev, base, {
+              kos_type: document.getElementById('akos-type').value,
+              room_size: document.getElementById('akos-room-size').value.trim(),
+              bathroom: document.getElementById('akos-bathroom').value,
+              electricity: document.getElementById('akos-electricity').value,
+              facilities: document.getElementById('akos-facilities').value.trim()
+            });
+          }
+          if (cat === 'rumah') {
+            return Object.assign({}, prev, base, {
+              land_area: document.getElementById('arumah-lt').value.trim(),
+              building_area: document.getElementById('arumah-lb').value.trim(),
+              bedrooms: document.getElementById('arumah-kt').value.trim(),
+              bathrooms: document.getElementById('arumah-km').value.trim(),
+              utilities: document.getElementById('arumah-utilities').value.trim(),
+              legality: document.getElementById('arumah-legality').value.trim()
+            });
+          }
+          return Object.assign({}, prev, base, {
+            land_area: document.getElementById('atanah-area').value.trim(),
+            dimensions: document.getElementById('atanah-dimensions').value.trim(),
+            certificate: document.getElementById('atanah-certificate').value,
+            zoning: document.getElementById('atanah-zoning').value.trim(),
+            road_access: document.getElementById('atanah-road').value.trim()
+          });
+        }
+
+        // ================= FOTO SAMPUL + GALERI PENDUKUNG DINAMIS =================
+        var aImgInput = document.getElementById('aprop-image');
+        var aFileInput = document.getElementById('aprop-file');
+        var aFileLabel = document.getElementById('afile-name-label');
+        var aImgPreview = document.getElementById('aimage-preview');
+        var aCoverWrapper = document.getElementById('acover-preview-wrapper');
+        var aBtnRemoveCover = document.getElementById('abtn-remove-cover');
+
+        var aGalleryContainer = document.getElementById('agallery-slots-container');
+        var aGalleryEmptyHint = document.getElementById('agallery-empty-hint');
+        var aBtnAddGallery = document.getElementById('abtn-add-gallery-slot');
+        var agentGalleryPhotos = [];
+
+        function syncAgentCoverPreview() {
+          var val = (aImgInput && aImgInput.value ? aImgInput.value : '').trim();
+          if (val) {
+            aImgPreview.src = val;
+            aCoverWrapper.classList.remove('hidden');
+          } else {
+            aImgPreview.src = '';
+            aCoverWrapper.classList.add('hidden');
+          }
+        }
+
+        function renderAgentGallerySlots() {
+          if (!aGalleryContainer) return;
+          aGalleryContainer.innerHTML = '';
+          if (aGalleryEmptyHint) {
+            aGalleryEmptyHint.classList.toggle('hidden', agentGalleryPhotos.length > 0);
+          }
+
+          agentGalleryPhotos.forEach(function (photoVal, idx) {
+            var slot = document.createElement('div');
+            slot.className = 'p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2';
+
+            var header = document.createElement('div');
+            header.className = 'flex items-center justify-between';
+            header.innerHTML = '<span class="text-[11px] font-bold text-slate-700">Foto Pendukung #' + (idx + 1) + '</span>';
+
+            var delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'text-[10px] font-bold text-rose-600 hover:underline cursor-pointer';
+            delBtn.textContent = 'Hapus Foto ✕';
+            delBtn.addEventListener('click', function () {
+              agentGalleryPhotos.splice(idx, 1);
+              renderAgentGallerySlots();
+            });
+            header.appendChild(delBtn);
+            slot.appendChild(header);
+
+            var controls = document.createElement('div');
+            controls.className = 'flex items-center gap-1.5';
+
+            var fileLabel = document.createElement('label');
+            fileLabel.className = 'shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-[10px] font-bold cursor-pointer transition';
+            fileLabel.textContent = 'Upload';
+            var hiddenFile = document.createElement('input');
+            hiddenFile.type = 'file';
+            hiddenFile.accept = 'image/*';
+            hiddenFile.className = 'hidden';
+            hiddenFile.addEventListener('change', function (ev) {
+              var f = ev.target.files && ev.target.files[0];
+              if (!f) return;
+              compressImageFile(f, function (dataUrl) {
+                agentGalleryPhotos[idx] = dataUrl;
+                renderAgentGallerySlots();
+              });
+            });
+            fileLabel.appendChild(hiddenFile);
+
+            var urlField = document.createElement('input');
+            urlField.type = 'text';
+            urlField.placeholder = 'Atau tempel URL foto...';
+            urlField.value = photoVal && !photoVal.startsWith('data:') ? photoVal : '';
+            urlField.className = 'w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px] focus:outline-none focus:ring-1 focus:ring-emerald-500';
+            urlField.addEventListener('input', function (ev) {
+              agentGalleryPhotos[idx] = ev.target.value.trim();
+              var prev = slot.querySelector('.slot-preview-img');
+              if (prev) {
+                if (agentGalleryPhotos[idx]) {
+                  prev.src = agentGalleryPhotos[idx];
+                  prev.classList.remove('hidden');
+                } else {
+                  prev.classList.add('hidden');
+                }
+              }
+            });
+
+            controls.appendChild(fileLabel);
+            controls.appendChild(urlField);
+            slot.appendChild(controls);
+
+            var previewImg = document.createElement('img');
+            previewImg.alt = 'Foto Pendukung ' + (idx + 1);
+            previewImg.className = 'slot-preview-img w-full h-24 object-cover rounded-lg border border-slate-200 bg-white ' + (photoVal ? '' : 'hidden');
+            if (photoVal) previewImg.src = photoVal;
+            slot.appendChild(previewImg);
+
+            aGalleryContainer.appendChild(slot);
+          });
+        }
+
+        if (aBtnAddGallery) {
+          aBtnAddGallery.addEventListener('click', function () {
+            agentGalleryPhotos.push('');
+            renderAgentGallerySlots();
+          });
+        }
+
+        document.getElementById('amode-upload-btn').addEventListener('click', function () {
+          document.getElementById('amode-upload-btn').classList.add('bg-white', 'text-slate-900', 'shadow-xs');
+          document.getElementById('amode-url-btn').classList.remove('bg-white', 'text-slate-900', 'shadow-xs');
+          document.getElementById('abox-upload-file').classList.remove('hidden');
+          document.getElementById('abox-input-url').classList.add('hidden');
+        });
+
+        document.getElementById('amode-url-btn').addEventListener('click', function () {
+          document.getElementById('amode-url-btn').classList.add('bg-white', 'text-slate-900', 'shadow-xs');
+          document.getElementById('amode-upload-btn').classList.remove('bg-white', 'text-slate-900', 'shadow-xs');
+          document.getElementById('abox-input-url').classList.remove('hidden');
+          document.getElementById('abox-upload-file').classList.add('hidden');
+        });
+
+        aImgInput.addEventListener('input', syncAgentCoverPreview);
+
+        if (aBtnRemoveCover) {
+          aBtnRemoveCover.addEventListener('click', function () {
+            aImgInput.value = '';
+            aFileInput.value = '';
+            aFileLabel.textContent = 'JPG, PNG, WebP (Maks. 5MB)';
+            syncAgentCoverPreview();
+          });
+        }
+
+        aFileInput.addEventListener('change', function (e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+          aFileLabel.textContent = 'Terpilih: ' + file.name;
+          compressImageFile(file, function (dataUrl) {
+            aImgInput.value = dataUrl;
+            syncAgentCoverPreview();
+          });
+        });
+
+        window.toggleAgentPropStatus = async function (propId, currentStatus) {
+          var st = normalizeStatus(currentStatus);
+          var nextStatus = st === 'available' ? 'booked' : 'available';
+          try {
+            var res = await fetch(API_BASE + '/api/admin/properties/' + propId, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: nextStatus })
+            });
+            if (res.ok) {
+              queueToastAfterReload(
+                'success',
+                'Status Diperbarui',
+                'Status unit diubah menjadi "' + nextStatus.toUpperCase() + '" di katalog.'
+              );
+              window.location.reload();
+            } else {
+              var errData = await res.json().catch(function () {
+                return {};
+              });
+              showAgentToast('error', 'Gagal Ubah Status', errData.error || 'Gagal mengubah status unit.');
+            }
+          } catch (err) {
+            showAgentToast('error', 'Gangguan Koneksi', 'Koneksi ke server backend gagal.');
+          }
+        };
+
+        window.editAgentProp = function (propId) {
+          var item = myProperties.find(function (p) {
+            return String(p.id) === String(propId);
+          });
+          if (!item) return;
+
+          window.switchAgentTab('tab-agent-form');
+          var cat = (item.category || 'kos').toLowerCase();
+          var specs = item.specifications || {};
+
+          document.getElementById('aprop-id').value = item.id;
+          document.getElementById('aprop-title').value = item.title || '';
+          catSelect.value = cat;
+          updateAgentCategoryFields(cat, false);
+
+          document.getElementById('aprop-block').value = item.block_or_unit || '';
+          document.getElementById('aprop-price').value = item.price || '';
+          document.getElementById('aprop-unit').value = item.price_unit || 'bulan';
+          document.getElementById('aprop-status').value = normalizeStatus(item.status);
+          document.getElementById('aprop-location').value = item.location || '';
+          document.getElementById('aprop-description').value = item.description || '';
+          document.getElementById('aprop-seller-name').value = specs.seller_name || currentAgent.name || '';
+          document.getElementById('aprop-seller-phone').value = specs.seller_phone || currentAgent.phone || '';
+          document.getElementById('aprop-image').value = item.image_url || '';
+          syncAgentCoverPreview();
+
+          var existingGallery = Array.isArray(item.gallery)
+            ? item.gallery
+            : (Array.isArray(specs.gallery) ? specs.gallery : []);
+          agentGalleryPhotos = existingGallery.filter(Boolean);
+          renderAgentGallerySlots();
+
+          if (cat === 'kos') {
+            if (specs.kos_type) document.getElementById('akos-type').value = specs.kos_type;
+            document.getElementById('akos-room-size').value = specs.room_size || '';
+            if (specs.bathroom) document.getElementById('akos-bathroom').value = specs.bathroom;
+            if (specs.electricity) document.getElementById('akos-electricity').value = specs.electricity;
+            document.getElementById('akos-facilities').value = specs.facilities || '';
+          } else if (cat === 'rumah') {
+            document.getElementById('arumah-lt').value = specs.land_area || '';
+            document.getElementById('arumah-lb').value = specs.building_area || '';
+            document.getElementById('arumah-kt').value = specs.bedrooms || '';
+            document.getElementById('arumah-km').value = specs.bathrooms || '';
+            document.getElementById('arumah-utilities').value = specs.utilities || '';
+            document.getElementById('arumah-legality').value = specs.legality || '';
+          } else if (cat === 'tanah') {
+            document.getElementById('atanah-area').value = specs.land_area || '';
+            document.getElementById('atanah-dimensions').value = specs.dimensions || '';
+            if (specs.certificate) document.getElementById('atanah-certificate').value = specs.certificate;
+            document.getElementById('atanah-zoning').value = specs.zoning || '';
+            document.getElementById('atanah-road').value = specs.road_access || '';
+          }
+
+          document.getElementById('agent-form-heading').textContent = 'Edit Properti: ' + item.title;
+          document.getElementById('abtn-submit-label').textContent = 'Simpan Perubahan Unit';
+          document.getElementById('btn-agent-cancel-edit').classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        document.getElementById('btn-agent-cancel-edit').addEventListener('click', function () {
+          document.getElementById('aprop-id').value = '';
+          document.getElementById('agent-property-form').reset();
+          updateAgentCategoryFields('kos', true);
+          syncAgentProfileUI();
+          aImgInput.value = '';
+          syncAgentCoverPreview();
+          agentGalleryPhotos = [];
+          renderAgentGallerySlots();
+          aFileLabel.textContent = 'JPG, PNG, WebP (Maks. 5MB)';
+          document.getElementById('agent-form-heading').textContent = 'Pasang Iklan Properti Baru';
+          document.getElementById('abtn-submit-label').textContent = 'Tayangkan ke Katalog Sekarang';
+          document.getElementById('btn-agent-cancel-edit').classList.add('hidden');
+        });
+
+        document.getElementById('agent-property-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var coverVal = (aImgInput.value || '').trim();
+          if (!coverVal) {
+            showAgentToast(
+              'error',
+              'Foto Sampul Wajib',
+              'Harap unggah atau masukkan minimal 1 Foto Sampul Utama sebelum menayangkan properti.'
+            );
+            return;
+          }
+
+          var btnSubmit = document.getElementById('abtn-submit-prop');
+          var btnLabel = document.getElementById('abtn-submit-label');
+          var origLabel = btnLabel ? btnLabel.textContent : 'Tayangkan ke Katalog Sekarang';
+
+          var id = document.getElementById('aprop-id').value;
+          var category = catSelect.value;
+          var existingItem = id
+            ? myProperties.find(function (p) {
+                return String(p.id) === String(id);
+              })
+            : null;
+
+          var titleVal = document.getElementById('aprop-title').value.trim();
+          var cleanedGallery = agentGalleryPhotos
+            .map(function (u) {
+              return String(u || '').trim();
+            })
+            .filter(Boolean);
+
+          var payload = {
+            title: titleVal,
+            category: category,
+            block_or_unit: document.getElementById('aprop-block').value.trim(),
+            price: Number(document.getElementById('aprop-price').value),
+            price_unit: document.getElementById('aprop-unit').value,
+            status: normalizeStatus(document.getElementById('aprop-status').value),
+            location: document.getElementById('aprop-location').value.trim(),
+            description: document.getElementById('aprop-description').value.trim(),
+            specifications: collectAgentSpecs(category, existingItem ? existingItem.specifications : null, cleanedGallery),
+            image_url: coverVal,
+            gallery: cleanedGallery
+          };
+
+          var url = id ? API_BASE + '/api/admin/properties/' + id : API_BASE + '/api/admin/properties';
+          var method = id ? 'PUT' : 'POST';
+
+          if (btnSubmit) btnSubmit.disabled = true;
+          if (btnLabel) btnLabel.textContent = 'Mengirim ke Katalog...';
+
+          try {
+            var res = await fetch(url, {
+              method: method,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            var data = await res.json().catch(function () {
+              return {};
+            });
+
+            if (res.ok) {
+              var successMsg = id
+                ? 'Perubahan unit "' + titleVal + '" berhasil disimpan (' + (1 + cleanedGallery.length) + ' foto).'
+                : 'Unit "' + titleVal + '" berhasil diposting & tayang di katalog (' + (1 + cleanedGallery.length) + ' foto).';
+              queueToastAfterReload(
+                'success',
+                id ? 'Unit Diperbarui' : 'Terkirim ke Katalog',
+                data.message || successMsg
+              );
+              window.location.reload();
+            } else {
+              showAgentToast(
+                'error',
+                'Gagal Menyimpan Unit',
+                data.error || 'Terjadi kesalahan saat menyimpan properti.'
+              );
+              if (btnSubmit) btnSubmit.disabled = false;
+              if (btnLabel) btnLabel.textContent = origLabel;
+            }
+          } catch (err) {
+            showAgentToast('error', 'Koneksi Gagal', 'Gagal terhubung ke server backend.');
+            if (btnSubmit) btnSubmit.disabled = false;
+            if (btnLabel) btnLabel.textContent = origLabel;
+          }
+        });
+
+        window.deleteAgentProp = async function (propId) {
+          var item = myProperties.find(function (p) {
+            return String(p.id) === String(propId);
+          });
+          var propTitle = (item && item.title) || 'unit ini';
+          if (!confirm('Hapus "' + propTitle + '" dari katalog?')) return;
+          try {
+            var res = await fetch(API_BASE + '/api/admin/properties/' + propId, { method: 'DELETE' });
+            if (res.ok) {
+              queueToastAfterReload('success', 'Unit Dihapus', '"' + propTitle + '" telah dihapus dari katalog.');
+              window.location.reload();
+            } else {
+              var errData = await res.json().catch(function () {
+                return {};
+              });
+              showAgentToast('error', 'Gagal Menghapus', errData.error || 'Gagal menghapus unit.');
+            }
+          } catch (err) {
+            showAgentToast('error', 'Koneksi Gagal', 'Koneksi ke backend gagal.');
+          }
+        };
+
+        document.getElementById('agent-profile-form').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          var newName = document.getElementById('prof-name').value.trim();
+          var newPhone = document.getElementById('prof-phone').value.trim();
+
+          try {
+            if (currentAgent.id) {
+              var res = await fetch(API_BASE + '/api/users/' + currentAgent.id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName, phone: newPhone })
+              });
+              var data = await res.json().catch(function () {
+                return {};
+              });
+              if (res.ok && data.user) {
+                currentAgent = Object.assign({}, currentAgent, data.user);
+              } else {
+                showAgentToast('error', 'Gagal Simpan Profil', data.error || 'Gagal memperbarui profil di database.');
+                return;
+              }
+            } else {
+              currentAgent.name = newName;
+              currentAgent.phone = newPhone;
+            }
+
+            localStorage.setItem('lapak_agent', JSON.stringify(currentAgent));
+
+            var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
+            if (currentAgent.email) {
+              phoneDirectory[currentAgent.email] = newPhone;
+              localStorage.setItem('lp_agent_phones', JSON.stringify(phoneDirectory));
+            }
+
+            syncAgentProfileUI();
+            showAgentToast('success', 'Profil Tersimpan', 'Nama agen & nomor WhatsApp berhasil diperbarui.');
+          } catch (err) {
+            showAgentToast('error', 'Koneksi Gagal', 'Gagal terhubung ke server backend.');
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

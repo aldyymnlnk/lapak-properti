@@ -1,0 +1,361 @@
+---
+// src/pages/blog/index.astro
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+
+const articles = [
+  {
+    slug: '/blog/lapak-properti',
+    category: 'Artikel Pilar',
+    date: '21 November 2026',
+    title: 'Lapak Properti Terpercaya untuk Jual Beli Rumah',
+    excerpt: 'Cari lapak properti terpercaya untuk jual beli rumah dan tanah. Pelajari ciri iklan aman, alur transaksi, dan panduannya.',
+    readTime: '6 Menit Baca',
+    image: '/assets/img/lapak-properti-terpercaya.webp',
+    imageAlt: 'Pembeli dan penjual meninjau iklan di lapak properti online lewat laptop',
+    tags: ['Lapak Properti', 'Jual Beli Rumah', 'Panduan Pemula', 'Iklan Aman']
+  },
+  {
+    slug: '/blog/cara-pasang-iklan-properti',
+    category: 'Panduan Penjual',
+    date: '22 November 2026',
+    title: 'Cara Pasang Iklan Properti agar Cepat Laku',
+    excerpt: 'Ikuti langkah menyiapkan data fisik, foto terang, penentuan harga pembanding, dan rumus deskripsi lima bagian agar rumah cepat terjual.',
+    readTime: '5 Menit Baca',
+    image: '/assets/img/cara-pasang-iklan-properti-cepat-laku.webp',
+    imageAlt: 'Pemilik rumah memotret ruang tamu untuk cara pasang iklan properti agar cepat laku',
+    tags: ['Pasang Iklan', 'Tips Penjual', 'Foto Properti', 'Harga Jual']
+  },
+  {
+    slug: '/blog/cek-legalitas-properti',
+    category: 'Panduan Legalitas',
+    date: '23 November 2026',
+    title: 'Cek Legalitas Properti Sebelum Beli Rumah atau Tanah',
+    excerpt: 'Pahami perbedaan SHM dan HGB, status PBG, cara cek keaslian sertifikat di kantor pertanahan, serta tanda bahaya sebelum bayar tanda jadi.',
+    readTime: '6 Menit Baca',
+    image: '/assets/img/cek-legalitas-properti-sertifikat-tanah.webp',
+    imageAlt: 'Pembeli memeriksa sertifikat tanah dalam proses cek legalitas properti',
+    tags: ['Cek Legalitas', 'SHM & HGB', 'Sertifikat Tanah', 'PBG']
+  },
+  {
+    slug: '/blog/biaya-jual-beli-rumah',
+    category: 'Panduan Biaya',
+    date: '24 November 2026',
+    title: 'Biaya Jual Beli Rumah yang Wajib Kamu Siapkan',
+    excerpt: 'Hitung rincian biaya jual beli rumah lengkap: PPh final penjual, BPHTB pembeli, NPOPTKP, honorarium PPAT/notaris, dan balik nama sertifikat.',
+    readTime: '5 Menit Baca',
+    image: '/assets/img/biaya-jual-beli-rumah-pajak-dan-notaris.webp',
+    imageAlt: 'Rincian biaya jual beli rumah berupa BPHTB, PPh final, dan biaya notaris',
+    tags: ['Biaya Transaksi', 'BPHTB', 'PPh Final', 'Notaris & PPAT']
+  }
+];
+
+const allCategories = ['Semua', ...new Set(articles.map((a) => a.category))];
+const allTags = [...new Set(articles.flatMap((a) => a.tags))];
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blog & Panduan Properti — LapakProperti</title>
+    <meta
+      name="description"
+      content="Kumpulan panduan jual beli rumah, cara pasang iklan properti, cek legalitas sertifikat SHM/HGB, dan rincian biaya pajak BPHTB serta notaris."
+    />
+    <link rel="canonical" href="https://lapakproperty.web.id/blog" />
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="blog" />
+
+      <!-- HERO SECTION + SEARCH & TAG RATA TENGAH -->
+      <section class="bg-[#0F172A] text-white py-14 px-4 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto text-center space-y-5">
+          <div>
+            <span class="inline-block px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-3">
+              Edukasi & Wawasan
+            </span>
+            <h1 class="text-3xl md:text-4xl font-extrabold">Blog & Panduan Properti</h1>
+            <p class="text-slate-300 text-xs sm:text-sm mt-2.5 max-w-2xl mx-auto leading-relaxed">
+              Artikel informatif seputar cara memilih lapak properti aman, memasang iklan cepat laku, mengecek legalitas sertifikat, hingga menghitung biaya transaksi.
+            </p>
+          </div>
+
+          <!-- SEARCH BAR RATA TENGAH -->
+          <div class="max-w-xl mx-auto pt-1">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z" />
+                </svg>
+              </span>
+              <input
+                type="search"
+                id="blog-search-input"
+                placeholder="Cari artikel (misal: SHM, BPHTB, iklan rumah, PPAT)..."
+                aria-label="Cari artikel blog"
+                class="w-full pl-11 pr-10 py-3 rounded-2xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition"
+              />
+              <button
+                type="button"
+                id="blog-search-clear"
+                aria-label="Hapus pencarian"
+                class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white text-xs font-bold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- FILTER KATEGORI RATA TENGAH -->
+          <div class="flex flex-wrap items-center justify-center gap-2 pt-1" id="category-filter-group">
+            {allCategories.map((cat, idx) => (
+              <button
+                type="button"
+                data-category={cat}
+                class={`cat-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer ${
+                  idx === 0
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-slate-800/80 text-slate-300 border border-slate-700 hover:border-emerald-500/50 hover:text-white'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <!-- FILTER TAG RATA TENGAH -->
+          <div class="flex flex-wrap items-center justify-center gap-1.5 max-w-3xl mx-auto" id="tag-filter-group">
+            {allTags.map((tag) => (
+              <button
+                type="button"
+                data-tag={tag}
+                class="tag-btn px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-400 border border-slate-800 hover:border-emerald-500/40 hover:text-emerald-300 text-[11px] font-medium transition cursor-pointer"
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <!-- DAFTAR ARTIKEL -->
+      <main class="max-w-6xl mx-auto px-4 py-12 space-y-6">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+          <p id="result-counter">Menampilkan <strong class="text-slate-800">{articles.length}</strong> artikel panduan</p>
+          <button
+            type="button"
+            id="reset-all-filters"
+            class="hidden text-emerald-700 font-bold hover:underline cursor-pointer"
+          >
+            Reset Filter & Pencarian
+          </button>
+        </div>
+
+        <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 gap-7">
+          {articles.map((post) => (
+            <article
+              data-title={post.title.toLowerCase()}
+              data-excerpt={post.excerpt.toLowerCase()}
+              data-category={post.category}
+              data-tags={post.tags.join('|').toLowerCase()}
+              class="article-card bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between group"
+            >
+              <div>
+                <a href={post.slug} class="block overflow-hidden bg-slate-100 border-b border-slate-200/80">
+                  <img
+                    src={post.image}
+                    alt={post.imageAlt}
+                    class="w-full h-52 object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </a>
+
+                <div class="p-6 pb-4">
+                  <div class="flex items-center justify-between text-[11px] mb-3">
+                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold">
+                      {post.category}
+                    </span>
+                    <span class="text-slate-400">{post.readTime}</span>
+                  </div>
+
+                  <h2 class="text-lg font-extrabold text-slate-900 leading-snug mb-2 group-hover:text-emerald-700 transition-colors">
+                    <a href={post.slug}>{post.title}</a>
+                  </h2>
+
+                  <p class="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                    {post.excerpt}
+                  </p>
+
+                  <!-- TAG ARTIKEL -->
+                  <div class="flex flex-wrap gap-1.5">
+                    {post.tags.map((tag) => (
+                      <button
+                        type="button"
+                        data-card-tag={tag}
+                        class="card-tag-btn px-2 py-0.5 rounded-md bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-[10px] font-semibold transition cursor-pointer"
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-6 py-3.5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span>{post.date}</span>
+                <a href={post.slug} class="font-bold text-emerald-700 hover:text-emerald-800 hover:underline">
+                  Baca Panduan &rarr;
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <!-- EMPTY STATE JIKA TIDAK ADA HASIL -->
+        <div id="empty-state" class="hidden text-center py-16 px-4 bg-white rounded-3xl border border-slate-200 space-y-3">
+          <p class="text-base font-extrabold text-slate-900">Artikel tidak ditemukan</p>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+            Coba gunakan kata kunci lain atau hapus pilihan kategori dan tag untuk melihat semua panduan properti.
+          </p>
+          <button
+            type="button"
+            id="empty-reset-btn"
+            class="inline-flex items-center px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition cursor-pointer"
+          >
+            Tampilkan Semua Artikel
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+
+    <script>
+      const searchInput = document.getElementById('blog-search-input') as HTMLInputElement | null;
+      const clearSearchBtn = document.getElementById('blog-search-clear');
+      const catButtons = document.querySelectorAll<HTMLButtonElement>('.cat-btn');
+      const tagButtons = document.querySelectorAll<HTMLButtonElement>('.tag-btn');
+      const cardTagButtons = document.querySelectorAll<HTMLButtonElement>('.card-tag-btn');
+      const cards = document.querySelectorAll<HTMLElement>('.article-card');
+      const resultCounter = document.getElementById('result-counter');
+      const emptyState = document.getElementById('empty-state');
+      const resetAllBtn = document.getElementById('reset-all-filters');
+      const emptyResetBtn = document.getElementById('empty-reset-btn');
+
+      let activeCategory = 'Semua';
+      let activeTag = '';
+      let searchQuery = '';
+
+      function updateUI() {
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const title = card.dataset.title || '';
+          const excerpt = card.dataset.excerpt || '';
+          const category = card.dataset.category || '';
+          const tags = (card.dataset.tags || '').split('|');
+
+          const matchesCategory = activeCategory === 'Semua' || category === activeCategory;
+          const matchesTag = !activeTag || tags.includes(activeTag.toLowerCase());
+          const matchesSearch =
+            !searchQuery ||
+            title.includes(searchQuery) ||
+            excerpt.includes(searchQuery) ||
+            category.toLowerCase().includes(searchQuery) ||
+            tags.some((t) => t.includes(searchQuery));
+
+          if (matchesCategory && matchesTag && matchesSearch) {
+            card.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+
+        // Update gaya tombol kategori
+        catButtons.forEach((btn) => {
+          const isSelected = btn.dataset.category === activeCategory;
+          btn.className = isSelected
+            ? 'cat-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer bg-emerald-600 text-white shadow-sm'
+            : 'cat-btn px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer bg-slate-800/80 text-slate-300 border border-slate-700 hover:border-emerald-500/50 hover:text-white';
+        });
+
+        // Update gaya tombol tag di hero
+        tagButtons.forEach((btn) => {
+          const isSelected = (btn.dataset.tag || '').toLowerCase() === activeTag.toLowerCase();
+          btn.className = isSelected
+            ? 'tag-btn px-2.5 py-1 rounded-lg bg-emerald-600 text-white border border-emerald-500 text-[11px] font-bold transition cursor-pointer'
+            : 'tag-btn px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-400 border border-slate-800 hover:border-emerald-500/40 hover:text-emerald-300 text-[11px] font-medium transition cursor-pointer';
+        });
+
+        // Toggle tombol clear search & reset filter
+        if (clearSearchBtn) {
+          clearSearchBtn.classList.toggle('hidden', !searchQuery);
+        }
+        const hasFilter = activeCategory !== 'Semua' || activeTag !== '' || searchQuery !== '';
+        if (resetAllBtn) {
+          resetAllBtn.classList.toggle('hidden', !hasFilter);
+        }
+
+        // Update counter & empty state
+        if (resultCounter) {
+          resultCounter.innerHTML = `Menampilkan <strong class="text-slate-800">${visibleCount}</strong> dari ${cards.length} artikel panduan`;
+        }
+        if (emptyState) {
+          emptyState.classList.toggle('hidden', visibleCount > 0);
+        }
+      }
+
+      searchInput?.addEventListener('input', (e) => {
+        searchQuery = (e.target as HTMLInputElement).value.trim().toLowerCase();
+        updateUI();
+      });
+
+      clearSearchBtn?.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        searchQuery = '';
+        updateUI();
+      });
+
+      catButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeCategory = btn.dataset.category || 'Semua';
+          updateUI();
+        });
+      });
+
+      tagButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const clickedTag = btn.dataset.tag || '';
+          activeTag = activeTag.toLowerCase() === clickedTag.toLowerCase() ? '' : clickedTag;
+          updateUI();
+        });
+      });
+
+      cardTagButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const clickedTag = btn.dataset.cardTag || '';
+          activeTag = activeTag.toLowerCase() === clickedTag.toLowerCase() ? '' : clickedTag;
+          updateUI();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+
+      function resetAll() {
+        activeCategory = 'Semua';
+        activeTag = '';
+        searchQuery = '';
+        if (searchInput) searchInput.value = '';
+        updateUI();
+      }
+
+      resetAllBtn?.addEventListener('click', resetAll);
+      emptyResetBtn?.addEventListener('click', resetAll);
+    </script>
+  </body>
+</html>
