@@ -30,14 +30,12 @@ const isBooked = statusLower === 'booked' || statusLower === 'sold';
 const cat = (property?.category || 'kos').toLowerCase();
 const specs = property?.specifications && typeof property.specifications === 'object' ? property.specifications : {};
 
-// Nomor WhatsApp & Nama Penjual / Agen
 const rawPhone = String(specs.seller_phone || property?.seller_phone || '081234567890').trim();
 const sellerWaNumber = rawPhone.replace(/^0/, '62').replace(/[^0-9]/g, '') || '6281234567890';
 const sellerDisplayPhone = rawPhone || '+62 812-3456-7890';
 const sellerName = specs.seller_name || property?.seller_name || 'Admin InfoProperti';
 const isAgentListing = Boolean(specs.agent_email || specs.agent_id || property?.owner_role === 'AGENT');
 
-// HANYA tampilkan foto yang diunggah Admin/Agen (tanpa foto stok/AI tambahan!)
 const rawExtras = Array.isArray(property?.gallery)
   ? property.gallery
   : (Array.isArray(specs.gallery) ? specs.gallery : []);
@@ -47,7 +45,6 @@ const galleryPhotos: string[] = [
   ...rawExtras.map((u: any) => String(u || '').trim()).filter(Boolean)
 ];
 
-// Spesifikasi Utama
 let specCards: { label: string; value: string }[] = [];
 if (property) {
   if (cat === 'kos') {
@@ -113,7 +110,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             <span class="text-slate-800 font-semibold truncate max-w-xs sm:max-w-md">{property.title}</span>
           </nav>
 
-          <!-- GALERI FOTO DINAMIS (MENYESUAIKAN JUMLAH FOTO ASLI YANG DIUNGGAH) -->
+          <!-- GALERI FOTO DINAMIS -->
           {galleryPhotos.length === 1 && (
             <section class="rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
               <div class="relative h-72 sm:h-96 md:h-[420px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
@@ -199,7 +196,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             <!-- KOLOM KIRI (7 KOLOM): INFORMASI PROPERTI -->
             <div class="lg:col-span-7 space-y-6">
 
-              <!-- HEADER JUDUL, HARGA & TOMBOL SHARE -->
+              <!-- HEADER JUDUL, HARGA & TOMBOL SUKA / SIMPAN / SHARE -->
               <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-xs">
                 <div class="flex items-start justify-between gap-4">
                   <div>
@@ -215,16 +212,42 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    id="btn-share"
-                    title="Bagikan Properti"
-                    class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer shrink-0"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                  </button>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      id="btn-detail-like"
+                      title="Sukai Properti"
+                      class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-rose-50 text-slate-600 text-xs font-bold transition cursor-pointer"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                      <span id="detail-like-label" class="hidden sm:inline">Suka</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      id="btn-detail-save"
+                      title="Simpan Properti"
+                      class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-amber-50 text-slate-600 text-xs font-bold transition cursor-pointer"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                      <span id="detail-save-label" class="hidden sm:inline">Simpan</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      id="btn-share"
+                      title="Bagikan Properti"
+                      class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-baseline justify-between gap-2">
@@ -310,7 +333,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             <!-- KOLOM KANAN (5 KOLOM): DUAL-TRACK PROFESIONAL -->
             <aside class="lg:col-span-5 space-y-5 sticky top-24">
 
-              <!-- JALUR 1: FORMULIR BOOKING RESMI & ANTI-DOUBLE BOOKING (VERIFIKASI ADMIN) -->
+              <!-- JALUR 1: FORMULIR BOOKING RESMI -->
               <div class="bg-white p-6 rounded-2xl border-2 border-emerald-500/40 shadow-sm space-y-4">
                 <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                   <div>
@@ -404,7 +427,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                 )}
               </div>
 
-              <!-- JALUR 2: KONSULTASI & SURVEI LANGSUNG VIA WHATSAPP (AGEN / ADMIN) -->
+              <!-- JALUR 2: KONSULTASI & SURVEI LANGSUNG VIA WHATSAPP -->
               <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Konsultasi & Survei Lokasi</span>
@@ -608,6 +631,101 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
     >
       const API_BASE = apiUrl || 'http://localhost:5000';
 
+      function getAuthSession() {
+        try {
+          return JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
+        } catch {
+          return null;
+        }
+      }
+
+      const authSession = getAuthSession();
+      const userScope = authSession?.id ? String(authSession.id) : 'guest';
+      const LIKED_KEY = `ip_liked_props_${userScope}`;
+      const SAVED_KEY = `ip_saved_props_${userScope}`;
+      const USER_ORDERS_KEY = `ip_user_orders_${userScope}`;
+
+      function readIds(key) {
+        try {
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          return Array.isArray(arr) ? arr.map(String) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function writeIds(key, arr) {
+        localStorage.setItem(key, JSON.stringify([...new Set(arr.map(String))]));
+      }
+
+      // Auto-fill nama & nomor WA jika pembeli sudah login
+      if (authSession) {
+        const nameField = document.getElementById('buyer-name');
+        const phoneField = document.getElementById('buyer-phone');
+        if (nameField && !nameField.value && authSession.name) nameField.value = authSession.name;
+        if (phoneField && !phoneField.value && authSession.phone) phoneField.value = authSession.phone;
+      }
+
+      // ================= TOMBOL SUKA & SIMPAN DI HALAMAN DETAIL =================
+      const detailLikeBtn = document.getElementById('btn-detail-like');
+      const detailLikeLabel = document.getElementById('detail-like-label');
+      const detailSaveBtn = document.getElementById('btn-detail-save');
+      const detailSaveLabel = document.getElementById('detail-save-label');
+
+      function syncDetailCollectionButtons() {
+        const idStr = String(propId);
+        const isLiked = readIds(LIKED_KEY).includes(idStr);
+        const isSaved = readIds(SAVED_KEY).includes(idStr);
+
+        if (detailLikeBtn) {
+          detailLikeBtn.classList.toggle('bg-rose-50', isLiked);
+          detailLikeBtn.classList.toggle('border-rose-300', isLiked);
+          detailLikeBtn.classList.toggle('text-rose-600', isLiked);
+          const svg = detailLikeBtn.querySelector('svg');
+          if (svg) svg.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+        }
+        if (detailLikeLabel) detailLikeLabel.textContent = isLiked ? 'Disukai' : 'Suka';
+
+        if (detailSaveBtn) {
+          detailSaveBtn.classList.toggle('bg-amber-50', isSaved);
+          detailSaveBtn.classList.toggle('border-amber-300', isSaved);
+          detailSaveBtn.classList.toggle('text-amber-700', isSaved);
+          const svg = detailSaveBtn.querySelector('svg');
+          if (svg) svg.setAttribute('fill', isSaved ? 'currentColor' : 'none');
+        }
+        if (detailSaveLabel) detailSaveLabel.textContent = isSaved ? 'Tersimpan' : 'Simpan';
+      }
+
+      detailLikeBtn?.addEventListener('click', () => {
+        if (!authSession?.id) {
+          if (confirm('Masuk ke akun terlebih dahulu untuk menyukai properti ini?')) {
+            window.location.href = '/masuk';
+          }
+          return;
+        }
+        const idStr = String(propId);
+        const list = readIds(LIKED_KEY);
+        const next = list.includes(idStr) ? list.filter((x) => x !== idStr) : [idStr, ...list];
+        writeIds(LIKED_KEY, next);
+        syncDetailCollectionButtons();
+      });
+
+      detailSaveBtn?.addEventListener('click', () => {
+        if (!authSession?.id) {
+          if (confirm('Masuk ke akun terlebih dahulu untuk menyimpan properti ini?')) {
+            window.location.href = '/masuk';
+          }
+          return;
+        }
+        const idStr = String(propId);
+        const list = readIds(SAVED_KEY);
+        const next = list.includes(idStr) ? list.filter((x) => x !== idStr) : [idStr, ...list];
+        writeIds(SAVED_KEY, next);
+        syncDetailCollectionButtons();
+      });
+
+      syncDetailCollectionButtons();
+
       // ================= JALUR 1: SUBMIT BOOKING RESMI + UPLOAD KTP =================
       let ktpDataUrl = '';
       const ktpFileInput = document.getElementById('buyer-ktp-file');
@@ -666,6 +784,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
               property_id: propId,
               buyer_name: buyerName,
               buyer_nik: buyerNik,
+              buyer_email: authSession?.email || undefined,
               buyer_phone: buyerPhone,
               ktp_image_url: ktpDataUrl,
               notes
@@ -674,11 +793,14 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
           const data = await res.json().catch(() => ({}));
 
           if (res.ok && data.order?.id) {
-            // Simpan ID order ke localStorage agar lonceng Notifikasi di Navbar aktif
             const existingOrders = JSON.parse(localStorage.getItem('lp_my_orders') || '[]');
             if (!existingOrders.includes(data.order.id)) {
               existingOrders.unshift(data.order.id);
               localStorage.setItem('lp_my_orders', JSON.stringify(existingOrders));
+            }
+            if (authSession?.id) {
+              const userOrders = readIds(USER_ORDERS_KEY);
+              writeIds(USER_ORDERS_KEY, [data.order.id, ...userOrders]);
             }
             window.location.href = `/order/${data.order.id}`;
           } else {

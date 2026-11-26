@@ -1,0 +1,643 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
+  'Halo Tim InfoProperti, saya ingin konsultasi terkait unit properti atau status pengajuan saya.'
+)}`;
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard & Profil Akun — InfoProperti</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="profil" />
+
+      <!-- HEADER PROFIL PROFESIONAL -->
+      <section class="bg-[#0F172A] text-white pt-10 pb-16 px-4 border-b border-slate-800">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="flex items-center gap-4">
+            <div
+              id="profile-avatar"
+              class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center text-xl font-black shadow-lg ring-2 ring-emerald-400/30 shrink-0"
+            >
+              IP
+            </div>
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-extrabold uppercase tracking-wider">
+                  Akun Pembeli Terdaftar
+                </span>
+                <span id="profile-phone-badge" class="text-[11px] text-slate-400 font-mono"></span>
+              </div>
+              <h1 id="profile-heading" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Profil Saya</h1>
+              <p id="profile-sub" class="text-xs text-slate-300">Memuat informasi akun...</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <a
+              href="/katalog"
+              class="px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition"
+            >
+              + Jelajahi Katalog
+            </a>
+            <a
+              href={waConsultUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition"
+            >
+              Bantuan WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <main class="max-w-5xl mx-auto px-4 -mt-8 pb-14 space-y-6">
+        <!-- KARTU STATISTIK RINGKAS -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Properti Dibeli</span>
+            <strong id="stat-purchased" class="block text-2xl font-black text-[#059669] mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Status lunas / terkunci</span>
+          </div>
+
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pengajuan Aktif</span>
+            <strong id="stat-active-orders" class="block text-2xl font-black text-blue-600 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Verifikasi &amp; menunggu bayar</span>
+          </div>
+
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Properti Disukai</span>
+            <strong id="stat-liked" class="block text-2xl font-black text-rose-600 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Daftar favorit Anda</span>
+          </div>
+
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Properti Disimpan</span>
+            <strong id="stat-saved" class="block text-2xl font-black text-amber-600 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Bookmark untuk dibanding</span>
+          </div>
+        </section>
+
+        <!-- NAVIGASI TAB DASHBOARD -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="border-b border-slate-200 px-3 sm:px-6 pt-3 flex flex-wrap gap-1.5 bg-slate-50/70">
+            <button
+              type="button"
+              data-tab="orders"
+              class="prof-tab px-4 py-2.5 rounded-t-xl text-xs font-extrabold border-b-2 border-[#059669] text-[#059669] bg-white cursor-pointer transition"
+            >
+              Riwayat &amp; Dibeli (<span id="tab-badge-orders">0</span>)
+            </button>
+            <button
+              type="button"
+              data-tab="liked"
+              class="prof-tab px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition"
+            >
+              Disukai (<span id="tab-badge-liked">0</span>)
+            </button>
+            <button
+              type="button"
+              data-tab="saved"
+              class="prof-tab px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition"
+            >
+              Disimpan (<span id="tab-badge-saved">0</span>)
+            </button>
+            <button
+              type="button"
+              data-tab="settings"
+              class="prof-tab px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition"
+            >
+              Pengaturan Akun
+            </button>
+          </div>
+
+          <!-- PANEL 1: RIWAYAT TRANSAKSI & PROPERTI DIBELI -->
+          <div id="panel-orders" class="tab-panel p-5 sm:p-7 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Properti Dibeli &amp; Riwayat Pengajuan</h2>
+                <p class="text-xs text-slate-500">
+                  Menampilkan unit yang sudah lunas dibeli (beserta E-Receipt) serta pengajuan booking berdasarkan nomor WhatsApp atau riwayat akun Anda.
+                </p>
+              </div>
+              <button
+                type="button"
+                id="btn-refresh-orders"
+                class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer transition"
+              >
+                Sinkronkan Riwayat
+              </button>
+            </div>
+
+            <div id="orders-container" class="space-y-3">
+              <div class="p-8 text-center text-xs text-slate-400">Memuat riwayat pembelian dan pengajuan...</div>
+            </div>
+          </div>
+
+          <!-- PANEL 2: PROPERTI DISUKAI -->
+          <div id="panel-liked" class="tab-panel hidden p-5 sm:p-7 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Properti yang Anda Sukai</h2>
+                <p class="text-xs text-slate-500">Daftar unit favorit yang Anda tandai dengan ikon hati di katalog maupun halaman detail.</p>
+              </div>
+              <a href="/katalog" class="text-xs font-bold text-[#059669] hover:underline">+ Cari Properti Lain &rarr;</a>
+            </div>
+
+            <div id="liked-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div class="col-span-full p-8 text-center text-xs text-slate-400">Memuat daftar properti disukai...</div>
+            </div>
+          </div>
+
+          <!-- PANEL 3: PROPERTI DISIMPAN -->
+          <div id="panel-saved" class="tab-panel hidden p-5 sm:p-7 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Properti Tersimpan (Bookmark)</h2>
+                <p class="text-xs text-slate-500">Unit yang Anda simpan untuk ditinjau ulang atau dibandingkan sebelum survei lokasi.</p>
+              </div>
+              <a href="/katalog" class="text-xs font-bold text-[#059669] hover:underline">+ Jelajahi Katalog &rarr;</a>
+            </div>
+
+            <div id="saved-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div class="col-span-full p-8 text-center text-xs text-slate-400">Memuat daftar properti tersimpan...</div>
+            </div>
+          </div>
+
+          <!-- PANEL 4: PENGATURAN INFORMASI AKUN -->
+          <div id="panel-settings" class="tab-panel hidden p-5 sm:p-7 space-y-5">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">Pengaturan Informasi Akun</h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                Perbarui nama lengkap dan nomor WhatsApp Anda. Nomor WhatsApp digunakan untuk menyinkronkan riwayat transaksi Anda.
+              </p>
+            </div>
+
+            <div id="profile-alert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+            <form id="profile-form" class="space-y-4 text-xs max-w-2xl">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Nama Lengkap *</label>
+                  <input
+                    type="text"
+                    id="prof-name"
+                    required
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                  />
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Nomor WhatsApp *</label>
+                  <input
+                    type="tel"
+                    id="prof-phone"
+                    required
+                    placeholder="6281234567890"
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-bold text-slate-500 mb-1">Email Akun</label>
+                  <input
+                    type="email"
+                    id="prof-email"
+                    disabled
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label class="block font-bold text-slate-500 mb-1">Peran Akun</label>
+                  <input
+                    type="text"
+                    id="prof-role"
+                    disabled
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 font-bold cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div class="pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+                <button
+                  type="submit"
+                  id="btn-save-profile"
+                  class="px-6 py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-extrabold text-xs transition cursor-pointer"
+                >
+                  Simpan Perubahan
+                </button>
+
+                <button
+                  type="button"
+                  id="btn-profile-logout"
+                  class="px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs transition cursor-pointer"
+                >
+                  Keluar dari Akun
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
+      const API_BASE = apiUrl || 'http://localhost:5000';
+      const alertBox = document.getElementById('profile-alert');
+
+      let session = null;
+      try {
+        session = JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
+      } catch {
+        session = null;
+      }
+
+      if (!session || !session.id) {
+        window.location.href = '/masuk';
+      }
+
+      const userScope = session?.id ? String(session.id) : 'guest';
+      const LIKED_KEY = `ip_liked_props_${userScope}`;
+      const SAVED_KEY = `ip_saved_props_${userScope}`;
+      const USER_ORDERS_KEY = `ip_user_orders_${userScope}`;
+
+      function getIdList(key) {
+        try {
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          return Array.isArray(arr) ? arr.map(String) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function setIdList(key, arr) {
+        localStorage.setItem(key, JSON.stringify([...new Set(arr.map(String))]));
+      }
+
+      function normalizeWaNumber(raw) {
+        const digits = String(raw || '').replace(/\D+/g, '');
+        if (!digits) return '';
+        if (digits.startsWith('62')) return digits;
+        if (digits.startsWith('0')) return `62${digits.slice(1)}`;
+        return `62${digits}`;
+      }
+
+      function renderHeaderInfo() {
+        if (!session) return;
+        const initials = String(session.name || 'IP')
+          .split(' ')
+          .map((w) => w[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase();
+        document.getElementById('profile-avatar').textContent = initials || 'IP';
+        document.getElementById('profile-heading').textContent = session.name || 'Profil Saya';
+        document.getElementById('profile-sub').textContent = session.email || '';
+        document.getElementById('profile-phone-badge').textContent = session.phone ? `WA: +${session.phone.replace(/^\+/, '')}` : '';
+        document.getElementById('prof-name').value = session.name || '';
+        document.getElementById('prof-phone').value = session.phone || '';
+        document.getElementById('prof-email').value = session.email || '';
+        document.getElementById('prof-role').value = session.role || 'BUYER';
+      }
+
+      renderHeaderInfo();
+
+      // ================= NAVIGASI TAB =================
+      const tabBtns = document.querySelectorAll('.prof-tab');
+      const tabPanels = document.querySelectorAll('.tab-panel');
+
+      tabBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-tab');
+          tabBtns.forEach((b) => {
+            b.className = 'prof-tab px-4 py-2.5 rounded-t-xl text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 cursor-pointer transition';
+          });
+          btn.className = 'prof-tab px-4 py-2.5 rounded-t-xl text-xs font-extrabold border-b-2 border-[#059669] text-[#059669] bg-white cursor-pointer transition';
+
+          tabPanels.forEach((panel) => {
+            panel.classList.toggle('hidden', panel.id !== `panel-${target}`);
+          });
+        });
+      });
+
+      // ================= MUAT RIWAYAT DIBELI & PENGAJUAN =================
+      async function loadUserOrders() {
+        const container = document.getElementById('orders-container');
+        if (!session) return;
+
+        try {
+          const savedIds = [
+            ...getIdList(USER_ORDERS_KEY),
+            ...getIdList('lp_my_orders')
+          ];
+          const uniqueIds = [...new Set(savedIds)];
+
+          const requests = [];
+          if (uniqueIds.length > 0) {
+            requests.push(fetch(`${API_BASE}/api/orders/track?ids=${encodeURIComponent(uniqueIds.join(','))}`, { cache: 'no-store' }));
+          }
+          if (session.phone) {
+            const normPhone = normalizeWaNumber(session.phone);
+            const localPhone = normPhone.startsWith('62') ? `0${normPhone.slice(2)}` : normPhone;
+            requests.push(fetch(`${API_BASE}/api/orders/track?query=${encodeURIComponent(normPhone)}`, { cache: 'no-store' }));
+            if (localPhone !== normPhone) {
+              requests.push(fetch(`${API_BASE}/api/orders/track?query=${encodeURIComponent(localPhone)}`, { cache: 'no-store' }));
+            }
+          }
+
+          const responses = await Promise.all(requests);
+          const mergedMap = new Map();
+
+          for (const res of responses) {
+            if (!res.ok) continue;
+            const list = await res.json();
+            if (Array.isArray(list)) {
+              list.forEach((item) => {
+                if (item?.id) mergedMap.set(String(item.id), item);
+              });
+            }
+          }
+
+          const orders = Array.from(mergedMap.values()).sort(
+            (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+          );
+
+          const paidOrders = orders.filter((o) => String(o.status).toUpperCase() === 'PAID');
+          const activeOrders = orders.filter((o) =>
+            ['PENDING_VERIFICATION', 'APPROVED'].includes(String(o.status).toUpperCase())
+          );
+
+          document.getElementById('stat-purchased').textContent = String(paidOrders.length);
+          document.getElementById('stat-active-orders').textContent = String(activeOrders.length);
+          document.getElementById('tab-badge-orders').textContent = String(orders.length);
+
+          if (orders.length === 0) {
+            container.innerHTML = `
+              <div class="p-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 text-center space-y-2.5">
+                <h3 class="text-sm font-extrabold text-slate-800">Belum Ada Riwayat Pembelian atau Pengajuan</h3>
+                <p class="text-xs text-slate-500 max-w-md mx-auto">
+                  Unit yang Anda ajukan booking atau sudah lunas dibeli akan otomatis tercatat di halaman ini.
+                </p>
+                <a href="/katalog" class="inline-block mt-1 px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition">
+                  Mulai Cari Properti
+                </a>
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = orders.map((o) => {
+            const st = String(o.status || '').toUpperCase();
+            const prop = o.properties || {};
+            const price = Number(prop.price || 0).toLocaleString('id-ID');
+            const dateStr = o.created_at
+              ? new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+              : '-';
+
+            let badgeHtml = `<span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-[10px] font-extrabold">MENUNGGU VERIFIKASI</span>`;
+            let actionLabel = 'Pantau Status';
+            let actionClass = 'bg-slate-900 hover:bg-slate-800 text-white';
+
+            if (st === 'PAID') {
+              badgeHtml = `<span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">DIBELI • LUNAS (PAID)</span>`;
+              actionLabel = 'Lihat E-Receipt & Detail';
+              actionClass = 'bg-[#059669] hover:bg-emerald-700 text-white';
+            } else if (st === 'APPROVED') {
+              badgeHtml = `<span class="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 text-[10px] font-extrabold">DISETUJUI • SIAP BAYAR</span>`;
+              actionLabel = 'Lanjutkan Pembayaran';
+              actionClass = 'bg-blue-600 hover:bg-blue-700 text-white';
+            } else if (st === 'REJECTED') {
+              badgeHtml = `<span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-[10px] font-extrabold">DITOLAK</span>`;
+              actionLabel = 'Lihat Keterangan';
+              actionClass = 'bg-slate-200 hover:bg-slate-300 text-slate-700';
+            }
+
+            return `
+              <div class="p-4 sm:p-5 rounded-2xl border ${st === 'PAID' ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 bg-white'} flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="space-y-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-[11px] font-bold text-slate-400">#${String(o.id).slice(0, 8).toUpperCase()}</span>
+                    ${badgeHtml}
+                    <span class="text-[11px] text-slate-400">• ${dateStr}</span>
+                  </div>
+                  <h3 class="text-sm sm:text-base font-extrabold text-slate-900">
+                    ${prop.title || 'Unit Properti'} ${prop.block_or_unit && prop.block_or_unit !== '-' ? `(${prop.block_or_unit})` : ''}
+                  </h3>
+                  <p class="text-xs text-slate-600">
+                    Nilai Unit: <strong class="text-[#059669]">Rp ${price}</strong>/${prop.price_unit || 'unit'} • Pemesan: <strong>${o.buyer_name || session.name}</strong>
+                  </p>
+                </div>
+
+                <a
+                  href="/order/${o.id}"
+                  class="px-4 py-2.5 rounded-xl text-xs font-bold text-center shrink-0 transition ${actionClass}"
+                >
+                  ${actionLabel} &rarr;
+                </a>
+              </div>
+            `;
+          }).join('');
+        } catch {
+          container.innerHTML = `<div class="p-6 text-center text-xs text-rose-600">Gagal memuat riwayat transaksi dari server.</div>`;
+        }
+      }
+
+      // ================= MUAT PROPERTI DISUKAI & DISIMPAN =================
+      let allPropertiesCache = [];
+
+      function renderSavedCollection(listIds, containerId, storageKey, emptyTitle, emptyDesc) {
+        const grid = document.getElementById(containerId);
+        if (!grid) return;
+
+        const matched = allPropertiesCache.filter((p) => listIds.includes(String(p.id)));
+
+        if (matched.length === 0) {
+          grid.innerHTML = `
+            <div class="col-span-full p-8 rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 text-center space-y-2">
+              <h3 class="text-sm font-extrabold text-slate-800">${emptyTitle}</h3>
+              <p class="text-xs text-slate-500 max-w-md mx-auto">${emptyDesc}</p>
+              <a href="/katalog" class="inline-block mt-1 px-5 py-2 rounded-xl bg-[#0F172A] text-white text-xs font-bold">
+                Buka Katalog Properti
+              </a>
+            </div>
+          `;
+          return;
+        }
+
+        grid.innerHTML = matched.map((item) => {
+          const isBooked = ['booked', 'sold'].includes(String(item.status || '').toLowerCase());
+          return `
+            <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="relative h-40 bg-slate-200 overflow-hidden">
+                  ${
+                    item.image_url
+                      ? `<img src="${item.image_url}" alt="${item.title || ''}" class="w-full h-full object-cover" />`
+                      : `<div class="w-full h-full flex items-center justify-center text-xs text-slate-400">Tanpa Foto</div>`
+                  }
+                  <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-slate-900/85 text-white text-[10px] font-bold uppercase">
+                    ${item.category || 'PROPERTI'}
+                  </span>
+                  <button
+                    type="button"
+                    data-remove-key="${storageKey}"
+                    data-remove-id="${item.id}"
+                    title="Hapus dari daftar"
+                    class="btn-remove-collection absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-white/95 hover:bg-rose-600 text-slate-700 hover:text-white text-[10px] font-extrabold shadow cursor-pointer transition"
+                  >
+                    Hapus &times;
+                  </button>
+                </div>
+
+                <div class="p-4">
+                  <h3 class="text-sm font-extrabold text-slate-900 line-clamp-1">${item.title || ''}</h3>
+                  <p class="text-[11px] text-slate-500 mt-0.5 truncate">${item.location || ''}</p>
+                  <p class="text-sm font-black text-[#059669] mt-2.5">
+                    Rp ${Number(item.price || 0).toLocaleString('id-ID')}
+                    <span class="text-[11px] font-normal text-slate-500">/${item.price_unit || 'unit'}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-4 pt-0">
+                <a
+                  href="/property/${item.id}"
+                  class="block w-full text-center py-2 rounded-xl text-xs font-bold transition ${
+                    isBooked ? 'bg-slate-200 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
+                  }"
+                >
+                  ${isBooked ? 'Lihat Detail (Terkunci)' : 'Lihat Detail Unit'}
+                </a>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        grid.querySelectorAll('.btn-remove-collection').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-remove-key');
+            const id = btn.getAttribute('data-remove-id');
+            if (!key || !id) return;
+            const next = getIdList(key).filter((x) => x !== String(id));
+            setIdList(key, next);
+            syncCollectionsUI();
+          });
+        });
+      }
+
+      function syncCollectionsUI() {
+        const likedIds = getIdList(LIKED_KEY);
+        const savedIds = getIdList(SAVED_KEY);
+
+        document.getElementById('stat-liked').textContent = String(likedIds.length);
+        document.getElementById('stat-saved').textContent = String(savedIds.length);
+        document.getElementById('tab-badge-liked').textContent = String(likedIds.length);
+        document.getElementById('tab-badge-saved').textContent = String(savedIds.length);
+
+        renderSavedCollection(
+          likedIds,
+          'liked-grid',
+          LIKED_KEY,
+          'Belum Ada Properti yang Disukai',
+          'Klik ikon hati pada kartu properti di Katalog untuk menyimpan unit favorit Anda.'
+        );
+
+        renderSavedCollection(
+          savedIds,
+          'saved-grid',
+          SAVED_KEY,
+          'Belum Ada Properti Tersimpan',
+          'Klik ikon simpan (bookmark) pada unit yang menarik perhatian Anda untuk dibaca ulang di sini.'
+        );
+      }
+
+      async function loadCollections() {
+        syncCollectionsUI();
+        try {
+          const res = await fetch(`${API_BASE}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            allPropertiesCache = Array.isArray(data) ? data : [];
+            syncCollectionsUI();
+          }
+        } catch {}
+      }
+
+      // ================= PENGATURAN AKUN =================
+      function showAlert(msg, isErr = true) {
+        alertBox.textContent = msg;
+        alertBox.className = `p-3 rounded-xl text-xs font-semibold ${
+          isErr ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+        }`;
+        alertBox.classList.remove('hidden');
+      }
+
+      document.getElementById('btn-profile-logout')?.addEventListener('click', () => {
+        localStorage.removeItem('ip_auth_user');
+        window.location.href = '/masuk';
+      });
+
+      document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!session?.id) return;
+
+        const btn = document.getElementById('btn-save-profile');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+
+        const cleanPhone = normalizeWaNumber(document.getElementById('prof-phone').value);
+        const cleanName = document.getElementById('prof-name').value.trim();
+
+        try {
+          const res = await fetch(`${API_BASE}/api/users/${session.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: cleanName, phone: cleanPhone })
+          });
+          const data = await res.json();
+
+          if (res.ok && data.user) {
+            const updated = { ...session, ...data.user };
+            localStorage.setItem('ip_auth_user', JSON.stringify(updated));
+            session = updated;
+            renderHeaderInfo();
+            if (typeof window.initNavbar === 'function') {
+              window.initNavbar();
+            }
+            showAlert(data.message || 'Profil berhasil diperbarui!', false);
+            loadUserOrders();
+          } else {
+            showAlert(data.error || 'Gagal menyimpan profil.');
+          }
+        } catch {
+          showAlert('Gagal terhubung ke server.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Simpan Perubahan';
+        }
+      });
+
+      document.getElementById('btn-refresh-orders')?.addEventListener('click', loadUserOrders);
+      loadUserOrders();
+      loadCollections();
+    </script>
+  </body>
+</html>

@@ -9,6 +9,7 @@ interface Props {
     | 'kontak'
     | 'daftar'
     | 'masuk'
+    | 'profil'
     | 'superadmin'
     | 'admin'
     | 'agen'
@@ -101,10 +102,10 @@ const currentActive = (active ||
       <div id="nav-user-actions" class="hidden items-center gap-2">
         <a
           id="nav-dashboard-link"
-          href="/masuk"
+          href="/profil"
           class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition truncate max-w-[140px]"
         >
-          Dashboard
+          Profil Saya
         </a>
         <button
           type="button"
@@ -165,10 +166,10 @@ const currentActive = (active ||
     <div id="mobile-user-actions" class="hidden pt-2 mt-2 border-t border-slate-800 items-center gap-2">
       <a
         id="mobile-dashboard-link"
-        href="/masuk"
+        href="/profil"
         class="flex-1 text-center py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition truncate px-3"
       >
-        Dashboard
+        Profil Saya
       </a>
       <button
         type="button"
@@ -234,8 +235,8 @@ const currentActive = (active ||
       mobileUserBox?.classList.add('flex');
 
       const role = String(session.role).toUpperCase();
-      let targetHref = '/katalog';
-      let targetLabel = session.name || 'Akun Saya';
+      let targetHref = '/profil';
+      let targetLabel = session.name || 'Profil Saya';
 
       if (role === 'SUPER_ADMIN') {
         targetHref = '/superadmin';
