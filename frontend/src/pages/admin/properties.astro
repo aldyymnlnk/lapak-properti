@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
 let properties: any[] = [];
 try {
@@ -310,7 +310,7 @@ try {
           } catch {}
         }
 
-        const API_BASE = apiUrl || 'http://localhost:5000';
+        const API_BASE = apiUrl || '';
         const form = document.getElementById('property-form');
         const formTitle = document.getElementById('form-title');
         const btnSubmit = document.getElementById('btn-submit-prop');

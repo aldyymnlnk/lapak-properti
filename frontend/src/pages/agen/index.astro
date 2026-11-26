@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
 let allProperties: any[] = [];
 try {
@@ -503,7 +503,7 @@ try {
 
     <script is:inline define:vars={{ serverProperties: allProperties, apiUrl: API_URL }}>
       (function () {
-        var API_BASE = apiUrl || 'http://localhost:5000';
+        const API_BASE = apiUrl || '';
         var ALLOWED_STATUSES = ['available', 'booked', 'sold'];
         var TOAST_STORAGE_KEY = 'lp_agent_toast_next';
 

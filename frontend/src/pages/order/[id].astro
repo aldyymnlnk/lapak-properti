@@ -2,7 +2,7 @@
 export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 const { id } = Astro.params;
 ---
 
@@ -174,7 +174,7 @@ const { id } = Astro.params;
 </Layout>
 
 <script is:inline define:vars={{ orderId: id, apiUrl: API_URL }}>
-  const API_BASE = apiUrl || 'http://localhost:5000';
+  const API_BASE = apiUrl || '';
   let pollingTimer = null;
   let latestOrder = null;
 

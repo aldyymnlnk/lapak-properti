@@ -10,14 +10,16 @@ interface Props {
     | 'daftar'
     | 'masuk'
     | 'profil'
+    | 'pesanan'
     | 'superadmin'
     | 'admin'
     | 'agen'
     | 'syarat-ketentuan'
     | 'kebijakan-privasi';
+  hideBreadcrumb?: boolean;
 }
 
-const { active } = Astro.props;
+const { active, hideBreadcrumb } = Astro.props;
 
 const navLinks = [
   { key: 'beranda', label: 'Beranda', href: '/' },

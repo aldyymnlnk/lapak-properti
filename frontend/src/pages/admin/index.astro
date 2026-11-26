@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
 let orders: any[] = [];
 let properties: any[] = [];
@@ -1095,7 +1095,7 @@ const activeAgentsCount = agents.filter((a: any) => a.is_active !== false).lengt
           window.location.href = '/admin/login';
         };
 
-        const API_BASE = apiUrl || 'http://localhost:5000';
+        const API_BASE = apiUrl || '';
         const headings = {
           'tab-stats': 'Statistik & Ringkasan Bisnis',
           'tab-properties': 'Kelola & Posting Properti Katalog',

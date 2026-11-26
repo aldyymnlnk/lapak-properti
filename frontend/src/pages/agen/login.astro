@@ -148,7 +148,7 @@ import Footer from '../../components/Footer.astro';
     <Footer />
 
     <script is:inline>
-      var API_BASE = 'http://localhost:5000';
+      const API_BASE = apiUrl || '';
 
       var existingAgent = localStorage.getItem('lapak_agent');
       if (existingAgent) {

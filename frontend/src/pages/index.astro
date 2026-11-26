@@ -3,17 +3,52 @@ export const prerender = false;
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
+
+const FALLBACK_PROPERTIES = [
+  {
+    id: 'demo-kos-soekarno-hatta',
+    title: 'Kos Eksklusif Griya Suhat Malang',
+    category: 'kos',
+    location: 'Jl. Soekarno Hatta, Lowokwaru, Kota Malang',
+    price: 1350000,
+    price_unit: 'bulan',
+    status: 'AVAILABLE',
+    image_url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'demo-rumah-sawojajar',
+    title: 'Rumah Minimalis 2 Lantai Sawojajar',
+    category: 'rumah',
+    location: 'Sawojajar, Kedungkandang, Kota Malang',
+    price: 850000000,
+    price_unit: 'unit',
+    status: 'AVAILABLE',
+    image_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'demo-tanah-dau',
+    title: 'Kavling Tanah Strategis Jalur Wisata Dau',
+    category: 'tanah',
+    location: 'Dau, Kabupaten Malang',
+    price: 375000000,
+    price_unit: 'kavling',
+    status: 'AVAILABLE',
+    image_url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'
+  }
+];
 
 let allProperties: any[] = [];
 try {
   const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
   if (res.ok) {
     const data = await res.json();
-    allProperties = Array.isArray(data) ? data : [];
+    allProperties = Array.isArray(data) && data.length > 0 ? data : FALLBACK_PROPERTIES;
+  } else {
+    allProperties = FALLBACK_PROPERTIES;
   }
 } catch {
-  allProperties = [];
+  allProperties = FALLBACK_PROPERTIES;
 }
 
 // 3 Wakil Katalog
@@ -22,21 +57,21 @@ const featuredProperties = allProperties.slice(0, 3);
 // 3 Wakil Galeri
 const fallbackGallery = [
   {
-    id: '',
+    id: 'demo-kos-soekarno-hatta',
     title: 'Interior Kamar Kos Eksklusif',
     category: 'kos',
     location: 'Lowokwaru, Kota Malang',
     image_url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'
   },
   {
-    id: '',
+    id: 'demo-rumah-sawojajar',
     title: 'Fasad Rumah Minimalis Modern',
     category: 'rumah',
     location: 'Kawasan Araya, Malang Raya',
     image_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=800&q=80'
   },
   {
-    id: '',
+    id: 'demo-tanah-dau',
     title: 'Kawasan Kavling Tanah Siap Bangun',
     category: 'tanah',
     location: 'Sukun & Dau, Malang',
@@ -261,7 +296,7 @@ const websiteSchema = {
           {featuredProperties.length > 0 ? (
             <div id="featured-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
               {featuredProperties.map((item: any) => {
-                const isBooked = item.status === 'BOOKED';
+                const isBooked = String(item.status || '').toUpperCase() === 'BOOKED';
                 return (
                   <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
                     <div>
@@ -437,65 +472,58 @@ const websiteSchema = {
 
     <Footer />
 
-    <script is:inline define:vars={{ apiUrl: API_URL, defaultGallery: fallbackGallery }}>
+    <script is:inline define:vars={{ apiUrl: API_URL, defaultGallery: fallbackGallery, defaultProps: FALLBACK_PROPERTIES }}>
+      const API_BASE = apiUrl || '';
       const featuredContainer = document.getElementById('featured-container');
       const galleryGrid = document.getElementById('gallery-grid');
 
       function renderFeaturedAndGallery(list) {
-        const items = Array.isArray(list) ? list : [];
+        const items = Array.isArray(list) && list.length > 0 ? list : defaultProps;
         const topThree = items.slice(0, 3);
 
         if (featuredContainer) {
-          if (topThree.length > 0) {
-            const cardsHtml = topThree.map((item) => {
-              const isBooked = item.status === 'BOOKED';
-              return `
-                <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
-                  <div>
-                    <div class="relative h-48 bg-slate-200 overflow-hidden">
-                      <img
-                        src="${item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}"
-                        alt="${item.title || ''}"
-                        class="w-full h-full object-cover hover:scale-105 transition duration-300"
-                      />
-                      <span class="absolute top-3 left-3 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md bg-slate-900/80 text-white">
-                        ${item.category || 'PROPERTI'}
-                      </span>
-                      <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}">
-                        ${isBooked ? 'TERKUNCI' : 'TERSEDIA'}
-                      </span>
-                    </div>
-                    <div class="p-5">
-                      <h3 class="text-base font-bold text-slate-900 line-clamp-1">${item.title || ''}</h3>
-                      <p class="text-xs text-slate-500 mt-1 truncate">${item.location || ''}</p>
-                      <p class="text-base font-extrabold text-[#059669] mt-3">
-                        Rp ${Number(item.price || 0).toLocaleString('id-ID')}
-                        <span class="text-xs font-normal text-slate-500">/${item.price_unit || 'bulan'}</span>
-                      </p>
-                    </div>
+          const cardsHtml = topThree.map((item) => {
+            const isBooked = String(item.status || '').toUpperCase() === 'BOOKED';
+            return `
+              <article class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col justify-between">
+                <div>
+                  <div class="relative h-48 bg-slate-200 overflow-hidden">
+                    <img
+                      src="${item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}"
+                      alt="${item.title || ''}"
+                      class="w-full h-full object-cover hover:scale-105 transition duration-300"
+                    />
+                    <span class="absolute top-3 left-3 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md bg-slate-900/80 text-white">
+                      ${item.category || 'PROPERTI'}
+                    </span>
+                    <span class="absolute top-3 right-3 text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}">
+                      ${isBooked ? 'TERKUNCI' : 'TERSEDIA'}
+                    </span>
                   </div>
-                  <div class="p-5 pt-0">
-                    <a
-                      href="/property/${item.id}"
-                      class="block w-full text-center font-semibold text-xs py-2.5 rounded-xl transition ${
-                        isBooked ? 'bg-slate-200 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
-                      }"
-                    >
-                      ${isBooked ? 'Lihat Detail Unit' : 'Lihat Detail & Hubungi WA'}
-                    </a>
+                  <div class="p-5">
+                    <h3 class="text-base font-bold text-slate-900 line-clamp-1">${item.title || ''}</h3>
+                    <p class="text-xs text-slate-500 mt-1 truncate">${item.location || ''}</p>
+                    <p class="text-base font-extrabold text-[#059669] mt-3">
+                      Rp ${Number(item.price || 0).toLocaleString('id-ID')}
+                      <span class="text-xs font-normal text-slate-500">/${item.price_unit || 'bulan'}</span>
+                    </p>
                   </div>
-                </article>
-              `;
-            }).join('');
-
-            featuredContainer.innerHTML = `<div id="featured-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">${cardsHtml}</div>`;
-          } else {
-            featuredContainer.innerHTML = `
-              <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-xs text-slate-500">
-                Belum ada unit properti yang ditampilkan. Silakan buka halaman Katalog untuk memuat data terbaru.
-              </div>
+                </div>
+                <div class="p-5 pt-0">
+                  <a
+                    href="/property/${item.id}"
+                    class="block w-full text-center font-semibold text-xs py-2.5 rounded-xl transition ${
+                      isBooked ? 'bg-slate-200 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
+                    }"
+                  >
+                    ${isBooked ? 'Lihat Detail Unit' : 'Lihat Detail & Hubungi WA'}
+                  </a>
+                </div>
+              </article>
             `;
-          }
+          }).join('');
+
+          featuredContainer.innerHTML = `<div id="featured-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">${cardsHtml}</div>`;
         }
 
         if (galleryGrid) {
@@ -525,7 +553,7 @@ const websiteSchema = {
 
       async function syncHomeData() {
         try {
-          const res = await fetch(`${apiUrl}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
+          const res = await fetch(`${API_BASE}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
           if (!res.ok) return;
           const data = await res.json();
           renderFeaturedAndGallery(data);

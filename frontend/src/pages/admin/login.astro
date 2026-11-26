@@ -135,7 +135,7 @@ import Footer from '../../components/Footer.astro';
     <Footer />
 
     <script is:inline>
-      const API_BASE = 'http://localhost:5000';
+      const API_BASE = apiUrl || '';
 
       // Cek sesi lama tanpa langsung auto-redirect
       const existingSeller = localStorage.getItem('lapak_seller');

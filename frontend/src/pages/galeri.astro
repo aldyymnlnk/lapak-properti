@@ -3,7 +3,7 @@ export const prerender = false;
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
 let properties: any[] = [];
 try {

@@ -2,7 +2,7 @@
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
   'Halo Tim InfoProperti, saya ingin konsultasi terkait unit properti atau status pengajuan saya.'
 )}`;
@@ -260,7 +260,7 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
     <Footer />
 
     <script is:inline define:vars={{ apiUrl: API_URL }}>
-      const API_BASE = apiUrl || 'http://localhost:5000';
+const API_BASE = apiUrl || '';
       const alertBox = document.getElementById('profile-alert');
 
       let session = null;
