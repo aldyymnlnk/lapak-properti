@@ -1,0 +1,134 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const pageTitle = 'Syarat & Ketentuan — InfoProperti';
+const pageDesc =
+  'Syarat dan Ketentuan penggunaan platform InfoProperti (infoproperti.web.id) untuk Pembeli, Agen di wilayah Indonesia.';
+const canonicalUrl = 'https://infoproperti.web.id/syarat-ketentuan';
+---
+
+<html lang="id" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="InfoProperti" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="syarat-ketentuan" />
+
+      <!-- HEADER HALAMAN -->
+      <section class="bg-[#0F172A] text-white py-12 px-4 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto text-center space-y-2.5">
+          <span class="inline-block px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+            Ketentuan Layanan &amp; Kepatuhan Hukum
+          </span>
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+            Syarat &amp; Ketentuan InfoProperti
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Dokumen ini mengatur hak, kewajiban, dan batasan tanggung jawab penggunaan layanan <strong>InfoProperti</strong> (<span class="text-emerald-400">infoproperti.web.id</span>).
+          </p>
+          <p class="text-[11px] text-slate-400 pt-1">
+            Pembaruan terakhir: November 2026 • Yurisdiksi: Republik Indonesia
+          </p>
+        </div>
+      </section>
+
+      <!-- KONTEN UTAMA -->
+      <main class="max-w-4xl mx-auto px-4 py-10">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-7 text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+            Dengan mendaftar, mengakses, atau menggunakan layanan <strong>InfoProperti</strong>, Anda menyatakan telah membaca, memahami, dan menyetujui seluruh Syarat &amp; Ketentuan ini serta <a href="/kebijakan-privasi" class="font-bold text-[#059669] underline">Kebijakan Privasi</a> kami.
+          </div>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">1. Definisi &amp; Ruang Lingkup Layanan</h2>
+            <p>
+              <strong>InfoProperti</strong> adalah platform informasi dan direktori marketplace properti (meliputi Kos, Rumah, dan Kavling Tanah) yang memfasilitasi pencarian unit, pengecekan status ketersediaan unit, serta komunikasi konsultasi atau survei antara pencari properti dan agen/pengiklan terdaftar.
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">2. Peran Pengguna &amp; Akun</h2>
+            <ul class="list-disc pl-5 space-y-1.5">
+              <li><strong>Pembeli / Pencari Properti:</strong> Pengguna yang menelusuri katalog properti, memeriksa spesifikasi dan status unit, serta menghubungi agen/pengiklan melalui WhatsApp untuk konsultasi atau penjadwalan survei.</li>
+              <li><strong>Agen:</strong> Pengguna yang mendaftarkan diri untuk memasarkan unit properti dan wajib memenuhi syarat verifikasi identitas (NIK KTP dan foto KTP) sebelum akun diaktifkan</li>
+            </ul>
+            <p>
+              Pengguna wajib menjaga kerahasiaan kredensial akun (email, username, dan kata sandi) serta bertanggung jawab atas seluruh aktivitas yang terjadi melalui akunnya.
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">3. Kewajiban Agen &amp; Keakuratan Informasi Properti</h2>
+            <ul class="list-disc pl-5 space-y-1.5">
+              <li>Agen wajib memberikan data identitas yang benar, asli, dan milik sendiri (NIK KTP serta foto KTP) dan dilarang menggunakan identitas orang lain secara melawan hukum.</li>
+              <li>Agen bertanggung jawab atas kebenaran informasi harga, satuan harga, lokasi, ukuran, fasilitas, legalitas sertifikat, foto, dan status ketersediaan unit yang ditampilkan.</li>
+              <li>Dilarang mengunggah konten penipuan, iklan fiktif, pelanggaran hak cipta, ujaran kebencian, atau informasi menyesatkan sesuai ketentuan peraturan perundang-undangan di Indonesia (termasuk UU Informasi dan Transaksi Elektronik serta UU Perlindungan Konsumen).</li>
+              <li>Pengelola platform berhak menangguhkan, menonaktifkan, atau menghapus akun maupun listing yang melanggar ketentuan tanpa pemberitahuan terlebih dahulu apabila diperlukan untuk pencegahan kerugian.</li>
+            </ul>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">4. Konsultasi WhatsApp, Survei &amp; Transaksi Properti</h2>
+            <p>
+              Konsultasi ketersediaan unit, negosiasi harga, dan pengaturan jadwal survei lokasi dapat dilakukan langsung ke WhatsApp agen atau pengiklan terkait. InfoProperti tidak menjamin terjadinya kesepakatan transaksi antara Pembeli dan Agen.
+            </p>
+            <p>
+              Sebelum melakukan pembayaran uang muka, booking, atau perikatan jual beli/sewa properti, Pembeli dan Agen wajib melakukan uji tuntas (<em>due diligence</em>) secara mandiri atas kondisi fisik bangunan/lahan serta keaslian dan legalitas dokumen kepemilikan (seperti SHM, HGB, IMB/PBG, dan PBB) di hadapan pihak atau pejabat yang berwenang.
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">5. Batasan Tanggung Jawab Platform</h2>
+            <p>
+              Sejauh diizinkan oleh hukum yang berlaku, InfoProperti menyediakan layanan &ldquo;sebagaimana adanya&rdquo; (<em>as is</em>) dan tidak bertanggung jawab atas kerugian langsung maupun tidak langsung yang timbul akibat: (a) ketidakakuratan data atau wanprestasi oleh pihak ketiga/agen/pembeli, (b) transaksi atau kesepakatan yang dilakukan di luar kendali langsung platform, maupun (c) gangguan jaringan, pemeliharaan sistem, atau keadaan memaksa (<em>force majeure</em>).
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">6. Hak Kekayaan Intelektual</h2>
+            <p>
+              Seluruh hak kekayaan intelektual atas desain antarmuka, tata letak, kode sistem, logo, dan materi milik InfoProperti dilindungi hukum. Konten foto atau materi properti yang diunggah oleh Agen tetap menjadi tanggung jawab pengunggah dengan memberikan hak tampil kepada InfoProperti untuk keperluan penayangan katalog pada platform.
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">7. Perubahan Ketentuan &amp; Hukum yang Berlaku</h2>
+            <p>
+              InfoProperti dapat memperbarui Syarat &amp; Ketentuan ini dari waktu ke waktu untuk menyesuaikan dengan pengembangan layanan maupun ketentuan hukum terbaru. Dokumen ini tunduk dan ditafsirkan berdasarkan hukum yang berlaku di <strong>Republik Indonesia</strong>, dan setiap sengketa yang timbul diupayakan penyelesaiannya secara musyawarah terlebih dahulu sebelum menempuh jalur hukum sesuai yurisdiksi yang berlaku.
+            </p>
+          </section>
+
+          <div class="pt-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <a href="/daftar" class="font-bold text-[#059669] hover:underline">
+              &larr; Kembali ke Halaman Daftar
+            </a>
+            <div class="flex items-center gap-4">
+              <a href="/kebijakan-privasi" class="font-bold text-slate-800 hover:text-[#059669] underline">
+                Kebijakan Privasi
+              </a>
+              <a href="/kontak" class="font-bold text-slate-600 hover:text-slate-900">
+                Hubungi Kami
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+  </body>
+</html>

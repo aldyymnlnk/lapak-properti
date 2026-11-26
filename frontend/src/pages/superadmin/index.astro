@@ -1,0 +1,360 @@
+---
+import Navbar from '../../components/Navbar.astro';
+import Footer from '../../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Super Admin — InfoProperti</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style is:global>
+      @import '../../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="superadmin" />
+
+      <!-- HEADER SUPER ADMIN -->
+      <section class="bg-[#0F172A] text-white py-10 px-4 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2.5 py-0.5 rounded bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                SUPER ADMIN CONTROL
+              </span>
+              <span id="sa-user-badge" class="text-xs text-slate-400">Memuat sesi...</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold">Pusat Kendali Sistem &amp; Otoritas Pengguna</h1>
+            <p class="text-xs text-slate-300 mt-1">
+              Kelola akun Admin &amp; Agen (termasuk verifikasi pendaftaran Agen), pantau seluruh unit properti, dan sinkronkan data.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <a href="/admin" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">
+              Buka Operasional Admin &rarr;
+            </a>
+            <button type="button" id="btn-sync-sheets" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold cursor-pointer transition">
+              Sync Google Sheets
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        <!-- STATISTIK GLOBAL -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Total Unit Properti</span>
+            <strong id="stat-props" class="block text-2xl font-black text-slate-900 mt-1">0</strong>
+            <span id="stat-booked" class="text-[11px] text-emerald-600 font-semibold">0 unit terkunci</span>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Total Pengajuan</span>
+            <strong id="stat-orders" class="block text-2xl font-black text-blue-600 mt-1">0</strong>
+            <span id="stat-pending" class="text-[11px] text-amber-600 font-semibold">0 menunggu verifikasi</span>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Admin Operasional</span>
+            <strong id="stat-admins" class="block text-2xl font-black text-indigo-600 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Akun terdaftar</span>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Mitra Agen</span>
+            <strong id="stat-agents" class="block text-2xl font-black text-[#059669] mt-1">0</strong>
+            <span id="stat-agents-pending" class="text-[11px] text-amber-600 font-semibold">0 menunggu aktif</span>
+          </div>
+        </section>
+
+        <!-- GRID MANAJEMEN AKUN -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- FORM TAMBAH AKUN BARU -->
+          <div class="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-600">Registrasi Otoritas</span>
+              <h2 class="text-base font-extrabold text-slate-900">Buat Akun Admin / Agen</h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">Tambahkan personel baru ke database Supabase.</p>
+            </div>
+
+            <form id="create-user-form" class="space-y-3 text-xs">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Peran (Role) *</label>
+                <select id="new-role" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold focus:outline-none focus:ring-2 focus:ring-[#059669]">
+                  <option value="ADMIN">ADMIN (Operasional &amp; Verifikasi)</option>
+                  <option value="AGENT">AGENT (Mitra Pemasaran Properti)</option>
+                  <option value="SUPER_ADMIN">SUPER_ADMIN (Akses Penuh)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nama Lengkap *</label>
+                <input type="text" id="new-name" required placeholder="Contoh: Admin Cabang Malang" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Username</label>
+                <input type="text" id="new-username" placeholder="admin_malang" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Email Login *</label>
+                <input type="email" id="new-email" required placeholder="nama@infoproperti.web.id" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">No. WhatsApp</label>
+                <input type="tel" id="new-phone" placeholder="081234567890" class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Kata Sandi Awal *</label>
+                <input type="text" id="new-password" required placeholder="Minimal 8 karakter" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono focus:outline-none focus:ring-2 focus:ring-[#059669]" />
+              </div>
+              <button type="submit" id="btn-create-user" class="w-full bg-[#0F172A] hover:bg-slate-800 text-amber-400 font-extrabold py-3 rounded-xl transition cursor-pointer">
+                + Simpan Akun ke Database
+              </button>
+            </form>
+          </div>
+
+          <!-- TABEL KELOLA PENGGUNA -->
+          <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-base font-extrabold text-slate-900">Daftar Akun Admin, Agen &amp; Pengguna</h2>
+                <p class="text-[11px] text-slate-500">Setujui/aktifkan pendaftaran Agen (NIK &amp; KTP), ubah status, atau hapus akun.</p>
+              </div>
+              <button type="button" id="btn-refresh-users" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 cursor-pointer">
+                Muat Ulang
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold border-b border-slate-200">
+                  <tr>
+                    <th class="px-4 py-3">Pengguna &amp; Identitas</th>
+                    <th class="px-4 py-3">Role</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3 text-right">Aksi Kendali</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-slate-400">Memuat data pengguna...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- RINGKASAN PENGAJUAN & UNIT TERBARU -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">Monitoring Aktivitas Unit &amp; Pengajuan</h2>
+              <p class="text-[11px] text-slate-500">Pantauan cepat aktivitas unit dan pengajuan masuk di sistem.</p>
+            </div>
+            <a href="/admin" class="text-xs font-bold text-[#059669] hover:underline">Kelola di Panel Admin &rarr;</a>
+          </div>
+          <div id="recent-orders-list" class="divide-y divide-slate-100 text-xs">
+            <div class="p-6 text-center text-slate-400">Memuat data...</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
+      const API_BASE = apiUrl || 'http://localhost:5000';
+
+      let currentUser = null;
+      try {
+        currentUser = JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
+      } catch {
+        currentUser = null;
+      }
+
+      if (!currentUser || String(currentUser.role || '').toUpperCase() !== 'SUPER_ADMIN') {
+        window.location.href = '/superadmin/login';
+      } else {
+        const badgeEl = document.getElementById('sa-user-badge');
+        if (badgeEl) {
+          badgeEl.textContent = `${currentUser.name} (${currentUser.email})`;
+        }
+      }
+
+      async function loadDashboardData() {
+        try {
+          const [usersRes, propsRes, ordersRes] = await Promise.all([
+            fetch(`${API_BASE}/api/superadmin/users`, { cache: 'no-store' }),
+            fetch(`${API_BASE}/api/properties`, { cache: 'no-store' }),
+            fetch(`${API_BASE}/api/admin/orders`, { cache: 'no-store' })
+          ]);
+
+          const users = usersRes.ok ? await usersRes.json() : [];
+          const props = propsRes.ok ? await propsRes.json() : [];
+          const orders = ordersRes.ok ? await ordersRes.json() : [];
+
+          document.getElementById('stat-props').textContent = String(props.length);
+          const bookedCount = props.filter((p) => String(p.status).toUpperCase() === 'BOOKED').length;
+          document.getElementById('stat-booked').textContent = `${bookedCount} unit terkunci`;
+
+          document.getElementById('stat-orders').textContent = String(orders.length);
+          const pendingCount = orders.filter((o) => o.status === 'PENDING_VERIFICATION').length;
+          document.getElementById('stat-pending').textContent = `${pendingCount} menunggu verifikasi`;
+
+          const adminCount = users.filter((u) => u.role === 'ADMIN').length;
+          const agents = users.filter((u) => u.role === 'AGENT');
+          const pendingAgents = agents.filter((a) => a.is_active === false).length;
+
+          document.getElementById('stat-admins').textContent = String(adminCount);
+          document.getElementById('stat-agents').textContent = String(agents.length);
+          document.getElementById('stat-agents-pending').textContent = `${pendingAgents} menunggu aktif`;
+
+          renderUsersTable(users);
+          renderRecentOrders(orders.slice(0, 5));
+        } catch (err) {
+          console.error('Gagal memuat dashboard Super Admin:', err);
+        }
+      }
+
+      function renderUsersTable(users) {
+        const tbody = document.getElementById('users-tbody');
+        if (!Array.isArray(users) || !users.length) {
+          tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">Belum ada akun tersimpan di tabel users. Gunakan formulir di samping untuk menambahkan.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = users.map((u) => {
+          const role = String(u.role || 'BUYER').toUpperCase();
+          const roleBadge = role === 'SUPER_ADMIN'
+            ? 'bg-amber-100 text-amber-800'
+            : role === 'ADMIN'
+            ? 'bg-indigo-100 text-indigo-800'
+            : role === 'AGENT'
+            ? 'bg-emerald-100 text-emerald-800'
+            : 'bg-slate-100 text-slate-700';
+
+          const isActive = u.is_active !== false;
+          const nikInfo = u.nik ? ` • NIK: <span class="font-mono">${u.nik}</span>` : '';
+          const ktpLink = u.ktp_image_url
+            ? ` • <a href="${u.ktp_image_url}" target="_blank" rel="noopener noreferrer" class="text-emerald-700 font-bold underline">Lihat KTP</a>`
+            : '';
+
+          return `
+            <tr class="hover:bg-slate-50/80">
+              <td class="px-4 py-3.5">
+                <strong class="block text-slate-900">${u.name || '-'}</strong>
+                <span class="text-[11px] text-slate-500">${u.email || '-'} ${u.phone ? `• ${u.phone}` : ''}${nikInfo}${ktpLink}</span>
+              </td>
+              <td class="px-4 py-3.5">
+                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold ${roleBadge}">${role}</span>
+              </td>
+              <td class="px-4 py-3.5">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}">
+                  ${isActive ? 'AKTIF' : 'MENUNGGU / NONAKTIF'}
+                </span>
+              </td>
+              <td class="px-4 py-3.5 text-right space-x-1.5">
+                <button
+                  type="button"
+                  onclick="toggleUserStatus('${u.id}', ${!isActive})"
+                  class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 cursor-pointer"
+                >
+                  ${isActive ? 'Nonaktifkan' : 'Setujui & Aktifkan'}
+                </button>
+                <button
+                  type="button"
+                  onclick="deleteUser('${u.id}', '${String(u.name || '').replace(/'/g, '')}')"
+                  class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-[11px] font-bold text-rose-700 cursor-pointer"
+                >
+                  Hapus
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderRecentOrders(orders) {
+        const box = document.getElementById('recent-orders-list');
+        if (!Array.isArray(orders) || !orders.length) {
+          box.innerHTML = `<div class="p-6 text-center text-slate-400">Belum ada data pengajuan.</div>`;
+          return;
+        }
+        box.innerHTML = orders.map((o) => `
+          <div class="p-4 px-5 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <strong class="text-slate-900">${o.properties?.title || 'Unit Properti'}</strong>
+              <span class="block text-[11px] text-slate-500">Pemesan: ${o.buyer_name} (${o.buyer_phone})</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-700">${o.status}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      window.toggleUserStatus = async (id, nextActive) => {
+        const res = await fetch(`${API_BASE}/api/superadmin/users/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_active: nextActive })
+        });
+        if (res.ok) loadDashboardData();
+      };
+
+      window.deleteUser = async (id, name) => {
+        if (!confirm(`Hapus permanen akun ${name}?`)) return;
+        const res = await fetch(`${API_BASE}/api/superadmin/users/${id}`, { method: 'DELETE' });
+        if (res.ok) loadDashboardData();
+      };
+
+      document.getElementById('create-user-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-create-user');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+
+        try {
+          const res = await fetch(`${API_BASE}/api/superadmin/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              role: document.getElementById('new-role').value,
+              name: document.getElementById('new-name').value.trim(),
+              username: document.getElementById('new-username').value.trim() || undefined,
+              email: document.getElementById('new-email').value.trim(),
+              phone: document.getElementById('new-phone').value.trim(),
+              password: document.getElementById('new-password').value
+            })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            alert(data.message || 'Akun berhasil dibuat!');
+            e.target.reset();
+            loadDashboardData();
+          } else {
+            alert(data.error || 'Gagal membuat akun.');
+          }
+        } catch {
+          alert('Gagal terhubung ke server.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '+ Simpan Akun ke Database';
+        }
+      });
+
+      document.getElementById('btn-sync-sheets')?.addEventListener('click', async () => {
+        const res = await fetch(`${API_BASE}/api/admin/sync-sheets`, { method: 'POST' });
+        const data = await res.json();
+        alert(data.message || data.error || 'Sinkronisasi selesai.');
+      });
+
+      document.getElementById('btn-refresh-users')?.addEventListener('click', loadDashboardData);
+      loadDashboardData();
+    </script>
+  </body>
+</html>

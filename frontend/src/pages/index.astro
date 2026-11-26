@@ -76,11 +76,11 @@ const faqs = [
   },
   {
     q: 'Bagaimana cara menanyakan detail atau menjadwalkan survei lokasi?',
-    a: 'Anda cukup membuka halaman detail properti yang diminati lalu menekan tombol "Chat WhatsApp". Pesan otomatis akan menyertakan nama unit, lokasi, dan harga agar langsung direspons.'
+    a: 'Anda cukup membuka halaman detail properti yang diminati lalu menekan tombol "Chat WhatsApp". Pesan otomatis akan menyertakan nama unit, lokasi, dan harga agar langsung direspons oleh agen atau pengiklan.'
   },
   {
     q: 'Apakah harga properti masih bisa dinegosiasikan?',
-    a: 'Untuk beberapa unit Rumah dan Kavling Tanah, negosiasi harga maupun skema pembayaran bertahap/KPR dapat langsung didiskusikan dengan pemilik melalui WhatsApp.'
+    a: 'Untuk beberapa unit Rumah dan Kavling Tanah, negosiasi harga maupun skema pembayaran bertahap/KPR dapat langsung didiskusikan melalui WhatsApp.'
   },
   {
     q: 'Apakah ada biaya tambahan bagi calon penyewa atau pembeli saat mencari unit?',
@@ -91,6 +91,13 @@ const faqs = [
 const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
   'Halo Tim InfoProperti, saya ingin konsultasi pencarian unit Kos / Rumah / Kavling Tanah di Malang Raya.'
 )}`;
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'InfoProperti',
+  url: 'https://infoproperti.web.id/'
+};
 ---
 
 <html lang="id" class="scroll-smooth">
@@ -105,6 +112,7 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
     <meta property="og:url" content="https://infoproperti.web.id/" />
     <meta property="og:title" content="Beranda — InfoProperti" />
     <meta property="og:description" content="Platform pencarian Kos, Rumah, dan Kavling Tanah terverifikasi di Malang Raya dengan status unit real-time dan konsultasi WhatsApp." />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
     <style is:global>
       @import '../styles/global.css';
     </style>
@@ -127,15 +135,21 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
             Temukan & Amankan Properti Tanpa Risiko Double-Booking
           </h1>
           <p class="text-slate-300 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8">
-            Jelajahi unit Kos, Rumah, dan Kavling Tanah dengan spesifikasi transparan, status ketersediaan real-time, dan terhubung langsung ke WhatsApp penjual.
+            Jelajahi unit Kos, Rumah, dan Kavling Tanah dengan spesifikasi transparan, status ketersediaan real-time, dan terhubung langsung ke WhatsApp agen atau pengiklan.
           </p>
 
           <div class="flex flex-wrap items-center justify-center gap-3">
             <a href="/katalog" class="bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition shadow-lg">
               Jelajahi Katalog Unit
             </a>
-            <a href={waConsultUrl} target="_blank" rel="noopener noreferrer" class="bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm px-6 py-3.5 rounded-xl transition border border-slate-700">
+            <a href={waConsultUrl} target="_blank" rel="noopener noreferrer" class="bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm px-5 py-3.5 rounded-xl transition border border-slate-700">
               Konsultasi via WhatsApp
+            </a>
+            <a href="/daftar" class="bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-xl transition">
+              Daftar
+            </a>
+            <a href="/masuk" class="bg-transparent hover:bg-slate-800 text-emerald-400 border border-emerald-500/40 font-bold text-xs sm:text-sm px-5 py-3.5 rounded-xl transition">
+              Masuk
             </a>
           </div>
         </div>
@@ -230,7 +244,7 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
             </div>
             <h3 class="text-sm font-extrabold text-slate-900">Terhubung Langsung ke WhatsApp</h3>
             <p class="text-xs text-slate-600 leading-relaxed">
-              Tanya ketersediaan unit, negosiasi harga, atau atur jadwal survei lokasi secara langsung dalam satu klik tanpa perantara rumit.
+              Tanya ketersediaan unit, negosiasi harga, atau atur jadwal survei lokasi secara langsung dalam satu klik ke agen atau pengiklan.
             </p>
           </div>
         </div>
@@ -372,7 +386,7 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
         <div class="text-center mb-8">
           <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700">Pusat Bantuan</span>
           <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Pertanyaan yang Sering Diajukan (FAQ)</h2>
-          <p class="text-xs text-slate-500 mt-1">Jawaban cepat seputar pengecekan unit, survei lokasi, dan transaksi di InfoProperti.</p>
+          <p class="text-xs text-slate-500 mt-1">Jawaban cepat seputar pengecekan unit, survei lokasi, dan konsultasi di InfoProperti.</p>
         </div>
 
         <div class="space-y-3">
@@ -392,18 +406,18 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
         </div>
       </section>
 
-      <!-- 8. CTA PENAWARAN PROPERTI & KONSULTASI -->
+      <!-- 8. CTA PENAWARAN PROPERTI, KONSULTASI & AKSES AKUN -->
       <section class="max-w-6xl mx-auto px-4 py-12">
         <div class="bg-[#0F172A] text-white rounded-3xl p-8 sm:p-10 border border-slate-800 shadow-lg flex flex-col lg:flex-row items-center justify-between gap-6">
           <div class="text-center lg:text-left max-w-2xl space-y-2.5">
             <span class="inline-block px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
-              Siap Survei atau Punya Kriteria Khusus?
+              Siap Survei atau Bergabung sebagai Agen?
             </span>
             <h2 class="text-2xl sm:text-3xl font-extrabold leading-tight">
               Temukan Unit Terbaik atau Konsultasikan Kebutuhan Properti Anda
             </h2>
             <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Pilih langsung unit yang tersedia di katalog kami, atau hubungi tim konsultan InfoProperti via WhatsApp untuk rekomendasi Kos, Rumah, dan Kavling sesuai anggaran Anda.
+              Pilih langsung unit yang tersedia di katalog kami, hubungi tim konsultan via WhatsApp, atau daftar/masuk ke akun InfoProperti Anda.
             </p>
           </div>
 
@@ -422,6 +436,20 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
             >
               Konsultasi Gratis via WhatsApp
             </a>
+            <div class="flex gap-2">
+              <a
+                href="/daftar"
+                class="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs text-center transition"
+              >
+                Daftar
+              </a>
+              <a
+                href="/masuk"
+                class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold text-xs text-center transition"
+              >
+                Masuk
+              </a>
+            </div>
           </div>
         </div>
       </section>

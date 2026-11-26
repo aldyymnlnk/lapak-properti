@@ -1,0 +1,133 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const pageTitle = 'Kebijakan Privasi — InfoProperti';
+const pageDesc =
+  'Kebijakan Privasi InfoProperti (infoproperti.web.id) mengenai pengumpulan, penggunaan, perlindungan, dan hak pengguna atas data pribadi sesuai ketentuan hukum Indonesia.';
+const canonicalUrl = 'https://infoproperti.web.id/kebijakan-privasi';
+---
+
+<html lang="id" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="InfoProperti" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="kebijakan-privasi" />
+
+      <!-- HEADER HALAMAN -->
+      <section class="bg-[#0F172A] text-white py-12 px-4 border-b border-slate-800">
+        <div class="max-w-4xl mx-auto text-center space-y-2.5">
+          <span class="inline-block px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+            Pelindungan Data Pribadi Pengguna
+          </span>
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+            Kebijakan Privasi InfoProperti
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Komitmen <strong>InfoProperti</strong> (<span class="text-emerald-400">infoproperti.web.id</span>) dalam mengelola dan melindungi data pribadi Anda secara aman dan transparan.
+          </p>
+          <p class="text-[11px] text-slate-400 pt-1">
+            Pembaruan terakhir: November 2026 • Sesuai Prinsip UU Pelindungan Data Pribadi (UU PDP)
+          </p>
+        </div>
+      </section>
+
+      <!-- KONTEN UTAMA -->
+      <main class="max-w-4xl mx-auto px-4 py-10">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-7 text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+            Kebijakan Privasi ini menjelaskan bagaimana <strong>InfoProperti</strong> mengumpulkan, menggunakan, menyimpan, melindungi, dan memproses data pribadi Anda saat menggunakan situs maupun layanan terkait.
+          </div>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">1. Jenis Data Pribadi yang Dikumpulkan</h2>
+            <ul class="list-disc pl-5 space-y-1.5">
+              <li><strong>Data Akun &amp; Kontak:</strong> Nama lengkap, username, alamat email, nomor WhatsApp, peran akun (Pembeli atau Agen), serta kredensial autentikasi yang di-hash.</li>
+              <li><strong>Data Verifikasi Identitas Agen:</strong> Nomor Induk Kependudukan (NIK) dan foto KTP yang diserahkan pada proses pendaftaran Agen untuk keperluan verifikasi keaslian identitas dan pencegahan penyalahgunaan akun.</li>
+              <li><strong>Data Aktivitas &amp; Layanan:</strong> Informasi listing properti yang dikelola, catatan verifikasi, serta log teknis dasar yang diperlukan untuk menjaga keamanan dan stabilitas sistem.</li>
+            </ul>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">2. Tujuan Pemrosesan Data Pribadi</h2>
+            <ul class="list-disc pl-5 space-y-1.5">
+              <li>Membuat, mengelola, dan memverifikasi akun pengguna (Pembeli, Agen).</li>
+              <li>Melakukan validasi syarat pendaftaran Agen guna menjaga kepercayaan katalog properti.</li>
+              <li>Menyediakan fitur pencarian properti, pengelolaan listing, serta dukungan komunikasi konsultasi dan layanan pelanggan.</li>
+              <li>Mendeteksi, mencegah, dan menangani aktivitas mencurigakan, penyalahgunaan layanan, atau pelanggaran hukum.</li>
+              <li>Memenuhi kewajiban hukum dan permintaan otoritas yang sah berdasarkan peraturan perundang-undangan.</li>
+            </ul>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">3. Dasar Pemrosesan &amp; Penyimpanan Data</h2>
+            <p>
+              Data pribadi diproses berdasarkan persetujuan eksplisit Anda saat mendaftar atau menggunakan fitur tertentu, kebutuhan pelaksanaan layanan yang diminta, serta kepentingan sah pengelola dalam menjaga keamanan platform dan kepatuhan hukum.
+            </p>
+            <p>
+              Data disimpan pada infrastruktur basis data dan layanan pendukung yang digunakan oleh sistem InfoProperti selama akun masih aktif atau selama diperlukan untuk tujuan verifikasi, audit keamanan, dan kewajiban hukum, kecuali diminta penghapusannya sesuai ketentuan yang berlaku.
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">4. Pengungkapan Data kepada Pihak Ketiga</h2>
+            <p>
+              InfoProperti tidak memperjualbelikan data pribadi Anda kepada pihak ketiga untuk kepentingan komersial tanpa dasar yang sah. Data hanya dapat diakses atau dibagikan secara terbatas kepada:
+            </p>
+            <ul class="list-disc pl-5 space-y-1.5">
+              <li>Penyedia infrastruktur teknis (seperti layanan database, hosting, dan komunikasi) yang terikat kewajiban menjaga kerahasiaan data.</li>
+              <li>Pihak berwenang atau aparat penegak hukum apabila diwajibkan berdasarkan ketentuan peraturan perundang-undangan yang berlaku.</li>
+            </ul>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">5. Keamanan Data &amp; Hak Subjek Data</h2>
+            <p>
+              Kami menerapkan langkah pengamanan teknis dan organisasional yang wajar (seperti hashing kata sandi dan pembatasan akses berbasis peran) untuk melindungi data pribadi dari akses tidak sah, perubahan, atau kebocoran. Namun, tidak ada sistem transmisi atau penyimpanan elektronik yang sepenuhnya bebas dari risiko.
+            </p>
+            <p>
+              Sesuai ketentuan pelindungan data pribadi yang berlaku di Indonesia, Anda berhak untuk: (a) memperoleh informasi kejelasan identitas dan tujuan pemrosesan data, (b) mengakses, melengkapi, atau memperbarui data pribadi Anda, (c) menarik persetujuan pemrosesan data tertentu, serta (d) mengajukan permohonan penghapusan atau pemusnahan data pribadi sesuai syarat dan ketentuan hukum yang berlaku.
+            </p>
+          </section>
+
+          <section class="space-y-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">6. Perubahan Kebijakan &amp; Kontak Privasi</h2>
+            <p>
+              Kebijakan Privasi ini dapat diperbarui sewaktu-waktu dan tanggal pembaruan akan ditampilkan pada halaman ini. Untuk pertanyaan, pembaruan data, atau permintaan terkait privasi dan penghapusan data, silakan hubungi pengelola InfoProperti melalui halaman <a href="/kontak" class="font-bold text-[#059669] underline">Kontak</a>.
+            </p>
+          </section>
+
+          <div class="pt-5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <a href="/daftar" class="font-bold text-[#059669] hover:underline">
+              &larr; Kembali ke Halaman Daftar
+            </a>
+            <div class="flex items-center gap-4">
+              <a href="/syarat-ketentuan" class="font-bold text-slate-800 hover:text-[#059669] underline">
+                Syarat &amp; Ketentuan
+              </a>
+              <a href="/kontak" class="font-bold text-slate-600 hover:text-slate-900">
+                Hubungi Kami
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+  </body>
+</html>

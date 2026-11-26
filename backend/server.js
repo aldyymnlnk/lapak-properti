@@ -29,6 +29,39 @@ const hashPassword = (password) => {
   return crypto.createHash('sha256').update(password).digest('hex');
 };
 
+const PRESET_ACCOUNTS = {
+  'superadmin@infoproperti.web.id': {
+    id: 'preset-superadmin',
+    name: 'Super Admin InfoProperti',
+    username: 'superadmin',
+    email: 'superadmin@infoproperti.web.id',
+    phone: '081234567890',
+    password: 'SuperAdmin#2026',
+    role: 'SUPER_ADMIN',
+    is_active: true
+  },
+  'admin@infoproperti.web.id': {
+    id: 'preset-admin',
+    name: 'Admin Operasional InfoProperti',
+    username: 'admin',
+    email: 'admin@infoproperti.web.id',
+    phone: '081234567890',
+    password: 'AdminInfo#2026',
+    role: 'ADMIN',
+    is_active: true
+  },
+  'agen@infoproperti.web.id': {
+    id: 'preset-agen',
+    name: 'Agen Mitra InfoProperti',
+    username: 'agen',
+    email: 'agen@infoproperti.web.id',
+    phone: '081234567890',
+    password: 'AgenInfo#2026',
+    role: 'AGENT',
+    is_active: true
+  }
+};
+
 // ==========================================
 // HELPER KIRIM E-RECEIPT KE EMAIL & WHATSAPP
 // ==========================================
@@ -170,39 +203,71 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 2. AUTENTIKASI PENJUAL / AGEN / ADMIN CMS
+// 2. AUTENTIKASI PEMBELI / AGEN / ADMIN / SUPER ADMIN
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { name, email, password, phone, role } = req.body;
+    const { name, username, email, password, phone, role, nik, ktp_image_url } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Nama, email, dan password wajib diisi.' });
     }
 
-    const userRole = role === 'SELLER' || role === 'ADMIN' ? role : 'AGENT';
+    const normalizedRole = String(role || 'BUYER').toUpperCase();
+    const userRole = normalizedRole === 'AGENT' ? 'AGENT' : 'BUYER';
 
-    const { data, error } = await supabase
+    if (userRole === 'AGENT') {
+      const cleanNik = String(nik || '').trim();
+      if (cleanNik.length !== 16) {
+        return res.status(400).json({ error: 'Pendaftaran Agen wajib menyertakan NIK KTP 16 digit.' });
+      }
+      if (!ktp_image_url) {
+        return res.status(400).json({ error: 'Pendaftaran Agen wajib mengunggah foto KTP.' });
+      }
+    }
+
+    const basePayload = {
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password_hash: hashPassword(password),
+      phone: phone ? phone.trim() : '',
+      role: userRole,
+      is_active: userRole === 'AGENT' ? false : true
+    };
+
+    const extraFields = {};
+    if (username) extraFields.username = String(username).toLowerCase().trim();
+    if (userRole === 'AGENT' && nik) extraFields.nik = String(nik).trim();
+    if (userRole === 'AGENT' && ktp_image_url) extraFields.ktp_image_url = ktp_image_url;
+
+    let { data, error } = await supabase
       .from('users')
-      .insert([{
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        password_hash: hashPassword(password),
-        phone: phone ? phone.trim() : '',
-        role: userRole,
-        is_active: true
-      }])
-      .select('id, name, email, phone, role')
+      .insert([{ ...basePayload, ...extraFields }])
+      .select('id, name, email, phone, role, is_active')
       .single();
+
+    // Fallback jika kolom opsional (username/nik/ktp_image_url) belum ada di tabel users
+    if (error && (error.code === '42703' || String(error.message || '').includes('column'))) {
+      const fallback = await supabase
+        .from('users')
+        .insert([basePayload])
+        .select('id, name, email, phone, role, is_active')
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       if (error.code === '23505') {
-        return res.status(409).json({ error: 'Email sudah terdaftar. Silakan login.' });
+        return res.status(409).json({ error: 'Email atau username sudah terdaftar. Silakan masuk.' });
       }
       throw error;
     }
 
     res.status(201).json({
-      message: 'Registrasi akun berhasil disimpan ke database!',
+      message:
+        userRole === 'AGENT'
+          ? 'Pendaftaran Agen berhasil dikirim dan menunggu verifikasi KTP oleh Admin/Super Admin.'
+          : 'Registrasi akun Pembeli berhasil!',
       user: data
     });
   } catch (err) {
@@ -212,40 +277,67 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password, access_code } = req.body;
+    const { email, username, identifier, password, access_code } = req.body;
 
     if (access_code) {
-      if (access_code.trim() === 'MITRA2026') {
-        return res.json({
-          message: 'Login Mitra Berhasil!',
-          user: {
-            id: 'demo-admin',
-            name: 'Mitra Pemilik Properti',
-            email: 'mitra@infoproperti.web.id',
-            phone: '081234567890',
-            role: 'SELLER'
-          }
-        });
+      const code = String(access_code).trim();
+      if (code === 'SUPER2026') {
+        const { password: _, ...safeUser } = PRESET_ACCOUNTS['superadmin@infoproperti.web.id'];
+        return res.json({ message: 'Login Super Admin Berhasil!', user: safeUser });
       }
-      return res.status(401).json({ error: 'Kode akses mitra salah.' });
+      if (code === 'MITRA2026' || code === 'ADMIN2026') {
+        const { password: _, ...safeUser } = PRESET_ACCOUNTS['admin@infoproperti.web.id'];
+        return res.json({ message: 'Login Admin Berhasil!', user: safeUser });
+      }
+      return res.status(401).json({ error: 'Kode akses tidak valid.' });
     }
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email dan password wajib diisi.' });
+    const loginId = String(email || username || identifier || '').toLowerCase().trim();
+    if (!loginId || !password) {
+      return res.status(400).json({ error: 'Email/username dan kata sandi wajib diisi.' });
     }
 
-    const { data: user, error } = await supabase
+    // Cek akun bawaan pengujian
+    const presetMatch = Object.values(PRESET_ACCOUNTS).find(
+      (acc) => acc.email.toLowerCase() === loginId || acc.username.toLowerCase() === loginId
+    );
+    if (presetMatch && presetMatch.password === password) {
+      const { password: _, ...safeUser } = presetMatch;
+      return res.json({
+        message: 'Login berhasil!',
+        user: safeUser
+      });
+    }
+
+    // Cek ke database Supabase berdasarkan email (atau username bila kolom tersedia)
+    let { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email.toLowerCase().trim())
-      .single();
+      .eq('email', loginId)
+      .maybeSingle();
+
+    if (!user && !error && !loginId.includes('@')) {
+      const byUsername = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', loginId)
+        .maybeSingle();
+      if (!byUsername.error) {
+        user = byUsername.data;
+      }
+    }
 
     if (error || !user || user.password_hash !== hashPassword(password)) {
-      return res.status(401).json({ error: 'Email atau password tidak sesuai.' });
+      return res.status(401).json({ error: 'Email/username atau kata sandi tidak sesuai.' });
     }
 
     if (user.is_active === false) {
-      return res.status(403).json({ error: 'Akun Anda dinonaktifkan oleh Admin.' });
+      return res.status(403).json({
+        error:
+          user.role === 'AGENT'
+            ? 'Akun Agen Anda masih menunggu verifikasi KTP oleh Admin/Super Admin.'
+            : 'Akun Anda sedang dinonaktifkan.'
+      });
     }
 
     res.json({
@@ -255,7 +347,7 @@ app.post('/api/auth/login', async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone || '',
-        role: user.role || 'AGENT'
+        role: user.role || 'BUYER'
       }
     });
   } catch (err) {
@@ -289,16 +381,124 @@ app.put('/api/users/:id', async (req, res) => {
   }
 });
 
+// ==========================================
+// ENDPOINT SUPER ADMIN (KELOLA ADMIN & AGEN)
+// ==========================================
+app.get('/api/superadmin/users', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    const sanitized = (data || []).map(({ password_hash, ...rest }) => rest);
+    res.json(sanitized);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/superadmin/users', async (req, res) => {
+  try {
+    const { name, username, email, password, phone, role } = req.body;
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: 'Nama, email, kata sandi, dan role wajib diisi.' });
+    }
+
+    const allowedRoles = ['SUPER_ADMIN', 'ADMIN', 'AGENT', 'BUYER'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ error: 'Role tidak valid.' });
+    }
+
+    const payload = {
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password_hash: hashPassword(password),
+      phone: phone ? phone.trim() : '',
+      role,
+      is_active: true
+    };
+    if (username) payload.username = String(username).toLowerCase().trim();
+
+    let { data, error } = await supabase
+      .from('users')
+      .insert([payload])
+      .select('id, name, email, phone, role, is_active, created_at')
+      .single();
+
+    if (error && (error.code === '42703' || String(error.message || '').includes('column'))) {
+      delete payload.username;
+      const fallback = await supabase
+        .from('users')
+        .insert([payload])
+        .select('id, name, email, phone, role, is_active, created_at')
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
+
+    if (error) {
+      if (error.code === '23505') {
+        return res.status(409).json({ error: 'Email atau username sudah terdaftar.' });
+      }
+      throw error;
+    }
+
+    res.status(201).json({
+      message: `Akun ${role} (${data.name}) berhasil dibuat!`,
+      user: data
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/superadmin/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role, is_active } = req.body;
+
+    const updateData = {};
+    if (role && ['SUPER_ADMIN', 'ADMIN', 'AGENT', 'BUYER'].includes(role)) updateData.role = role;
+    if (typeof is_active === 'boolean') updateData.is_active = is_active;
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', id)
+      .select('id, name, email, phone, role, is_active')
+      .single();
+
+    if (error) throw error;
+    res.json({ message: 'Status / role akun berhasil diperbarui!', user: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/superadmin/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('users').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ message: 'Akun berhasil dihapus.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/agents', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, role, is_active, created_at')
+      .select('*')
       .eq('role', 'AGENT')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    res.json(data || []);
+    const sanitized = (data || []).map(({ password_hash, ...rest }) => rest);
+    res.json(sanitized);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

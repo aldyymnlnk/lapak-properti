@@ -1,0 +1,143 @@
+---
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || 'http://localhost:5000';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Masuk — InfoProperti</title>
+    <meta name="description" content="Masuk ke akun InfoProperti menggunakan email atau username Anda." />
+    <link rel="canonical" href="https://infoproperti.web.id/masuk" />
+    <style is:global>
+      @import '../styles/global.css';
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+    <div>
+      <Navbar active="masuk" />
+
+      <main class="max-w-md mx-auto px-4 py-14">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+          <div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Masuk</h1>
+            <p class="text-xs text-slate-500 mt-1">
+              Masukkan email atau username dan kata sandi akun InfoProperti Anda.
+            </p>
+          </div>
+
+          <div id="login-alert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+          <form id="login-form" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Email atau Username</label>
+              <input
+                type="text"
+                id="login-identifier"
+                required
+                placeholder="Email atau Username"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+              />
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Kata Sandi</label>
+              <input
+                type="password"
+                id="login-password"
+                required
+                placeholder="Masukkan kata sandi"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+              />
+            </div>
+
+            <button
+              type="submit"
+              id="btn-login"
+              class="w-full bg-[#059669] hover:bg-emerald-700 text-white font-extrabold text-sm py-3 rounded-xl shadow-xs transition cursor-pointer"
+            >
+              Selanjutnya
+            </button>
+          </form>
+
+          <div class="text-center pt-3 border-t border-slate-100 text-xs space-y-2">
+            <p class="text-slate-600">
+              Belum punya akun?
+              <a href="/daftar" class="font-bold text-[#059669] hover:underline">Daftar</a> sekarang
+            </p>
+            <p class="text-[11px] text-slate-500">
+              Mengalami kendala untuk masuk?
+              <a href="/kontak" class="font-bold text-slate-800 hover:underline">Hubungi Kami</a>
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <Footer />
+
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
+      const API_BASE = apiUrl || 'http://localhost:5000';
+      const alertBox = document.getElementById('login-alert');
+
+      function showAlert(msg, isErr = true) {
+        alertBox.textContent = msg;
+        alertBox.className = `p-3 rounded-xl text-xs font-semibold ${
+          isErr ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+        }`;
+        alertBox.classList.remove('hidden');
+      }
+
+      function routeByRole(user) {
+        localStorage.setItem('ip_auth_user', JSON.stringify(user));
+        const role = String(user.role || '').toUpperCase();
+        if (role === 'SUPER_ADMIN') {
+          window.location.href = '/superadmin';
+        } else if (role === 'ADMIN' || role === 'SELLER') {
+          window.location.href = '/admin';
+        } else if (role === 'AGENT') {
+          window.location.href = '/agen';
+        } else {
+          window.location.href = '/katalog';
+        }
+      }
+
+      document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const identifier = document.getElementById('login-identifier').value.trim();
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-login');
+        btn.disabled = true;
+        btn.textContent = 'Memeriksa...';
+
+        try {
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: identifier.includes('@') ? identifier : undefined,
+              username: !identifier.includes('@') ? identifier : undefined,
+              password
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.user) {
+            showAlert(data.message || 'Berhasil masuk! Mengalihkan...', false);
+            setTimeout(() => routeByRole(data.user), 400);
+          } else {
+            showAlert(data.error || 'Email/username atau kata sandi salah.');
+            btn.disabled = false;
+            btn.textContent = 'Selanjutnya';
+          }
+        } catch {
+          showAlert('Gagal terhubung ke server.');
+          btn.disabled = false;
+          btn.textContent = 'Selanjutnya';
+        }
+      });
+    </script>
+  </body>
+</html>
