@@ -101,17 +101,6 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
       const API_BASE = apiUrl || '';
       const alertBox = document.getElementById('adm-login-alert');
       const btn = document.getElementById('btn-adm-login');
-      const identifierInput = document.getElementById('adm-identifier');
-      const passwordInput = document.getElementById('adm-password');
-      const codeInput = document.getElementById('adm-code');
-
-      // Jika kode akses diisi, kosongkan email & kata sandi agar tidak ambigu
-      codeInput?.addEventListener('input', () => {
-        if (codeInput.value.trim().length > 0) {
-          if (identifierInput) identifierInput.value = '';
-          if (passwordInput) passwordInput.value = '';
-        }
-      });
 
       function showAlert(msg, isErr = true) {
         alertBox.textContent = msg;
@@ -128,9 +117,9 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
       document.getElementById('adm-login-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const identifier = (identifierInput?.value || '').trim();
-        const password = passwordInput?.value || '';
-        const accessCode = (codeInput?.value || '').trim();
+        const identifier = document.getElementById('adm-identifier').value.trim();
+        const password = document.getElementById('adm-password').value;
+        const accessCode = document.getElementById('adm-code').value.trim();
 
         if (!accessCode && (!identifier || !password)) {
           showAlert('Isi email/username dan kata sandi, atau isi Kode Akses.');
@@ -157,7 +146,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           const data = await res.json().catch(() => ({}));
 
           if (!res.ok || !data.user) {
-            showAlert(data.error || 'Kredensial atau kode akses admin tidak valid.');
+            showAlert(data.error || 'Kredensial admin tidak valid.');
             resetBtn();
             return;
           }
@@ -166,8 +155,8 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           const allowed = ['ADMIN', 'SELLER', 'SUPER_ADMIN'];
           if (!allowed.includes(role)) {
             showAlert(
-              'Akun/kode ini terdaftar sebagai "' + (role || 'BUYER') + '", bukan Admin. ' +
-                (role === 'AGENT' ? 'Gunakan Portal Agen (/agen/login).' : 'Gunakan halaman Masuk yang sesuai.')
+              'Akun ini terdaftar sebagai "' + (role || 'BUYER') + '", bukan Admin. ' +
+                (role === 'AGENT' ? 'Gunakan Portal Agen.' : 'Gunakan halaman Masuk yang sesuai.')
             );
             resetBtn();
             return;
@@ -183,7 +172,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
             localStorage.setItem('lapak_seller', JSON.stringify(sessionUser));
           }
 
-          showAlert(data.message || 'Login berhasil! Mengalihkan...', false);
+          showAlert('Login berhasil! Mengalihkan...', false);
           setTimeout(() => {
             window.location.href = role === 'SUPER_ADMIN' ? '/superadmin' : '/admin';
           }, 400);
