@@ -36,9 +36,19 @@ export function getSupabase(locals?: any): SupabaseClient {
   return cachedSupabase;
 }
 
+/**
+ * APP_SECRET wajib diisi (minimal 32 karakter) di production.
+ * Fallback hanya dipakai saat development lokal (import.meta.env.DEV).
+ */
 export function getAppSecret(locals?: any): string {
   const env = getEnv(locals);
-  return env.APP_SECRET || 'dev-fallback-secret-change-in-production';
+  const secret = env.APP_SECRET;
+  if (secret && secret.length >= 32) return secret;
+
+  if ((import.meta as any).env?.DEV) {
+    return 'dev-only-secret-do-not-use-in-production-0123456789';
+  }
+  throw new Error('APP_SECRET belum diatur atau kurang dari 32 karakter.');
 }
 
 export function isEnforceAuth(locals?: any): boolean {
@@ -127,6 +137,31 @@ export function checkRole(request: Request, locals: any, ...roles: string[]) {
     return jsonRes({ error: 'Anda tidak memiliki akses ke fitur ini.' }, 403);
   }
   return null;
+}
+
+/**
+ * Cek kepemilikan properti. Pakai di route PUT/PATCH/DELETE /api/admin/properties/:id
+ * setelah checkRole(...) lolos.
+ *
+ * - SUPER_ADMIN / ADMIN / SELLER : boleh mengelola semua properti
+ * - AGENT                        : hanya properti miliknya (owner_id atau specifications.agent_id)
+ *
+ * Mengembalikan Response error jika ditolak, atau null jika boleh.
+ * Saat ENFORCE_AUTH=false pengecekan dilewati (perilaku lama).
+ */
+export function checkPropertyOwnership(request: Request, locals: any, property: any) {
+  if (!isEnforceAuth(locals)) return null;
+  const user = getAuthUser(request, locals);
+  if (!user) return jsonRes({ error: 'Anda harus login terlebih dahulu.' }, 401);
+
+  if (['SUPER_ADMIN', 'ADMIN', 'SELLER'].includes(user.role)) return null;
+
+  if (user.role === 'AGENT') {
+    const ownerId = property?.owner_id ? String(property.owner_id) : '';
+    const specAgentId = property?.specifications?.agent_id ? String(property.specifications.agent_id) : '';
+    if (String(user.id) === ownerId || String(user.id) === specAgentId) return null;
+  }
+  return jsonRes({ error: 'Anda tidak berhak mengubah properti ini.' }, 403);
 }
 
 export function buildPresetAccounts(locals?: any) {

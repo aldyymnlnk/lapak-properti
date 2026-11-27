@@ -10,7 +10,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portal Agen Properti — LapakProperti</title>
+    <title>Portal Agen Properti — InfoProperti</title>
     <style is:global>
       @import '../../styles/global.css';
     </style>
@@ -24,9 +24,9 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           <div class="text-center mb-6">
             <a href="/" class="inline-flex items-center justify-center gap-2.5 font-extrabold text-xl tracking-tight text-slate-900 mb-3">
               <span class="w-9 h-9 rounded-xl bg-[#059669] text-white flex items-center justify-center font-black text-base shadow-sm">
-                LP
+                IP
               </span>
-              <span>Lapak<span class="text-emerald-600">Properti</span></span>
+              <span>Info<span class="text-emerald-600">Properti</span></span>
             </a>
             <span class="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 mb-1">
               Partner & Marketing Agent Portal
@@ -60,6 +60,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
           <div id="agent-alert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium"></div>
 
+          <!-- FORM LOGIN -->
           <form id="form-agent-login" class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Email Agen *</label>
@@ -84,12 +85,14 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
             </div>
             <button
               type="submit"
+              id="btn-agent-login"
               class="w-full py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-sm"
             >
               Masuk ke Dashboard Agen
             </button>
           </form>
 
+          <!-- FORM DAFTAR -->
           <form id="form-agent-register" class="space-y-4 hidden">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Nama Agen / Pemilik Kos *</label>
@@ -127,16 +130,43 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
                 type="password"
                 id="agent-reg-password"
                 required
-                minlength="6"
-                placeholder="Minimal 6 karakter"
+                minlength="8"
+                placeholder="Minimal 8 karakter"
                 class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
               />
             </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">NIK KTP (16 digit) *</label>
+              <input
+                type="text"
+                id="agent-reg-nik"
+                required
+                inputmode="numeric"
+                pattern="\d{16}"
+                maxlength="16"
+                placeholder="16 digit NIK sesuai KTP"
+                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Foto KTP * <span class="font-normal text-slate-400">(JPG/PNG, maks. 3MB)</span></label>
+              <input
+                type="file"
+                id="agent-reg-ktp"
+                accept="image/*"
+                required
+                class="w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:text-emerald-700 file:font-bold file:cursor-pointer"
+              />
+            </div>
+            <p class="text-[11px] text-slate-500 leading-snug">
+              Setelah mendaftar, akun Anda akan diverifikasi oleh Admin. Anda baru bisa login setelah akun diaktifkan.
+            </p>
             <button
               type="submit"
+              id="btn-agent-register"
               class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
             >
-              Daftar Akun Agen & Masuk
+              Daftar Akun Agen
             </button>
           </form>
 
@@ -153,24 +183,33 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
     <script is:inline define:vars={{ apiUrl: API_URL }}>
       const API_BASE = apiUrl || '';
 
-      var existingAgent = localStorage.getItem('lapak_agent');
-      if (existingAgent) {
+      function clearAllSessions() {
+        localStorage.removeItem('lapak_agent');
+        localStorage.removeItem('lapak_seller');
+        localStorage.removeItem('ip_auth_user');
+        localStorage.removeItem('ip_auth_token');
+      }
+
+      // Notifikasi sesi agen yang masih aktif (hanya jika role benar-benar AGENT)
+      (function showExistingSession() {
         try {
-          var parsed = JSON.parse(existingAgent);
-          if (parsed && (parsed.id || parsed.email)) {
+          var rawAgent = localStorage.getItem('lapak_agent');
+          if (!rawAgent) return;
+          var parsed = JSON.parse(rawAgent);
+          var role = String((parsed && parsed.role) || '').toUpperCase();
+          if (parsed && (parsed.id || parsed.email) && (role === 'AGENT' || role === 'SUPER_ADMIN')) {
             var noticeEl = document.getElementById('agent-session-notice');
             if (noticeEl) noticeEl.classList.remove('hidden');
             var nameEl = document.getElementById('agent-session-name');
             if (nameEl) nameEl.textContent = parsed.name || parsed.email || 'Agen';
           }
         } catch (err) {}
-      }
+      })();
 
       var resetBtn = document.getElementById('btn-reset-agent-session');
       if (resetBtn) {
         resetBtn.addEventListener('click', function () {
-          localStorage.removeItem('lapak_agent');
-          localStorage.removeItem('ip_auth_user');
+          clearAllSessions();
           var noticeEl = document.getElementById('agent-session-notice');
           if (noticeEl) noticeEl.classList.add('hidden');
         });
@@ -219,18 +258,45 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         });
       }
 
-      function saveAgentSession(userData, email, fallbackPhone) {
+      // Simpan sesi HANYA jika role dari server benar-benar AGENT / SUPER_ADMIN.
+      function saveAgentSession(userData, token, email, fallbackPhone) {
+        var role = String((userData && userData.role) || '').trim().toUpperCase();
+        if (role !== 'AGENT' && role !== 'SUPER_ADMIN') {
+          showAlert(
+            'Akun ini terdaftar sebagai "' + (role || 'BUYER') + '", bukan Agen. ' +
+              'Gunakan halaman Masuk biasa, atau daftar sebagai agen baru dengan email lain.',
+            true
+          );
+          return false;
+        }
+
         var phoneDirectory = {};
         try {
           phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
-        } catch {}
-        var resolvedPhone = phoneDirectory[email] || (userData && userData.phone) || fallbackPhone || '';
-        var agentSession = Object.assign({}, userData || {}, {
-          role: 'AGENT',
-          phone: resolvedPhone
-        });
+        } catch (e) {}
+        var resolvedPhone = (userData && userData.phone) || phoneDirectory[email] || fallbackPhone || '';
+        var agentSession = Object.assign({}, userData, { role: role, phone: resolvedPhone });
+
+        localStorage.removeItem('lapak_seller');
         localStorage.setItem('lapak_agent', JSON.stringify(agentSession));
         localStorage.setItem('ip_auth_user', JSON.stringify(agentSession));
+        if (token) localStorage.setItem('ip_auth_token', token);
+        return true;
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise(function (resolve, reject) {
+          if (!file) return reject(new Error('Foto KTP wajib diunggah.'));
+          if (file.size > 3 * 1024 * 1024) return reject(new Error('Ukuran foto KTP maksimal 3MB.'));
+          var reader = new FileReader();
+          reader.onload = function () {
+            resolve(reader.result);
+          };
+          reader.onerror = function () {
+            reject(new Error('Gagal membaca foto KTP.'));
+          };
+          reader.readAsDataURL(file);
+        });
       }
 
       if (formLogin) {
@@ -238,6 +304,8 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           e.preventDefault();
           var email = document.getElementById('agent-login-email').value.trim();
           var password = document.getElementById('agent-login-password').value;
+          var btn = document.getElementById('btn-agent-login');
+          if (btn) btn.disabled = true;
 
           try {
             var res = await fetch(API_BASE + '/api/auth/login', {
@@ -254,13 +322,16 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
               return;
             }
 
-            saveAgentSession(data.user, email, '');
+            if (!saveAgentSession(data.user, data.token, email, '')) return;
+
             showAlert('Login berhasil! Mengalihkan ke Dashboard Agen...', false);
             setTimeout(function () {
               window.location.href = '/agen';
             }, 400);
           } catch (err) {
             showAlert('Gagal terhubung ke server API.', true);
+          } finally {
+            if (btn) btn.disabled = false;
           }
         });
       }
@@ -272,12 +343,32 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           var phone = document.getElementById('agent-reg-phone').value.trim();
           var email = document.getElementById('agent-reg-email').value.trim();
           var password = document.getElementById('agent-reg-password').value;
+          var nik = document.getElementById('agent-reg-nik').value.trim();
+          var ktpFile = document.getElementById('agent-reg-ktp').files[0];
+          var btn = document.getElementById('btn-agent-register');
+
+          if (!/^\d{16}$/.test(nik)) {
+            showAlert('NIK harus 16 digit angka.', true);
+            return;
+          }
+
+          if (btn) btn.disabled = true;
 
           try {
+            var ktpUrl = await fileToDataUrl(ktpFile);
+
             var res = await fetch(API_BASE + '/api/auth/register', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: name, email: email, password: password, phone: phone })
+              body: JSON.stringify({
+                name: name,
+                email: email,
+                password: password,
+                phone: phone,
+                role: 'AGENT',
+                nik: nik,
+                ktp_image_url: ktpUrl
+              })
             });
             var data = await res.json().catch(function () {
               return {};
@@ -291,17 +382,21 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
             var phoneDirectory = {};
             try {
               phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
-            } catch {}
-            phoneDirectory[email] = phone;
+            } catch (e2) {}
+            phoneDirectory[email.toLowerCase()] = phone;
             localStorage.setItem('lp_agent_phones', JSON.stringify(phoneDirectory));
 
-            saveAgentSession(data.user, email, phone);
-            showAlert('Pendaftaran agen berhasil! Mengalihkan ke Dashboard Agen...', false);
-            setTimeout(function () {
-              window.location.href = '/agen';
-            }, 400);
+            // Akun agen baru berstatus nonaktif sampai diverifikasi admin, jadi tidak auto-login.
+            formReg.reset();
+            if (tabLogin) tabLogin.click();
+            showAlert(
+              data.message || 'Pendaftaran berhasil dan menunggu verifikasi KTP oleh Admin.',
+              false
+            );
           } catch (err) {
-            showAlert('Gagal terhubung ke server API.', true);
+            showAlert(err && err.message ? err.message : 'Gagal terhubung ke server API.', true);
+          } finally {
+            if (btn) btn.disabled = false;
           }
         });
       }

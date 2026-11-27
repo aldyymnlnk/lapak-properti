@@ -20,6 +20,7 @@ try {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard Agen Properti — InfoProperti</title>
+    <meta name="robots" content="noindex, nofollow" />
     <style is:global>
       @import '../../styles/global.css';
     </style>
@@ -512,7 +513,34 @@ try {
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        // ---------- AUTH: kirim token Bearer ke setiap request ke API ----------
+        function clearAgentStorage() {
+          localStorage.removeItem('lapak_agent');
+          localStorage.removeItem('lapak_seller');
+          localStorage.removeItem('ip_auth_user');
+          localStorage.removeItem('ip_auth_token');
+        }
+
+        function authFetch(url, opts) {
+          opts = opts || {};
+          var headers = Object.assign({}, opts.headers || {});
+          try {
+            var token = localStorage.getItem('ip_auth_token');
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+          } catch (e) {}
+          opts.headers = headers;
+
+          return fetch(url, opts).then(function (res) {
+            if (res.status === 401) {
+              clearAgentStorage();
+              window.location.href = '/agen/login';
+            }
+            return res;
+          });
         }
 
         function showAgentToast(type, title, message) {
@@ -572,7 +600,7 @@ try {
               TOAST_STORAGE_KEY,
               JSON.stringify({ type: type, title: title, message: message })
             );
-          } catch {}
+          } catch (e) {}
         }
 
         function flushQueuedToast() {
@@ -584,7 +612,7 @@ try {
             if (parsed && parsed.message) {
               showAgentToast(parsed.type || 'success', parsed.title || 'Berhasil', parsed.message);
             }
-          } catch {}
+          } catch (e) {}
         }
 
         flushQueuedToast();
@@ -624,12 +652,12 @@ try {
           try {
             var rawAgent = localStorage.getItem('lapak_agent');
             if (rawAgent) parsedAgent = JSON.parse(rawAgent);
-          } catch {}
+          } catch (e) {}
 
           try {
             var rawAuth = localStorage.getItem('ip_auth_user');
             if (rawAuth) parsedAuth = JSON.parse(rawAuth);
-          } catch {}
+          } catch (e) {}
 
           var authRole = parsedAuth && parsedAuth.role ? String(parsedAuth.role).trim().toUpperCase() : '';
           var isAuthAgent = authRole === 'AGENT' || authRole === 'SUPER_ADMIN';
@@ -667,9 +695,7 @@ try {
         syncAgentProfileUI();
 
         window.logoutAgent = function () {
-          localStorage.removeItem('lapak_agent');
-          localStorage.removeItem('ip_auth_user');
-          localStorage.removeItem('lapak_seller');
+          clearAgentStorage();
           window.location.href = '/agen/login';
         };
 
@@ -904,7 +930,7 @@ try {
             var delBtn = document.createElement('button');
             delBtn.type = 'button';
             delBtn.className = 'text-[10px] font-bold text-rose-600 hover:underline cursor-pointer';
-            delBtn.textContent = 'Hapus Foto &#10005;';
+            delBtn.innerHTML = 'Hapus Foto &#10005;';
             delBtn.addEventListener('click', function () {
               agentGalleryPhotos.splice(idx, 1);
               renderAgentGallerySlots();
@@ -1010,7 +1036,7 @@ try {
           var st = normalizeStatus(currentStatus);
           var nextStatus = st === 'available' ? 'booked' : 'available';
           try {
-            var res = await fetch(API_BASE + '/api/admin/properties/' + encodeURIComponent(String(propId)), {
+            var res = await authFetch(API_BASE + '/api/admin/properties/' + encodeURIComponent(String(propId)), {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status: nextStatus })
@@ -1161,7 +1187,7 @@ try {
           if (btnLabel) btnLabel.textContent = 'Mengirim ke Katalog...';
 
           try {
-            var res = await fetch(url, {
+            var res = await authFetch(url, {
               method: method,
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
@@ -1203,7 +1229,7 @@ try {
           var propTitle = (item && item.title) || 'unit ini';
           if (!confirm('Hapus "' + propTitle + '" dari katalog?')) return;
           try {
-            var res = await fetch(API_BASE + '/api/admin/properties/' + encodeURIComponent(String(propId)), {
+            var res = await authFetch(API_BASE + '/api/admin/properties/' + encodeURIComponent(String(propId)), {
               method: 'DELETE'
             });
             if (res.ok) {
@@ -1226,8 +1252,9 @@ try {
           var newPhone = document.getElementById('prof-phone').value.trim();
 
           try {
-            if (currentAgent.id) {
-              var res = await fetch(API_BASE + '/api/users/' + encodeURIComponent(String(currentAgent.id)), {
+            var isPreset = String(currentAgent.id || '').indexOf('preset-') === 0;
+            if (currentAgent.id && !isPreset) {
+              var res = await authFetch(API_BASE + '/api/users/' + encodeURIComponent(String(currentAgent.id)), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: newName, phone: newPhone })
