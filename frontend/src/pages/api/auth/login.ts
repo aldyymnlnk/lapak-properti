@@ -10,45 +10,69 @@ import {
   verifyPassword
 } from '../../../lib/apiServer';
 
+type AccessRole = 'SUPER_ADMIN' | 'ADMIN' | 'AGENT';
+
+const ACCESS_USERS: Record<AccessRole, { id: string; name: string; username: string; email: string }> = {
+  SUPER_ADMIN: {
+    id: 'preset-superadmin',
+    name: 'Super Admin InfoProperti',
+    username: 'superadmin',
+    email: 'superadmin@infoproperti.web.id'
+  },
+  ADMIN: {
+    id: 'preset-admin',
+    name: 'Admin Operasional InfoProperti',
+    username: 'admin',
+    email: 'admin@infoproperti.web.id'
+  },
+  AGENT: {
+    id: 'preset-agen',
+    name: 'Agen Mitra InfoProperti',
+    username: 'agen',
+    email: 'agen@infoproperti.web.id'
+  }
+};
+
+/**
+ * Akun untuk login kode akses. Kalau PRESET_*_PASSWORD diisi, pakai akun preset itu.
+ * Kalau tidak, dibuat akun bawaan, jadi cukup *_ACCESS_CODE saja yang perlu diisi.
+ */
+function buildAccessUser(role: AccessRole, presetAccounts: Record<string, any>, env: Record<string, string | undefined>) {
+  const base = ACCESS_USERS[role];
+  const preset = presetAccounts[base.email];
+  if (preset) {
+    const { password: _pw, ...rest } = preset;
+    return rest;
+  }
+  return { ...base, phone: env.PRESET_PHONE || '', role, is_active: true };
+}
+
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const body = await request.json();
     const { email, username, identifier, password, access_code } = body || {};
     const env = getEnv(locals);
     const presetAccounts = buildPresetAccounts(locals);
-    const superAdminCode = env.SUPERADMIN_ACCESS_CODE || '';
-    const adminCode = env.ADMIN_ACCESS_CODE || '';
-    const agentCode = env.AGENT_ACCESS_CODE || '';
 
+    // ---------- LOGIN DENGAN KODE AKSES (Super Admin / Admin / Agen) ----------
     if (access_code) {
       const code = String(access_code).trim();
-      if (superAdminCode && safeEqual(code, superAdminCode) && presetAccounts['superadmin@infoproperti.web.id']) {
-        const { password: _pw, ...user } = presetAccounts['superadmin@infoproperti.web.id'];
-        return jsonRes({ message: 'Login Super Admin Berhasil!', user, token: signToken(user, locals) }, 200);
-      }
-      if (adminCode && safeEqual(code, adminCode) && presetAccounts['admin@infoproperti.web.id']) {
-        const { password: _pw, ...user } = presetAccounts['admin@infoproperti.web.id'];
-        return jsonRes({ message: 'Login Admin Berhasil!', user, token: signToken(user, locals) }, 200);
-      }
-      if (agentCode && safeEqual(code, agentCode)) {
-        // Akun agen preset: tidak butuh PRESET_AGENT_PASSWORD, cukup AGENT_ACCESS_CODE.
-        const preset = presetAccounts['agen@infoproperti.web.id'];
-        const agentUser = preset
-          ? (({ password: _pw, ...rest }) => rest)(preset)
-          : {
-              id: 'preset-agen',
-              name: 'Agen Mitra InfoProperti',
-              username: 'agen',
-              email: 'agen@infoproperti.web.id',
-              phone: env.PRESET_PHONE || '',
-              role: 'AGENT',
-              is_active: true
-            };
-        return jsonRes({ message: 'Login Agen Berhasil!', user: agentUser, token: signToken(agentUser, locals) }, 200);
+      const checks: Array<{ role: AccessRole; expected: string; message: string }> = [
+        { role: 'SUPER_ADMIN', expected: env.SUPERADMIN_ACCESS_CODE || '', message: 'Login Super Admin Berhasil!' },
+        { role: 'ADMIN', expected: env.ADMIN_ACCESS_CODE || '', message: 'Login Admin Berhasil!' },
+        { role: 'AGENT', expected: env.AGENT_ACCESS_CODE || '', message: 'Login Agen Berhasil!' }
+      ];
+
+      for (const check of checks) {
+        if (check.expected && safeEqual(code, check.expected)) {
+          const user = buildAccessUser(check.role, presetAccounts, env);
+          return jsonRes({ message: check.message, user, token: signToken(user, locals) }, 200);
+        }
       }
       return jsonRes({ error: 'Kode akses tidak valid.' }, 401);
     }
 
+    // ---------- LOGIN EMAIL/USERNAME + PASSWORD ----------
     const loginId = String(email || username || identifier || '').toLowerCase().trim();
     if (!loginId || !password) {
       return jsonRes({ error: 'Email/username dan kata sandi wajib diisi.' }, 400);
