@@ -85,6 +85,7 @@ try {
         <a
           href="/katalog"
           target="_blank"
+          rel="noopener noreferrer"
           class="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition"
         >
           <span>Lihat Katalog Publik</span>
@@ -415,7 +416,7 @@ try {
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
                     </div>
 
-                    <!-- Preview Sampul (Hanya tampil jika sudah ada foto) -->
+                    <!-- Preview Sampul -->
                     <div id="acover-preview-wrapper" class="hidden relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
                       <img id="aimage-preview" src="" alt="Preview Sampul" class="w-full h-36 object-cover" />
                       <button
@@ -429,7 +430,7 @@ try {
                     </div>
                   </div>
 
-                  <!-- BAGIAN B: FOTO PENDUKUNG DINAMIS (OPSIONAL, BISA TAMBAH & HAPUS) -->
+                  <!-- BAGIAN B: FOTO PENDUKUNG DINAMIS -->
                   <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-3">
                     <div class="flex items-center justify-between gap-2">
                       <div>
@@ -617,16 +618,34 @@ try {
           reader.readAsDataURL(file);
         }
 
-        var rawAgent = localStorage.getItem('lapak_agent');
-        if (!rawAgent) {
-          window.location.href = '/agen/login';
-          return;
+        function resolveAgentSession() {
+          var parsedAgent = null;
+          var parsedAuth = null;
+
+          try {
+            var rawAgent = localStorage.getItem('lapak_agent');
+            if (rawAgent) parsedAgent = JSON.parse(rawAgent);
+          } catch {}
+
+          try {
+            var rawAuth = localStorage.getItem('ip_auth_user');
+            if (rawAuth) parsedAuth = JSON.parse(rawAuth);
+          } catch {}
+
+          var authRole = parsedAuth && parsedAuth.role ? String(parsedAuth.role).toUpperCase() : '';
+          var isAuthAgent = authRole === 'AGENT' || authRole === 'SUPER_ADMIN';
+
+          if (!parsedAgent && !isAuthAgent) {
+            return null;
+          }
+
+          var base = Object.assign({}, parsedAgent || {}, parsedAuth || {});
+          base.role = authRole || String(base.role || 'AGENT').toUpperCase();
+          return base;
         }
 
-        var currentAgent = {};
-        try {
-          currentAgent = JSON.parse(rawAgent || '{}');
-        } catch (err) {
+        var currentAgent = resolveAgentSession();
+        if (!currentAgent) {
           window.location.href = '/agen/login';
           return;
         }
@@ -656,8 +675,10 @@ try {
 
         var agentEmailNorm = String(currentAgent.email || '').trim().toLowerCase();
         var agentIdStr = currentAgent.id ? String(currentAgent.id) : '';
+        var isSuperAdmin = String(currentAgent.role || '').toUpperCase() === 'SUPER_ADMIN';
 
         var myProperties = (serverProperties || []).filter(function (p) {
+          if (isSuperAdmin) return true;
           var specs = p.specifications || {};
           var specEmail = String(specs.agent_email || '').trim().toLowerCase();
           var specId = specs.agent_id ? String(specs.agent_id) : '';
@@ -723,7 +744,7 @@ try {
                 '<td class="px-5 py-4 font-bold text-slate-800">Rp ' + priceText + '/' + escapeHtml(item.price_unit) + '</td>' +
                 '<td class="px-5 py-4"><button type="button" onclick="window.toggleAgentPropStatus(\'' + escapeHtml(item.id) + '\', \'' + st + '\')" class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition ' + statusClass + '">' + st + ' (Ubah)</button></td>' +
                 '<td class="px-5 py-4 text-right"><div class="flex items-center justify-end gap-2">' +
-                '<a href="/property/' + escapeHtml(item.id) + '" target="_blank" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-[11px]">Lihat</a>' +
+                '<a href="/property/' + escapeHtml(item.id) + '" target="_blank" rel="noopener noreferrer" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-[11px]">Lihat</a>' +
                 '<button type="button" onclick="window.editAgentProp(\'' + escapeHtml(item.id) + '\')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] cursor-pointer">Edit</button>' +
                 '<button type="button" onclick="window.deleteAgentProp(\'' + escapeHtml(item.id) + '\')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg text-[11px] cursor-pointer">Hapus</button>' +
                 '</div></td></tr>'
@@ -842,7 +863,6 @@ try {
           });
         }
 
-        // ================= FOTO SAMPUL + GALERI PENDUKUNG DINAMIS =================
         var aImgInput = document.getElementById('aprop-image');
         var aFileInput = document.getElementById('aprop-file');
         var aFileLabel = document.getElementById('afile-name-label');
@@ -990,7 +1010,7 @@ try {
           var st = normalizeStatus(currentStatus);
           var nextStatus = st === 'available' ? 'booked' : 'available';
           try {
-            var res = await fetch(API_BASE + '/api/admin/properties/' + propId, {
+            var res = await fetch(API_BASE + '/api/admin/properties/' + encodeURIComponent(String(propId)), {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ status: nextStatus })
@@ -1132,7 +1152,9 @@ try {
             gallery: cleanedGallery
           };
 
-          var url = id ? API_BASE + '/api/admin/properties/' + id : API_BASE + '/api/admin/properties';
+          var url = id
+            ? API_BASE + '/api/admin/properties/' + encodeURIComponent(String(id))
+            : API_BASE + '/api/admin/properties';
           var method = id ? 'PUT' : 'POST';
 
           if (btnSubmit) btnSubmit.disabled = true;
@@ -1181,7 +1203,9 @@ try {
           var propTitle = (item && item.title) || 'unit ini';
           if (!confirm('Hapus "' + propTitle + '" dari katalog?')) return;
           try {
-            var res = await fetch(API_BASE + '/api/admin/properties/' + propId, { method: 'DELETE' });
+            var res = await fetch(API_BASE + '/api/admin/properties/' + encodeURIComponent(String(propId)), {
+              method: 'DELETE'
+            });
             if (res.ok) {
               queueToastAfterReload('success', 'Unit Dihapus', '"' + propTitle + '" telah dihapus dari katalog.');
               window.location.reload();
@@ -1203,7 +1227,7 @@ try {
 
           try {
             if (currentAgent.id) {
-              var res = await fetch(API_BASE + '/api/users/' + currentAgent.id, {
+              var res = await fetch(API_BASE + '/api/users/' + encodeURIComponent(String(currentAgent.id)), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: newName, phone: newPhone })
@@ -1225,7 +1249,7 @@ try {
             localStorage.setItem('lapak_agent', JSON.stringify(currentAgent));
             localStorage.setItem(
               'ip_auth_user',
-              JSON.stringify(Object.assign({}, currentAgent, { role: 'AGENT' }))
+              JSON.stringify(Object.assign({}, currentAgent, { role: currentAgent.role || 'AGENT' }))
             );
 
             var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
