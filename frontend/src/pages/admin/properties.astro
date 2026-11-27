@@ -1,18 +1,10 @@
 ---
 export const prerender = false;
+import { getAllProperties } from '../../lib/properties';
 
 const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
-let properties: any[] = [];
-try {
-  const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
-  if (res.ok) {
-    const data = await res.json();
-    properties = Array.isArray(data) ? data : [];
-  }
-} catch {
-  properties = [];
-}
+const properties: any[] = await getAllProperties(Astro.locals);
 ---
 
 <html lang="id">
@@ -136,6 +128,18 @@ try {
                 <label class="block font-bold text-slate-700 mb-1">Alamat / Lokasi Lengkap *</label>
                 <input type="text" id="prop-location" required placeholder="Contoh: Jl. Soekarno Hatta No. 10, Lowokwaru, Malang"
                   class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nama Penampil (tampil di halaman detail) *</label>
+                <input type="text" id="prop-seller-name" required placeholder="Contoh: Admin InfoProperti"
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">No. WhatsApp Penerima Chat *</label>
+                <input type="tel" id="prop-seller-phone" required placeholder="081234567890"
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
               </div>
 
               <div class="md:col-span-2">
@@ -343,6 +347,7 @@ try {
               id: parsed.id || '',
               name: parsed.name || 'Admin',
               email: parsed.email || '',
+              phone: parsed.phone || '',
               role: String(parsed.role || '').trim().toUpperCase()
             };
           } catch {
@@ -508,6 +513,13 @@ try {
           renderExtraSlots();
         });
 
+        function fillSellerDefaults() {
+          const n = document.getElementById('prop-seller-name');
+          const p = document.getElementById('prop-seller-phone');
+          if (n && !n.value) n.value = currentSeller.name || 'Admin InfoProperti';
+          if (p && !p.value) p.value = currentSeller.phone || '';
+        }
+
         window.resetForm = function () {
           document.getElementById('prop-id').value = '';
           form.reset();
@@ -518,9 +530,11 @@ try {
           formTitle.textContent = 'Tambah Unit Properti Baru';
           btnSubmit.textContent = '+ Simpan Unit ke Katalog';
           btnReset.classList.add('hidden');
+          fillSellerDefaults();
         };
 
         btnReset.addEventListener('click', window.resetForm);
+        fillSellerDefaults();
 
         window.editProperty = function (propId) {
           const item = initialProperties.find((p) => String(p.id) === String(propId));
@@ -544,6 +558,10 @@ try {
           renderExtraSlots();
 
           document.getElementById('prop-description').value = item.description || '';
+
+          const itemSpecs = item.specifications && typeof item.specifications === 'object' ? item.specifications : {};
+          document.getElementById('prop-seller-name').value = itemSpecs.seller_name || currentSeller.name || '';
+          document.getElementById('prop-seller-phone').value = itemSpecs.seller_phone || currentSeller.phone || '';
 
           formTitle.textContent = 'Edit Unit: ' + (item.title || '');
           btnSubmit.textContent = 'Simpan Perubahan Unit';
@@ -573,7 +591,11 @@ try {
             location: document.getElementById('prop-location').value,
             image_url: coverVal,
             gallery: cleanedGallery,
-            specifications: Object.assign({}, existingItem?.specifications || {}, { gallery: cleanedGallery }),
+            specifications: Object.assign({}, existingItem?.specifications || {}, {
+              gallery: cleanedGallery,
+              seller_name: document.getElementById('prop-seller-name').value.trim() || currentSeller.name || 'Admin InfoProperti',
+              seller_phone: document.getElementById('prop-seller-phone').value.trim()
+            }),
             description: document.getElementById('prop-description').value
           };
 

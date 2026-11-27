@@ -1,18 +1,10 @@
 ---
 export const prerender = false;
+import { getAllProperties } from '../../lib/properties';
 
 const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
-let allProperties: any[] = [];
-try {
-  const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
-  if (res.ok) {
-    const data = await res.json();
-    allProperties = Array.isArray(data) ? data : [];
-  }
-} catch {
-  allProperties = [];
-}
+const allProperties: any[] = await getAllProperties(Astro.locals);
 ---
 
 <html lang="id">

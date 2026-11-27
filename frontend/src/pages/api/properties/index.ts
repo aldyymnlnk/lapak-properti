@@ -51,20 +51,34 @@ const FALLBACK_PROPERTIES = [
   }
 ];
 
+const NO_STORE = { 'Cache-Control': 'no-store' };
+
 export const GET: APIRoute = async ({ locals }) => {
   try {
     const supabase = getSupabase(locals);
-    const { data, error } = await supabase
+
+    let { data, error } = await supabase
       .from('properties')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (!error && Array.isArray(data) && data.length > 0) {
-      return jsonRes(data, 200);
+    // Kolom created_at mungkin tidak ada: ulangi tanpa pengurutan
+    if (error) {
+      const retry = await supabase.from('properties').select('*');
+      data = retry.data;
+      error = retry.error;
     }
 
-    return jsonRes(FALLBACK_PROPERTIES, 200);
-  } catch {
-    return jsonRes(FALLBACK_PROPERTIES, 200);
+    // Data demo hanya dipakai kalau query GAGAL. Tabel kosong tetap mengembalikan [],
+    // supaya dashboard admin/superadmin tidak menampilkan unit palsu.
+    if (error || !Array.isArray(data)) {
+      console.error('GET /api/properties gagal:', error);
+      return jsonRes(FALLBACK_PROPERTIES, 200, NO_STORE);
+    }
+
+    return jsonRes(data, 200, NO_STORE);
+  } catch (err) {
+    console.error('GET /api/properties error:', err);
+    return jsonRes(FALLBACK_PROPERTIES, 200, NO_STORE);
   }
 };
