@@ -1,6 +1,9 @@
 ---
+export const prerender = false;
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 ---
 
 <html lang="id">
@@ -147,17 +150,19 @@ import Footer from '../../components/Footer.astro';
 
     <Footer />
 
-    <script is:inline>
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
       const API_BASE = apiUrl || '';
 
       var existingAgent = localStorage.getItem('lapak_agent');
       if (existingAgent) {
         try {
           var parsed = JSON.parse(existingAgent);
-          var noticeEl = document.getElementById('agent-session-notice');
-          if (noticeEl) noticeEl.classList.remove('hidden');
-          var nameEl = document.getElementById('agent-session-name');
-          if (nameEl) nameEl.textContent = parsed.name || parsed.email || 'Agen';
+          if (parsed && (parsed.id || parsed.email)) {
+            var noticeEl = document.getElementById('agent-session-notice');
+            if (noticeEl) noticeEl.classList.remove('hidden');
+            var nameEl = document.getElementById('agent-session-name');
+            if (nameEl) nameEl.textContent = parsed.name || parsed.email || 'Agen';
+          }
         } catch (err) {}
       }
 
@@ -165,6 +170,7 @@ import Footer from '../../components/Footer.astro';
       if (resetBtn) {
         resetBtn.addEventListener('click', function () {
           localStorage.removeItem('lapak_agent');
+          localStorage.removeItem('ip_auth_user');
           var noticeEl = document.getElementById('agent-session-notice');
           if (noticeEl) noticeEl.classList.add('hidden');
         });
@@ -213,6 +219,20 @@ import Footer from '../../components/Footer.astro';
         });
       }
 
+      function saveAgentSession(userData, email, fallbackPhone) {
+        var phoneDirectory = {};
+        try {
+          phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
+        } catch {}
+        var resolvedPhone = phoneDirectory[email] || (userData && userData.phone) || fallbackPhone || '';
+        var agentSession = Object.assign({}, userData || {}, {
+          role: 'AGENT',
+          phone: resolvedPhone
+        });
+        localStorage.setItem('lapak_agent', JSON.stringify(agentSession));
+        localStorage.setItem('ip_auth_user', JSON.stringify(agentSession));
+      }
+
       if (formLogin) {
         formLogin.addEventListener('submit', async function (e) {
           e.preventDefault();
@@ -225,26 +245,22 @@ import Footer from '../../components/Footer.astro';
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: email, password: password })
             });
-            var data = await res.json();
+            var data = await res.json().catch(function () {
+              return {};
+            });
 
             if (!res.ok) {
               showAlert(data.error || 'Email atau password agen salah.', true);
               return;
             }
 
-            var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
-            var agentSession = Object.assign({}, data.user, {
-              role: 'AGENT',
-              phone: phoneDirectory[email] || data.user.phone || ''
-            });
-
-            localStorage.setItem('lapak_agent', JSON.stringify(agentSession));
+            saveAgentSession(data.user, email, '');
             showAlert('Login berhasil! Mengalihkan ke Dashboard Agen...', false);
             setTimeout(function () {
               window.location.href = '/agen';
-            }, 500);
+            }, 400);
           } catch (err) {
-            showAlert('Gagal terhubung ke server backend (pastikan port 5000 aktif).', true);
+            showAlert('Gagal terhubung ke server API.', true);
           }
         });
       }
@@ -263,29 +279,29 @@ import Footer from '../../components/Footer.astro';
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ name: name, email: email, password: password, phone: phone })
             });
-            var data = await res.json();
+            var data = await res.json().catch(function () {
+              return {};
+            });
 
             if (!res.ok) {
               showAlert(data.error || 'Pendaftaran agen gagal.', true);
               return;
             }
 
-            var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
+            var phoneDirectory = {};
+            try {
+              phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
+            } catch {}
             phoneDirectory[email] = phone;
             localStorage.setItem('lp_agent_phones', JSON.stringify(phoneDirectory));
 
-            var agentSession = Object.assign({}, data.user, {
-              role: 'AGENT',
-              phone: phone
-            });
-
-            localStorage.setItem('lapak_agent', JSON.stringify(agentSession));
+            saveAgentSession(data.user, email, phone);
             showAlert('Pendaftaran agen berhasil! Mengalihkan ke Dashboard Agen...', false);
             setTimeout(function () {
               window.location.href = '/agen';
-            }, 500);
+            }, 400);
           } catch (err) {
-            showAlert('Gagal terhubung ke server backend (pastikan port 5000 aktif).', true);
+            showAlert('Gagal terhubung ke server API.', true);
           }
         });
       }

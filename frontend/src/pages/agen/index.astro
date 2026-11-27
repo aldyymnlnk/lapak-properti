@@ -650,6 +650,7 @@ try {
 
         window.logoutAgent = function () {
           localStorage.removeItem('lapak_agent');
+          localStorage.removeItem('ip_auth_user');
           window.location.href = '/agen/login';
         };
 
@@ -1222,6 +1223,10 @@ try {
             }
 
             localStorage.setItem('lapak_agent', JSON.stringify(currentAgent));
+            localStorage.setItem(
+              'ip_auth_user',
+              JSON.stringify(Object.assign({}, currentAgent, { role: 'AGENT' }))
+            );
 
             var phoneDirectory = JSON.parse(localStorage.getItem('lp_agent_phones') || '{}');
             if (currentAgent.email) {
