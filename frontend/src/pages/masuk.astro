@@ -91,16 +91,25 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         alertBox.classList.remove('hidden');
       }
 
-      function routeByRole(user) {
-        localStorage.setItem('ip_auth_user', JSON.stringify(user));
-        const role = String(user.role || '').toUpperCase();
-        if (role === 'SUPER_ADMIN') {
-          window.location.href = '/superadmin';
-        } else if (role === 'ADMIN' || role === 'SELLER') {
-          window.location.href = '/admin';
-        } else if (role === 'AGENT') {
+      function routeByRole(rawUser) {
+        const normalizedRole = String(rawUser.role || 'BUYER').trim().toUpperCase();
+        const sessionUser = {
+          ...rawUser,
+          role: normalizedRole
+        };
+
+        localStorage.setItem('ip_auth_user', JSON.stringify(sessionUser));
+
+        if (normalizedRole === 'AGENT') {
+          localStorage.setItem('lapak_agent', JSON.stringify(sessionUser));
           window.location.href = '/agen';
+        } else if (normalizedRole === 'SUPER_ADMIN') {
+          window.location.href = '/superadmin';
+        } else if (normalizedRole === 'ADMIN' || normalizedRole === 'SELLER') {
+          localStorage.removeItem('lapak_agent');
+          window.location.href = '/admin';
         } else {
+          localStorage.removeItem('lapak_agent');
           window.location.href = '/profil';
         }
       }
@@ -123,10 +132,10 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
               password
             })
           });
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
           if (res.ok && data.user) {
             showAlert(data.message || 'Berhasil masuk! Mengalihkan...', false);
-            setTimeout(() => routeByRole(data.user), 400);
+            setTimeout(() => routeByRole(data.user), 350);
           } else {
             showAlert(data.error || 'Email/username atau kata sandi salah.');
             btn.disabled = false;
