@@ -9,257 +9,364 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Admin - LapakProperti</title>
+    <title>Dashboard Admin Operasional — InfoProperti</title>
+    <meta name="robots" content="noindex, nofollow" />
     <style is:global>
       @import '../../styles/global.css';
     </style>
   </head>
-  <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
     <div>
-      <Navbar />
+      <Navbar active="admin" />
 
-      <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-
-          <!-- Header Portal -->
-          <div class="text-center mb-6">
-            <a href="/" class="inline-flex items-center justify-center gap-2.5 font-extrabold text-xl tracking-tight text-slate-900 mb-3">
-              <span class="w-9 h-9 rounded-xl bg-[#059669] text-white flex items-center justify-center font-black text-base shadow-sm">
-                LP
+      <section class="bg-[#0F172A] text-white py-10 px-4 border-b border-slate-800">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="px-2.5 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                ADMIN OPERASIONAL
               </span>
-              <span>Lapak<span class="text-emerald-600">Properti</span></span>
-            </a>
-            <span class="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 mb-1">
-              Administrator Control Panel
-            </span>
-            <h1 class="text-2xl font-extrabold text-slate-900">Login Admin</h1>
-            <p class="text-xs text-slate-500 mt-1">
-              Silakan isi kredensial Anda untuk mengelola katalog properti, agen, dan verifikasi.
+              <span id="admin-user-badge" class="text-xs text-slate-400">Memuat sesi...</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold">Kelola Properti &amp; Verifikasi Booking</h1>
+            <p class="text-xs text-slate-300 mt-1">
+              Setujui atau tolak pengajuan KTP/NIK pembeli, pantau status pembayaran, dan kelola ketersediaan unit properti.
             </p>
           </div>
 
-          <!-- Notifikasi jika masih ada sesi login sebelumnya (TIDAK auto-redirect paksa) -->
-          <div id="session-notice" class="hidden mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">
-            <p>Anda masih memiliki sesi aktif sebagai <strong id="session-user-name">Admin</strong>.</p>
-            <div class="flex items-center gap-2">
-              <a id="session-continue-link" href="/admin" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-[11px]">
-                Lanjutkan ke Dashboard &rarr;
-              </a>
-              <button type="button" id="btn-reset-session" class="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-bold text-[11px] cursor-pointer">
-                Hapus Sesi & Login Ulang
+          <div class="flex flex-wrap items-center gap-2.5">
+            <a id="admin-sa-link" href="/superadmin" class="hidden px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold transition">
+              Pusat Super Admin
+            </a>
+            <button type="button" id="btn-admin-refresh" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold cursor-pointer transition">
+              Muat Ulang Data
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+        <!-- RINGKASAN OPERASIONAL -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Menunggu Verifikasi</span>
+            <strong id="adm-stat-pending" class="block text-2xl font-black text-amber-600 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Cek KTP &amp; NIK pemesan</span>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Disetujui (Siap Bayar)</span>
+            <strong id="adm-stat-approved" class="block text-2xl font-black text-blue-600 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Menunggu pelunasan/DP</span>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Lunas / Terkunci</span>
+            <strong id="adm-stat-paid" class="block text-2xl font-black text-[#059669] mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">E-Receipt terbit</span>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Unit Tersedia</span>
+            <strong id="adm-stat-available" class="block text-2xl font-black text-slate-900 mt-1">0</strong>
+            <span class="text-[11px] text-slate-500">Siap ditawarkan</span>
+          </div>
+        </section>
+
+        <!-- DAFTAR PENGAJUAN BOOKING -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">Antrean Pengajuan Booking &amp; KYC</h2>
+              <p class="text-[11px] text-slate-500">Verifikasi identitas pemesan sebelum unit dinyatakan terkunci atau lunas.</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" data-order-filter="ALL" class="ord-filter-btn px-3 py-1.5 rounded-lg bg-[#0F172A] text-white text-xs font-bold cursor-pointer">
+                Semua
+              </button>
+              <button type="button" data-order-filter="PENDING_VERIFICATION" class="ord-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold cursor-pointer">
+                Pending
+              </button>
+              <button type="button" data-order-filter="APPROVED" class="ord-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold cursor-pointer">
+                Disetujui
+              </button>
+              <button type="button" data-order-filter="PAID" class="ord-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold cursor-pointer">
+                Lunas
               </button>
             </div>
           </div>
 
-          <!-- Tab Pilihan Mode -->
-          <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl mb-6 text-xs font-semibold">
-            <button type="button" id="tab-login" class="py-2 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer">
-              Login Admin
-            </button>
-            <button type="button" id="tab-register" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">
-              Daftar Akun
-            </button>
-            <button type="button" id="tab-code" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">
-              Kode Akses
-            </button>
+          <div id="admin-orders-list" class="divide-y divide-slate-100 text-xs">
+            <div class="p-8 text-center text-slate-400">Memuat daftar pengajuan...</div>
+          </div>
+        </section>
+
+        <!-- DAFTAR UNIT PROPERTI -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">Status Ketersediaan Unit Properti</h2>
+              <p class="text-[11px] text-slate-500">Ubah status unit menjadi tersedia atau terkunci bila diperlukan.</p>
+            </div>
+            <a href="/katalog" class="text-xs font-bold text-[#059669] hover:underline">Lihat Katalog Publik &rarr;</a>
           </div>
 
-          <!-- Alert Pesan Error / Sukses -->
-          <div id="auth-alert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium"></div>
-
-          <!-- FORM 1: LOGIN EMAIL & PASSWORD -->
-          <form id="form-login" class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Email Admin *</label>
-              <input type="email" id="login-email" required autocomplete="off" placeholder="admin@lapakproperti.id"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
-              <input type="password" id="login-password" required placeholder="Masukkan password Anda"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <button type="submit"
-              class="w-full py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-sm">
-              Masuk ke Dashboard Admin
-            </button>
-          </form>
-
-          <!-- FORM 2: REGISTER ADMIN / MITRA BARU -->
-          <form id="form-register" class="space-y-4 hidden">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
-              <input type="text" id="reg-name" required placeholder="Nama lengkap admin / pengelola"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Email *</label>
-              <input type="email" id="reg-email" required placeholder="email@domain.com"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Buat Password *</label>
-              <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <button type="submit"
-              class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer">
-              Daftar & Masuk Dashboard
-            </button>
-          </form>
-
-          <!-- FORM 3: KODE AKSES CEPAT (WAJIB DIISI MANUAL) -->
-          <form id="form-code" class="space-y-4 hidden">
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
-              Masukkan kode akses khusus pengelola untuk masuk ke panel administrasi.
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Kode Akses Admin *</label>
-              <input type="password" id="access-code" required placeholder="Masukkan kode akses"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <button type="submit"
-              class="w-full py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer">
-              Verifikasi Kode & Masuk
-            </button>
-          </form>
-
-          <!-- Footer Links -->
-          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-            <a href="/" class="hover:text-slate-900">&larr; Kembali ke Beranda</a>
-            <a href="/agen/login" class="font-bold text-[#059669] hover:underline">Portal Khusus Agen &rarr;</a>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-3">Unit Properti</th>
+                  <th class="px-4 py-3">Kategori</th>
+                  <th class="px-4 py-3">Harga</th>
+                  <th class="px-4 py-3">Status</th>
+                  <th class="px-4 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="admin-props-tbody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="5" class="px-4 py-8 text-center text-slate-400">Memuat data properti...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
 
     <Footer />
 
     <script is:inline define:vars={{ apiUrl: API_URL }}>
-      const API_BASE = apiUrl || '';
+      (function () {
+        const API_BASE = apiUrl || '';
 
-      function getDestinationByRole(role) {
-        const normalized = String(role || 'ADMIN').trim().toUpperCase();
-        if (normalized === 'AGENT') return '/agen';
-        if (normalized === 'SUPER_ADMIN') return '/superadmin';
-        if (normalized === 'BUYER') return '/profil';
-        return '/admin';
-      }
-
-      const existingSessionRaw = localStorage.getItem('ip_auth_user') || localStorage.getItem('lapak_seller');
-      if (existingSessionRaw) {
-        try {
-          const parsed = JSON.parse(existingSessionRaw);
-          document.getElementById('session-notice')?.classList.remove('hidden');
-          const nameEl = document.getElementById('session-user-name');
-          if (nameEl) nameEl.textContent = parsed.name || parsed.email || 'Pengguna';
-          const continueLink = document.getElementById('session-continue-link');
-          if (continueLink) continueLink.href = getDestinationByRole(parsed.role);
-        } catch {}
-      }
-
-      document.getElementById('btn-reset-session')?.addEventListener('click', () => {
-        localStorage.removeItem('ip_auth_user');
-        localStorage.removeItem('lapak_seller');
-        localStorage.removeItem('lapak_agent');
-        document.getElementById('session-notice')?.classList.add('hidden');
-      });
-
-      const tabs = {
-        login: { btn: document.getElementById('tab-login'), form: document.getElementById('form-login') },
-        register: { btn: document.getElementById('tab-register'), form: document.getElementById('form-register') },
-        code: { btn: document.getElementById('tab-code'), form: document.getElementById('form-code') }
-      };
-
-      const alertBox = document.getElementById('auth-alert');
-
-      function showAlert(msg, isError = true) {
-        if (!alertBox) return;
-        alertBox.textContent = msg;
-        alertBox.className = `mb-4 p-3 rounded-xl text-xs font-medium ${
-          isError
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-        }`;
-        alertBox.classList.remove('hidden');
-      }
-
-      function switchTab(activeKey) {
-        alertBox?.classList.add('hidden');
-        Object.keys(tabs).forEach((key) => {
-          const item = tabs[key];
-          if (key === activeKey) {
-            item.btn?.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-            item.btn?.classList.remove('text-slate-600');
-            item.form?.classList.remove('hidden');
-          } else {
-            item.btn?.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
-            item.btn?.classList.add('text-slate-600');
-            item.form?.classList.add('hidden');
+        function getAdminSession() {
+          try {
+            const rawAuth = localStorage.getItem('ip_auth_user');
+            const rawSeller = localStorage.getItem('lapak_seller');
+            const raw = rawAuth || rawSeller;
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return null;
+            return {
+              id: parsed.id || '',
+              name: parsed.name || 'Admin',
+              email: parsed.email || '',
+              role: String(parsed.role || '').trim().toUpperCase()
+            };
+          } catch {
+            return null;
           }
-        });
-      }
+        }
 
-      tabs.login.btn?.addEventListener('click', () => switchTab('login'));
-      tabs.register.btn?.addEventListener('click', () => switchTab('register'));
-      tabs.code.btn?.addEventListener('click', () => switchTab('code'));
+        const currentAdmin = getAdminSession();
+        const allowedRoles = ['ADMIN', 'SUPER_ADMIN', 'SELLER'];
 
-      async function handleAuth(url, payload) {
-        try {
-          const res = await fetch(`${API_BASE}${url}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json().catch(() => ({}));
+        if (!currentAdmin) {
+          window.location.href = '/admin/login';
+          return;
+        }
 
-          if (!res.ok) {
-            showAlert(data.error || 'Autentikasi gagal. Periksa kembali data Anda.', true);
+        if (currentAdmin.role === 'AGENT') {
+          window.location.href = '/agen';
+          return;
+        }
+
+        if (!allowedRoles.includes(currentAdmin.role)) {
+          window.location.href = '/profil';
+          return;
+        }
+
+        const badge = document.getElementById('admin-user-badge');
+        if (badge) {
+          badge.textContent = `${currentAdmin.name} (${currentAdmin.role})`;
+        }
+        if (currentAdmin.role === 'SUPER_ADMIN') {
+          document.getElementById('admin-sa-link')?.classList.remove('hidden');
+        }
+
+        let allOrdersCache = [];
+        let currentOrderFilter = 'ALL';
+
+        function renderOrdersList() {
+          const box = document.getElementById('admin-orders-list');
+          if (!box) return;
+
+          const filtered =
+            currentOrderFilter === 'ALL'
+              ? allOrdersCache
+              : allOrdersCache.filter((o) => String(o.status || '').toUpperCase() === currentOrderFilter);
+
+          if (!filtered.length) {
+            box.innerHTML = `<div class="p-8 text-center text-slate-400">Tidak ada pengajuan untuk filter ini.</div>`;
             return;
           }
 
-          const user = data.user || {};
-          const role = String(user.role || 'ADMIN').trim().toUpperCase();
-          const sessionData = { ...user, role };
+          box.innerHTML = filtered
+            .map((o) => {
+              const st = String(o.status || 'PENDING_VERIFICATION').toUpperCase();
+              const prop = o.properties || {};
+              const ktpBtn = o.ktp_image_url
+                ? `<a href="${o.ktp_image_url}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold">Lihat KTP</a>`
+                : `<span class="text-[11px] text-slate-400">Tanpa foto KTP</span>`;
 
-          localStorage.setItem('ip_auth_user', JSON.stringify(sessionData));
-          if (role === 'AGENT') {
-            localStorage.setItem('lapak_agent', JSON.stringify(sessionData));
-          } else {
-            localStorage.removeItem('lapak_agent');
+              return `
+                <div class="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-slate-50/70">
+                  <div class="space-y-1">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="font-mono text-[11px] font-bold text-slate-400">#${String(o.id || '').slice(0, 8).toUpperCase()}</span>
+                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        st === 'PAID'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : st === 'APPROVED'
+                          ? 'bg-blue-100 text-blue-800'
+                          : st === 'REJECTED'
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }">${st}</span>
+                    </div>
+                    <h3 class="text-sm font-extrabold text-slate-900">${prop.title || 'Unit Properti'}</h3>
+                    <p class="text-[11px] text-slate-600">
+                      Pemesan: <strong>${o.buyer_name || '-'}</strong> • NIK: <span class="font-mono">${o.buyer_nik || '-'}</span> • WA: <strong>${o.buyer_phone || '-'}</strong>
+                    </p>
+                    ${o.notes ? `<p class="text-[11px] text-slate-500">Catatan: ${o.notes}</p>` : ''}
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    ${ktpBtn}
+                    ${
+                      st === 'PENDING_VERIFICATION'
+                        ? `<button type="button" onclick="updateOrderStatus('${o.id}', 'APPROVED')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer">Setujui (ACC)</button>
+                           <button type="button" onclick="updateOrderStatus('${o.id}', 'REJECTED')" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold cursor-pointer">Tolak</button>`
+                        : ''
+                    }
+                    ${
+                      st === 'APPROVED'
+                        ? `<button type="button" onclick="updateOrderStatus('${o.id}', 'PAID')" class="px-3 py-1.5 rounded-lg bg-[#059669] hover:bg-emerald-700 text-white font-bold cursor-pointer">Tandai Lunas (PAID)</button>`
+                        : ''
+                    }
+                    <a href="/order/${o.id}" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold">Detail</a>
+                  </div>
+                </div>
+              `;
+            })
+            .join('');
+        }
+
+        function renderPropsTable(props) {
+          const tbody = document.getElementById('admin-props-tbody');
+          if (!tbody) return;
+          if (!Array.isArray(props) || !props.length) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-slate-400">Belum ada unit properti.</td></tr>`;
+            return;
           }
 
-          const targetUrl = getDestinationByRole(role);
-          showAlert('Login berhasil! Mengalihkan...', false);
-          setTimeout(() => {
-            window.location.href = targetUrl;
-          }, 400);
-        } catch {
-          showAlert('Gagal terhubung ke server backend.', true);
+          tbody.innerHTML = props
+            .map((p) => {
+              const st = String(p.status || 'AVAILABLE').toUpperCase();
+              const isBooked = st === 'BOOKED' || st === 'SOLD';
+              const nextStatus = isBooked ? 'AVAILABLE' : 'BOOKED';
+
+              return `
+                <tr class="hover:bg-slate-50/80">
+                  <td class="px-4 py-3">
+                    <strong class="block text-slate-900">${p.title || '-'}</strong>
+                    <span class="text-[11px] text-slate-500">${p.location || '-'}</span>
+                  </td>
+                  <td class="px-4 py-3 uppercase font-bold text-[11px] text-slate-600">${p.category || '-'}</td>
+                  <td class="px-4 py-3 font-bold text-[#059669]">Rp ${Number(p.price || 0).toLocaleString('id-ID')}</td>
+                  <td class="px-4 py-3">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                      isBooked ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'
+                    }">${st}</span>
+                  </td>
+                  <td class="px-4 py-3 text-right space-x-1.5">
+                    <button
+                      type="button"
+                      onclick="togglePropertyStatus('${p.id}', '${nextStatus}')"
+                      class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 cursor-pointer"
+                    >
+                      Set ${nextStatus}
+                    </button>
+                    <a href="/property/${p.id}" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700">Lihat</a>
+                  </td>
+                </tr>
+              `;
+            })
+            .join('');
         }
-      }
 
-      tabs.login.form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        handleAuth('/api/auth/login', { email, password });
-      });
+        async function loadAdminData() {
+          try {
+            const [ordersRes, propsRes] = await Promise.all([
+              fetch(`${API_BASE}/api/admin/orders?t=${Date.now()}`, { cache: 'no-store' }),
+              fetch(`${API_BASE}/api/properties?t=${Date.now()}`, { cache: 'no-store' })
+            ]);
 
-      tabs.register.form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('reg-name').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const password = document.getElementById('reg-password').value;
-        handleAuth('/api/auth/register', { name, email, password });
-      });
+            const orders = ordersRes.ok ? await ordersRes.json().catch(() => []) : [];
+            const props = propsRes.ok ? await propsRes.json().catch(() => []) : [];
 
-      tabs.code.form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const access_code = document.getElementById('access-code').value.trim();
-        handleAuth('/api/auth/login', { access_code });
-      });
+            allOrdersCache = Array.isArray(orders) ? orders : [];
+            const safeProps = Array.isArray(props) ? props : [];
+
+            document.getElementById('adm-stat-pending').textContent = String(
+              allOrdersCache.filter((o) => String(o.status).toUpperCase() === 'PENDING_VERIFICATION').length
+            );
+            document.getElementById('adm-stat-approved').textContent = String(
+              allOrdersCache.filter((o) => String(o.status).toUpperCase() === 'APPROVED').length
+            );
+            document.getElementById('adm-stat-paid').textContent = String(
+              allOrdersCache.filter((o) => String(o.status).toUpperCase() === 'PAID').length
+            );
+            document.getElementById('adm-stat-available').textContent = String(
+              safeProps.filter((p) => !['BOOKED', 'SOLD'].includes(String(p.status || '').toUpperCase())).length
+            );
+
+            renderOrdersList();
+            renderPropsTable(safeProps);
+          } catch (err) {
+            console.error('Gagal memuat data Admin:', err);
+          }
+        }
+
+        window.updateOrderStatus = async (orderId, status) => {
+          const res = await fetch(`${API_BASE}/api/admin/orders/${encodeURIComponent(String(orderId))}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            loadAdminData();
+          } else {
+            alert(data.error || 'Gagal memperbarui status pengajuan.');
+          }
+        };
+
+        window.togglePropertyStatus = async (propId, status) => {
+          const res = await fetch(`${API_BASE}/api/admin/properties/${encodeURIComponent(String(propId))}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) {
+            loadAdminData();
+          } else {
+            alert(data.error || 'Gagal mengubah status properti.');
+          }
+        };
+
+        document.querySelectorAll('.ord-filter-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.ord-filter-btn').forEach((b) => {
+              b.className = 'ord-filter-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold cursor-pointer';
+            });
+            btn.className = 'ord-filter-btn px-3 py-1.5 rounded-lg bg-[#0F172A] text-white text-xs font-bold cursor-pointer';
+            currentOrderFilter = btn.getAttribute('data-order-filter') || 'ALL';
+            renderOrdersList();
+          });
+        });
+
+        document.getElementById('btn-admin-refresh')?.addEventListener('click', loadAdminData);
+        loadAdminData();
+      })();
     </script>
-  </body> 
+  </body>
 </html>

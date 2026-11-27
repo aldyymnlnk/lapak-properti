@@ -102,14 +102,18 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
         if (normalizedRole === 'AGENT') {
           localStorage.setItem('lapak_agent', JSON.stringify(sessionUser));
+          localStorage.removeItem('lapak_seller');
           window.location.href = '/agen';
         } else if (normalizedRole === 'SUPER_ADMIN') {
+          localStorage.removeItem('lapak_agent');
           window.location.href = '/superadmin';
         } else if (normalizedRole === 'ADMIN' || normalizedRole === 'SELLER') {
+          localStorage.setItem('lapak_seller', JSON.stringify(sessionUser));
           localStorage.removeItem('lapak_agent');
           window.location.href = '/admin';
         } else {
           localStorage.removeItem('lapak_agent');
+          localStorage.removeItem('lapak_seller');
           window.location.href = '/profil';
         }
       }
