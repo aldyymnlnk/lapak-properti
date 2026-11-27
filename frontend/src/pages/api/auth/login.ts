@@ -18,6 +18,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const presetAccounts = buildPresetAccounts(locals);
     const superAdminCode = env.SUPERADMIN_ACCESS_CODE || '';
     const adminCode = env.ADMIN_ACCESS_CODE || '';
+    const agentCode = env.AGENT_ACCESS_CODE || '';
 
     if (access_code) {
       const code = String(access_code).trim();
@@ -28,6 +29,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (adminCode && safeEqual(code, adminCode) && presetAccounts['admin@infoproperti.web.id']) {
         const { password: _pw, ...user } = presetAccounts['admin@infoproperti.web.id'];
         return jsonRes({ message: 'Login Admin Berhasil!', user, token: signToken(user, locals) }, 200);
+      }
+      if (agentCode && safeEqual(code, agentCode)) {
+        // Akun agen preset: tidak butuh PRESET_AGENT_PASSWORD, cukup AGENT_ACCESS_CODE.
+        const preset = presetAccounts['agen@infoproperti.web.id'];
+        const agentUser = preset
+          ? (({ password: _pw, ...rest }) => rest)(preset)
+          : {
+              id: 'preset-agen',
+              name: 'Agen Mitra InfoProperti',
+              username: 'agen',
+              email: 'agen@infoproperti.web.id',
+              phone: env.PRESET_PHONE || '',
+              role: 'AGENT',
+              is_active: true
+            };
+        return jsonRes({ message: 'Login Agen Berhasil!', user: agentUser, token: signToken(agentUser, locals) }, 200);
       }
       return jsonRes({ error: 'Kode akses tidak valid.' }, 401);
     }
