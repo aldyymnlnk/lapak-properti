@@ -22,11 +22,31 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
       <main class="max-w-lg mx-auto px-4 py-12">
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
-          <div>
-            <h1 class="text-2xl font-extrabold text-slate-900">Daftar Akun Baru</h1>
-            <p class="text-xs text-slate-500 mt-1">
-              Pilih peran akun Anda di InfoProperti. Pendaftaran Agen memerlukan data verifikasi identitas (KTP).
-            </p>
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-900">Daftar Akun Baru</h1>
+              <p class="text-xs text-slate-500 mt-1">
+                Pilih peran akun Anda di InfoProperti. Pendaftaran Agen memerlukan data verifikasi identitas (KTP).
+              </p>
+            </div>
+
+            <!-- BANTUAN CEPAT ISI DATA UJI COBA -->
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                id="btn-fill-test-buyer"
+                class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold cursor-pointer transition"
+              >
+                Isi Uji Pembeli
+              </button>
+              <button
+                type="button"
+                id="btn-fill-test-agent"
+                class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-bold cursor-pointer transition"
+              >
+                Isi Uji Agen
+              </button>
+            </div>
           </div>
 
           <!-- Pilihan 2 Role: Pembeli atau Agen -->
@@ -79,7 +99,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
             <div>
               <label class="block font-bold text-slate-700 mb-1">Nomor WhatsApp *</label>
-              <div class="flex rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus-within:ring-[#059669]">
+              <div class="flex rounded-xl border border-slate-300 overflow-hidden focus-within:ring-2 focus:ring-[#059669]">
                 <span class="px-3 py-2.5 bg-slate-100 text-slate-700 font-bold border-r border-slate-300 flex items-center">
                   +62
                 </span>
@@ -110,18 +130,22 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
                 Persyaratan Verifikasi Agen
               </p>
               <div>
-                <label class="block font-bold text-slate-700 mb-1">Nomor Induk Kependudukan (NIK KTP 16 Digit)</label>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block font-bold text-slate-700">Nomor Induk Kependudukan (NIK KTP 16 Digit) *</label>
+                  <span id="nik-counter" class="text-[10px] font-mono font-bold text-slate-500">0/16 digit</span>
+                </div>
                 <input
                   type="text"
                   id="reg-nik"
+                  inputmode="numeric"
                   maxlength="16"
                   pattern="[0-9]{16}"
-                  placeholder="357301xxxxxxxxxx"
+                  placeholder="3573010101900001"
                   class="w-full px-3.5 py-2 rounded-xl border border-slate-300 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-[#059669]"
                 />
               </div>
               <div>
-                <label class="block font-bold text-slate-700 mb-1">Upload Foto KTP</label>
+                <label class="block font-bold text-slate-700 mb-1">Upload Foto KTP *</label>
                 <input
                   type="file"
                   id="reg-ktp-file"
@@ -190,30 +214,62 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
       const roleInput = document.getElementById('selected-role');
       const agentReqBox = document.getElementById('agent-requirements');
       const nikInput = document.getElementById('reg-nik');
+      const nikCounter = document.getElementById('nik-counter');
       const ktpInput = document.getElementById('reg-ktp-file');
       const alertBox = document.getElementById('reg-alert');
       let ktpBase64 = '';
 
+      function setRoleMode(targetRole) {
+        const role = targetRole === 'AGENT' ? 'AGENT' : 'BUYER';
+        roleTabs.forEach((t) => {
+          const isMatch = t.getAttribute('data-role') === role;
+          t.className = isMatch
+            ? 'role-tab py-2.5 rounded-lg bg-[#0F172A] text-white shadow-2xs cursor-pointer transition'
+            : 'role-tab py-2.5 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer transition';
+        });
+
+        if (roleInput) roleInput.value = role;
+        const isAgent = role === 'AGENT';
+        if (agentReqBox) agentReqBox.classList.toggle('hidden', !isAgent);
+        if (nikInput) nikInput.required = isAgent;
+        if (ktpInput) ktpInput.required = isAgent;
+      }
+
       roleTabs.forEach((tab) => {
         tab.addEventListener('click', () => {
-          roleTabs.forEach((t) => {
-            t.className = 'role-tab py-2.5 rounded-lg text-slate-600 hover:text-slate-900 cursor-pointer transition';
-          });
-          tab.className = 'role-tab py-2.5 rounded-lg bg-[#0F172A] text-white shadow-2xs cursor-pointer transition';
-
-          const role = tab.getAttribute('data-role') || 'BUYER';
-          if (roleInput) roleInput.value = role;
-
-          const isAgent = role === 'AGENT';
-          if (agentReqBox) agentReqBox.classList.toggle('hidden', !isAgent);
-          if (nikInput) nikInput.required = isAgent;
-          if (ktpInput) ktpInput.required = isAgent;
+          setRoleMode(tab.getAttribute('data-role') || 'BUYER');
         });
       });
 
+      function syncNikDigits() {
+        if (!nikInput) return;
+        const digitsOnly = nikInput.value.replace(/\D/g, '').slice(0, 16);
+        if (nikInput.value !== digitsOnly) {
+          nikInput.value = digitsOnly;
+        }
+        if (nikCounter) {
+          nikCounter.textContent = `${digitsOnly.length}/16 digit`;
+          nikCounter.className =
+            digitsOnly.length === 16
+              ? 'text-[10px] font-mono font-bold text-emerald-700'
+              : 'text-[10px] font-mono font-bold text-slate-500';
+        }
+        if (digitsOnly.length > 0 && digitsOnly.length < 16) {
+          nikInput.setCustomValidity('NIK KTP harus terdiri dari tepat 16 digit angka.');
+        } else {
+          nikInput.setCustomValidity('');
+        }
+      }
+
+      nikInput?.addEventListener('input', syncNikDigits);
+      nikInput?.addEventListener('paste', () => setTimeout(syncNikDigits, 0));
+
       ktpInput?.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
-        if (!file) return;
+        if (!file) {
+          ktpBase64 = '';
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (ev) => {
           ktpBase64 = String(ev.target?.result || '');
@@ -229,8 +285,37 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         alertBox.classList.remove('hidden');
       }
 
+      // Data uji coba cepat (pilih file Foto KTP secara manual jika mode Agen)
+      document.getElementById('btn-fill-test-buyer')?.addEventListener('click', () => {
+        setRoleMode('BUYER');
+        document.getElementById('reg-name').value = 'Pembeli Uji Coba';
+        document.getElementById('reg-username').value = 'pembeli_uji';
+        document.getElementById('reg-phone').value = '81234567890';
+        document.getElementById('reg-email').value = 'pembeli.uji@example.com';
+        document.getElementById('reg-password').value = 'Rahasia123!';
+        document.getElementById('reg-password-confirm').value = 'Rahasia123!';
+        showAlert('Data uji coba Pembeli terisi. Klik "Daftar Sekarang" untuk menguji.', false);
+      });
+
+      document.getElementById('btn-fill-test-agent')?.addEventListener('click', () => {
+        setRoleMode('AGENT');
+        document.getElementById('reg-name').value = 'Agen Uji Coba';
+        document.getElementById('reg-username').value = 'agen_uji';
+        document.getElementById('reg-phone').value = '81298765432';
+        document.getElementById('reg-email').value = 'agen.uji@example.com';
+        if (nikInput) {
+          nikInput.value = '3573010101900001';
+          syncNikDigits();
+        }
+        document.getElementById('reg-password').value = 'Rahasia123!';
+        document.getElementById('reg-password-confirm').value = 'Rahasia123!';
+        showAlert('Data uji coba Agen terisi (NIK 16 digit: 3573010101900001). Pilih file Foto KTP lalu klik "Daftar Sekarang".', false);
+      });
+
       document.getElementById('register-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        syncNikDigits();
+
         const pass = document.getElementById('reg-password').value;
         const passConfirm = document.getElementById('reg-password-confirm').value;
         if (pass.length < 8) {
@@ -243,6 +328,20 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         }
 
         const role = roleInput?.value || 'BUYER';
+        const cleanNik = (nikInput?.value || '').replace(/\D/g, '');
+        if (role === 'AGENT') {
+          if (cleanNik.length !== 16) {
+            showAlert('NIK KTP Agen wajib tepat 16 digit angka.');
+            nikInput?.focus();
+            return;
+          }
+          if (!ktpBase64) {
+            showAlert('Harap pilih file Foto KTP terlebih dahulu.');
+            ktpInput?.focus();
+            return;
+          }
+        }
+
         const rawPhone = document.getElementById('reg-phone').value.replace(/^0+/, '').trim();
         const fullPhone = `62${rawPhone}`;
         const btn = document.getElementById('btn-daftar');
@@ -260,7 +359,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
               email: document.getElementById('reg-email').value.trim(),
               password: pass,
               role,
-              nik: role === 'AGENT' ? nikInput?.value.trim() : undefined,
+              nik: role === 'AGENT' ? cleanNik : undefined,
               ktp_image_url: role === 'AGENT' ? ktpBase64 : undefined
             })
           });
