@@ -34,8 +34,8 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
             </div>
             <div class="space-y-1">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-extrabold uppercase tracking-wider">
-                  Akun Pembeli Terdaftar
+                <span id="profile-role-badge" class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-extrabold uppercase tracking-wider">
+                  Akun Terdaftar
                 </span>
                 <span id="profile-phone-badge" class="text-[11px] text-slate-400 font-mono"></span>
               </div>
@@ -260,21 +260,39 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
     <Footer />
 
     <script is:inline define:vars={{ apiUrl: API_URL }}>
-const API_BASE = apiUrl || '';
+      const API_BASE = apiUrl || '';
       const alertBox = document.getElementById('profile-alert');
 
-      let session = null;
-      try {
-        session = JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
-      } catch {
-        session = null;
+      function readAuthSession() {
+        try {
+          const raw = localStorage.getItem('ip_auth_user');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          const id = parsed.id ? String(parsed.id).trim() : '';
+          const email = parsed.email ? String(parsed.email).trim().toLowerCase() : '';
+          const scopeId = id || email;
+          if (!scopeId) return null;
+          return {
+            ...parsed,
+            id: scopeId,
+            email: parsed.email || '',
+            name: parsed.name || 'Pengguna',
+            phone: parsed.phone || '',
+            role: String(parsed.role || 'BUYER').toUpperCase()
+          };
+        } catch {
+          return null;
+        }
       }
 
-      if (!session || !session.id) {
+      let session = readAuthSession();
+
+      if (!session) {
         window.location.href = '/masuk';
       }
 
-      const userScope = session?.id ? String(session.id) : 'guest';
+      const userScope = session?.id ? encodeURIComponent(String(session.id).trim()) : 'guest';
       const LIKED_KEY = `ip_liked_props_${userScope}`;
       const SAVED_KEY = `ip_saved_props_${userScope}`;
       const USER_ORDERS_KEY = `ip_user_orders_${userScope}`;
@@ -304,6 +322,7 @@ const API_BASE = apiUrl || '';
         if (!session) return;
         const initials = String(session.name || 'IP')
           .split(' ')
+          .filter(Boolean)
           .map((w) => w[0])
           .join('')
           .slice(0, 2)
@@ -311,7 +330,20 @@ const API_BASE = apiUrl || '';
         document.getElementById('profile-avatar').textContent = initials || 'IP';
         document.getElementById('profile-heading').textContent = session.name || 'Profil Saya';
         document.getElementById('profile-sub').textContent = session.email || '';
-        document.getElementById('profile-phone-badge').textContent = session.phone ? `WA: +${session.phone.replace(/^\+/, '')}` : '';
+        document.getElementById('profile-phone-badge').textContent = session.phone
+          ? `WA: +${String(session.phone).replace(/^\+/, '')}`
+          : '';
+
+        const roleLabel =
+          session.role === 'AGENT'
+            ? 'Mitra Agen Terdaftar'
+            : session.role === 'ADMIN'
+            ? 'Admin Operasional'
+            : session.role === 'SUPER_ADMIN'
+            ? 'Super Admin'
+            : 'Akun Pembeli Terdaftar';
+        document.getElementById('profile-role-badge').textContent = roleLabel;
+
         document.getElementById('prof-name').value = session.name || '';
         document.getElementById('prof-phone').value = session.phone || '';
         document.getElementById('prof-email').value = session.email || '';
@@ -320,7 +352,6 @@ const API_BASE = apiUrl || '';
 
       renderHeaderInfo();
 
-      // ================= NAVIGASI TAB =================
       const tabBtns = document.querySelectorAll('.prof-tab');
       const tabPanels = document.querySelectorAll('.tab-panel');
 
@@ -338,7 +369,6 @@ const API_BASE = apiUrl || '';
         });
       });
 
-      // ================= MUAT RIWAYAT DIBELI & PENGAJUAN =================
       async function loadUserOrders() {
         const container = document.getElementById('orders-container');
         if (!session) return;
@@ -368,7 +398,7 @@ const API_BASE = apiUrl || '';
 
           for (const res of responses) {
             if (!res.ok) continue;
-            const list = await res.json();
+            const list = await res.json().catch(() => []);
             if (Array.isArray(list)) {
               list.forEach((item) => {
                 if (item?.id) mergedMap.set(String(item.id), item);
@@ -460,7 +490,6 @@ const API_BASE = apiUrl || '';
         }
       }
 
-      // ================= MUAT PROPERTI DISUKAI & DISIMPAN =================
       let allPropertiesCache = [];
 
       function renderSavedCollection(listIds, containerId, storageKey, emptyTitle, emptyDesc) {
@@ -574,14 +603,13 @@ const API_BASE = apiUrl || '';
         try {
           const res = await fetch(`${API_BASE}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
           if (res.ok) {
-            const data = await res.json();
+            const data = await res.json().catch(() => []);
             allPropertiesCache = Array.isArray(data) ? data : [];
             syncCollectionsUI();
           }
         } catch {}
       }
 
-      // ================= PENGATURAN AKUN =================
       function showAlert(msg, isErr = true) {
         alertBox.textContent = msg;
         alertBox.className = `p-3 rounded-xl text-xs font-semibold ${
@@ -592,6 +620,7 @@ const API_BASE = apiUrl || '';
 
       document.getElementById('btn-profile-logout')?.addEventListener('click', () => {
         localStorage.removeItem('ip_auth_user');
+        localStorage.removeItem('lapak_agent');
         window.location.href = '/masuk';
       });
 
@@ -607,16 +636,23 @@ const API_BASE = apiUrl || '';
         const cleanName = document.getElementById('prof-name').value.trim();
 
         try {
-          const res = await fetch(`${API_BASE}/api/users/${session.id}`, {
+          const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(String(session.id))}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: cleanName, phone: cleanPhone })
           });
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
 
           if (res.ok && data.user) {
-            const updated = { ...session, ...data.user };
+            const updated = {
+              ...session,
+              ...data.user,
+              role: String(data.user.role || session.role || 'BUYER').toUpperCase()
+            };
             localStorage.setItem('ip_auth_user', JSON.stringify(updated));
+            if (updated.role === 'AGENT') {
+              localStorage.setItem('lapak_agent', JSON.stringify(updated));
+            }
             session = updated;
             renderHeaderInfo();
             if (typeof window.initNavbar === 'function') {

@@ -137,7 +137,7 @@ try {
       .slice(0, 3);
   }
 } catch {
-  // Jika Supabase gagal di SSR, coba lanjutkan ke fallback
+  // Jika Supabase gagal di SSR, lanjut ke fallback
 }
 
 if (!property && cleanId) {
@@ -233,7 +233,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
       {property ? (
         <main class="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
-          <!-- BREADCRUMB NAVIGASI -->
           <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
             <a href="/" class="hover:text-emerald-700 transition">Beranda</a>
             <span>/</span>
@@ -247,7 +246,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             )}
           </nav>
 
-          <!-- GALERI FOTO (MINIMAL 4 FOTO) -->
           <section class="grid grid-cols-1 md:grid-cols-4 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
             <div class="md:col-span-2 md:row-span-2 relative h-64 sm:h-80 md:h-[380px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
               <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
@@ -274,13 +272,10 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             ))}
           </section>
 
-          <!-- KONTEN UTAMA 2 KOLOM -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
 
-            <!-- KOLOM KIRI (7 KOLOM): INFORMASI PROPERTI -->
             <div class="lg:col-span-7 space-y-6">
 
-              <!-- HEADER JUDUL, HARGA & TOMBOL SUKA / SIMPAN / SHARE -->
               <div class="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200 shadow-xs">
                 <div class="flex items-start justify-between gap-4">
                   <div>
@@ -347,7 +342,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                   </span>
                 </div>
 
-                <!-- SPESIFIKASI UTAMA -->
                 <div class="mt-6 pt-6 border-t border-slate-100">
                   <h2 class="text-sm font-extrabold text-slate-900 mb-4">Spesifikasi Utama</h2>
                   <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
@@ -360,7 +354,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                   </div>
                 </div>
 
-                <!-- DESKRIPSI PROPERTI -->
                 <div class="mt-6 pt-6 border-t border-slate-100">
                   <h2 class="text-sm font-extrabold text-slate-900 mb-3">Deskripsi Properti</h2>
                   <div class="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line space-y-3">
@@ -370,7 +363,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                   </div>
                 </div>
 
-                <!-- FASILITAS & KEUNGGULAN -->
                 <div class="mt-6 pt-6 border-t border-slate-100">
                   <h2 class="text-sm font-extrabold text-slate-900 mb-3">Fasilitas & Keunggulan</h2>
                   <div class="flex flex-wrap gap-2">
@@ -385,7 +377,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                   </div>
                 </div>
 
-                <!-- LOKASI & PETA -->
                 <div class="mt-6 pt-6 border-t border-slate-100">
                   <div class="flex items-center justify-between mb-3">
                     <h2 class="text-sm font-extrabold text-slate-900">Lokasi Properti</h2>
@@ -414,10 +405,8 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
               </div>
             </div>
 
-            <!-- KOLOM KANAN (5 KOLOM): DUAL-TRACK PROFESIONAL -->
             <aside class="lg:col-span-5 space-y-5 sticky top-24">
 
-              <!-- JALUR 1: FORMULIR BOOKING RESMI -->
               <div class="bg-white p-6 rounded-2xl border-2 border-emerald-500/40 shadow-sm space-y-4">
                 <div class="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
                   <div>
@@ -511,7 +500,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                 )}
               </div>
 
-              <!-- JALUR 2: KONSULTASI & SURVEI LANGSUNG VIA WHATSAPP -->
               <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Konsultasi & Survei Lokasi</span>
@@ -570,7 +558,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
                 </div>
               </div>
 
-              <!-- SIMULASI CICILAN / ESTIMASI SEWA -->
               <div class="bg-[#0F172A] text-white p-5 rounded-2xl border border-slate-800 shadow-md space-y-3">
                 <div>
                   <h3 class="text-sm font-extrabold">
@@ -635,7 +622,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             </aside>
           </div>
 
-          <!-- PROPERTI SERUPA -->
           {similarProperties.length > 0 && (
             <section class="pt-8 border-t border-slate-200">
               <div class="flex items-center justify-between mb-5">
@@ -693,7 +679,6 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
 
     <Footer />
 
-    <!-- LIGHTBOX MODAL FOTO -->
     <div id="lightbox-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 flex items-center justify-center p-4">
       <button type="button" id="close-lightbox" class="absolute top-5 right-5 text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer">
         Tutup &times;
@@ -717,14 +702,26 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
 
       function getAuthSession() {
         try {
-          return JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
+          const raw = localStorage.getItem('ip_auth_user');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          const id = parsed.id ? String(parsed.id).trim() : '';
+          const email = parsed.email ? String(parsed.email).trim().toLowerCase() : '';
+          return {
+            id: id || email || '',
+            email,
+            name: parsed.name || '',
+            phone: parsed.phone || '',
+            role: String(parsed.role || 'BUYER').toUpperCase()
+          };
         } catch {
           return null;
         }
       }
 
       const authSession = getAuthSession();
-      const userScope = authSession?.id ? String(authSession.id) : 'guest';
+      const userScope = authSession?.id ? encodeURIComponent(authSession.id) : 'guest';
       const LIKED_KEY = `ip_liked_props_${userScope}`;
       const SAVED_KEY = `ip_saved_props_${userScope}`;
       const USER_ORDERS_KEY = `ip_user_orders_${userScope}`;
@@ -780,9 +777,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
 
       detailLikeBtn?.addEventListener('click', () => {
         if (!authSession?.id) {
-          if (confirm('Masuk ke akun terlebih dahulu untuk menyukai properti ini?')) {
-            window.location.href = '/masuk';
-          }
+          window.location.href = '/masuk';
           return;
         }
         const idStr = String(propId);
@@ -794,9 +789,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
 
       detailSaveBtn?.addEventListener('click', () => {
         if (!authSession?.id) {
-          if (confirm('Masuk ke akun terlebih dahulu untuk menyimpan properti ini?')) {
-            window.location.href = '/masuk';
-          }
+          window.location.href = '/masuk';
           return;
         }
         const idStr = String(propId);

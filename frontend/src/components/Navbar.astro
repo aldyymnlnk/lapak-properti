@@ -185,6 +185,17 @@ const currentActive = (active ||
 </header>
 
 <script is:inline>
+  function readAuthSession() {
+    try {
+      const raw = localStorage.getItem('ip_auth_user');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
   function initNavbar() {
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -214,19 +225,15 @@ const currentActive = (active ||
     const mobileDashLink = document.getElementById('mobile-dashboard-link');
     const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
 
-    let session = null;
-    try {
-      session = JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
-    } catch {
-      session = null;
-    }
+    const session = readAuthSession();
 
     const handleLogout = () => {
       localStorage.removeItem('ip_auth_user');
+      localStorage.removeItem('lapak_agent');
       window.location.href = '/masuk';
     };
 
-    if (session && session.role) {
+    if (session && (session.role || session.id || session.email)) {
       guestBox?.classList.remove('sm:flex');
       guestBox?.classList.add('hidden');
       userBox?.classList.remove('hidden');
@@ -236,7 +243,7 @@ const currentActive = (active ||
       mobileUserBox?.classList.remove('hidden');
       mobileUserBox?.classList.add('flex');
 
-      const role = String(session.role).toUpperCase();
+      const role = String(session.role || 'BUYER').toUpperCase();
       let targetHref = '/profil';
       let targetLabel = session.name || 'Profil Saya';
 

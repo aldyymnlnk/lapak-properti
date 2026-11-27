@@ -105,7 +105,6 @@ function getQuickSpecs(item: any): string[] {
     <div>
       <Navbar active="katalog" />
 
-      <!-- HERO SECTION RATA TENGAH -->
       <section class="bg-[#0F172A] text-white py-14 px-4 border-b border-slate-800">
         <div class="max-w-4xl mx-auto text-center">
           <span class="inline-block px-3.5 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-xs font-semibold text-emerald-400 mb-3">
@@ -123,7 +122,7 @@ function getQuickSpecs(item: any): string[] {
               placeholder="Cari lokasi, nama unit, SHM, atau fasilitas..."
               class="w-full px-3.5 py-2 text-xs sm:text-sm text-slate-800 focus:outline-none"
             />
-            <button id="search-btn" class="bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2 rounded-lg cursor-pointer">
+            <button type="button" id="search-btn" class="bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2 rounded-lg cursor-pointer">
               Cari
             </button>
           </div>
@@ -146,16 +145,16 @@ function getQuickSpecs(item: any): string[] {
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
-            <button data-filter="all" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0F172A] text-white border border-slate-800 cursor-pointer">
+            <button type="button" data-filter="all" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0F172A] text-white border border-slate-800 cursor-pointer">
               Semua (<span id="all-count">{properties.length}</span>)
             </button>
-            <button data-filter="kos" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
+            <button type="button" data-filter="kos" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
               Kos
             </button>
-            <button data-filter="rumah" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
+            <button type="button" data-filter="rumah" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
               Rumah
             </button>
-            <button data-filter="tanah" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
+            <button type="button" data-filter="tanah" class="filter-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 cursor-pointer">
               Tanah
             </button>
           </div>
@@ -307,7 +306,18 @@ function getQuickSpecs(item: any): string[] {
 
       function getAuthSession() {
         try {
-          return JSON.parse(localStorage.getItem('ip_auth_user') || 'null');
+          const raw = localStorage.getItem('ip_auth_user');
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          const id = parsed.id ? String(parsed.id).trim() : '';
+          const email = parsed.email ? String(parsed.email).trim().toLowerCase() : '';
+          return {
+            id: id || email || '',
+            email,
+            name: parsed.name || '',
+            role: String(parsed.role || 'BUYER').toUpperCase()
+          };
         } catch {
           return null;
         }
@@ -315,7 +325,7 @@ function getQuickSpecs(item: any): string[] {
 
       function getStorageKeys() {
         const s = getAuthSession();
-        const scope = s?.id ? String(s.id) : 'guest';
+        const scope = s?.id ? encodeURIComponent(s.id) : 'guest';
         return {
           liked: `ip_liked_props_${scope}`,
           saved: `ip_saved_props_${scope}`,
@@ -389,9 +399,10 @@ function getQuickSpecs(item: any): string[] {
             e.stopPropagation();
             const keys = getStorageKeys();
             if (!keys.isLoggedIn) {
-              if (confirm('Masuk ke akun terlebih dahulu untuk menyukai & menyinkronkan properti di Profil Anda?')) {
+              showToast('Masuk ke akun terlebih dahulu untuk menyukai properti.');
+              setTimeout(() => {
                 window.location.href = '/masuk';
-              }
+              }, 700);
               return;
             }
             const id = String(btn.getAttribute('data-like-id') || '');
@@ -412,9 +423,10 @@ function getQuickSpecs(item: any): string[] {
             e.stopPropagation();
             const keys = getStorageKeys();
             if (!keys.isLoggedIn) {
-              if (confirm('Masuk ke akun terlebih dahulu untuk menyimpan properti ke Profil Anda?')) {
+              showToast('Masuk ke akun terlebih dahulu untuk menyimpan properti.');
+              setTimeout(() => {
                 window.location.href = '/masuk';
-              }
+              }, 700);
               return;
             }
             const id = String(btn.getAttribute('data-save-id') || '');
@@ -466,9 +478,8 @@ function getQuickSpecs(item: any): string[] {
 
       searchInput?.addEventListener('input', applyFilter);
       searchBtn?.addEventListener('click', applyFilter);
-      window.addEventListener('focus', () => {
-        syncCardActionStates();
-      });
+      window.addEventListener('focus', syncCardActionStates);
+      window.addEventListener('storage', syncCardActionStates);
 
       bindCardActions();
     </script>
