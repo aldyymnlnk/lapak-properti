@@ -37,10 +37,10 @@ const currentActive = (active ||
 ---
 
 <header class="bg-[#0F172A]/95 backdrop-blur-md text-white py-3.5 shadow-lg sticky top-0 z-50 border-b border-slate-800/90">
-  <div class="max-w-6xl mx-auto px-4 flex justify-between items-center gap-4">
+  <div class="max-w-6xl mx-auto px-4 flex justify-between items-center gap-3">
     <!-- LOGO BRANDING -->
-    <a href="/" class="flex items-center gap-3 group shrink-0">
-      <div class="w-10 h-10 bg-white rounded-xl p-1 flex items-center justify-center shadow-sm overflow-hidden ring-1 ring-slate-200/30 group-hover:ring-2 group-hover:ring-emerald-400 transition-all duration-200">
+    <a href="/" class="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-xl p-1 flex items-center justify-center shadow-sm overflow-hidden ring-1 ring-slate-200/30 group-hover:ring-2 group-hover:ring-emerald-400 transition-all duration-200">
         <img
           src="/assets/img/logo.webp"
           alt="Logo InfoProperti"
@@ -50,7 +50,7 @@ const currentActive = (active ||
         />
       </div>
       <div>
-        <span class="block text-lg font-extrabold tracking-tight leading-none text-white">
+        <span class="block text-base sm:text-lg font-extrabold tracking-tight leading-none text-white">
           Info<span class="text-emerald-400">Properti</span>
         </span>
         <span class="block text-[10px] text-slate-400 font-medium mt-0.5">
@@ -76,12 +76,13 @@ const currentActive = (active ||
       ))}
     </nav>
 
-    <!-- TOMBOL DAFTAR & MASUK / SESI AKTIF + MOBILE MENU -->
-    <div class="flex items-center gap-2">
-      <div id="nav-guest-actions" class="hidden sm:flex items-center gap-2">
+    <!-- TOMBOL DAFTAR & MASUK (DESKTOP) + MOBILE MENU BUTTON -->
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Guest Actions: Hanya muncul di layar md ke atas -->
+      <div id="nav-guest-actions" class="hidden md:flex items-center gap-2">
         <a
           href="/daftar"
-          class={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+          class={`px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
             currentActive === 'daftar'
               ? 'bg-white text-slate-900 ring-2 ring-emerald-400'
               : 'bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700'
@@ -91,7 +92,7 @@ const currentActive = (active ||
         </a>
         <a
           href="/masuk"
-          class={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+          class={`px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
             currentActive === 'masuk'
               ? 'bg-emerald-500 text-slate-950 shadow-xs'
               : 'bg-[#059669] hover:bg-emerald-700 text-white'
@@ -101,6 +102,7 @@ const currentActive = (active ||
         </a>
       </div>
 
+      <!-- User Actions: Hanya muncul di layar md ke atas saat sudah login -->
       <div id="nav-user-actions" class="hidden items-center gap-2">
         <a
           id="nav-dashboard-link"
@@ -112,7 +114,7 @@ const currentActive = (active ||
         <button
           type="button"
           id="nav-logout-btn"
-          class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer"
+          class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer whitespace-nowrap"
         >
           Keluar
         </button>
@@ -125,17 +127,20 @@ const currentActive = (active ||
         aria-label="Buka Menu Navigasi"
         aria-expanded="false"
         aria-controls="mobile-menu"
-        class="md:hidden p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-white border border-slate-700 cursor-pointer transition"
+        class="md:hidden p-2.5 rounded-xl bg-slate-800/90 text-slate-200 hover:text-white hover:bg-slate-700 border border-slate-700 cursor-pointer transition"
       >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg id="mobile-icon-open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="mobile-icon-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>
   </div>
 
   <!-- MOBILE DROPDOWN MENU -->
-  <div id="mobile-menu" class="hidden md:hidden px-4 pt-3 pb-3 border-t border-slate-800 mt-3 space-y-1">
+  <div id="mobile-menu" class="hidden md:hidden px-4 pt-3 pb-4 border-t border-slate-800 mt-3 space-y-1.5">
     {navLinks.map((item) => (
       <a
         href={item.href}
@@ -150,33 +155,43 @@ const currentActive = (active ||
       </a>
     ))}
 
-    <div id="mobile-guest-actions" class="pt-2 mt-2 border-t border-slate-800 grid grid-cols-2 gap-2">
+    <!-- Tombol Daftar & Masuk di Mobile Menu -->
+    <div id="mobile-guest-actions" class="pt-3 mt-2 border-t border-slate-800 grid grid-cols-2 gap-2.5">
       <a
         href="/daftar"
-        class="text-center py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition"
+        class={`text-center py-2.5 px-3 rounded-xl text-xs font-bold transition ${
+          currentActive === 'daftar'
+            ? 'bg-white text-slate-900 ring-2 ring-emerald-400'
+            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+        }`}
       >
         Daftar
       </a>
       <a
         href="/masuk"
-        class="text-center py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition"
+        class={`text-center py-2.5 px-3 rounded-xl text-xs font-bold transition ${
+          currentActive === 'masuk'
+            ? 'bg-emerald-500 text-slate-950 shadow-xs'
+            : 'bg-[#059669] hover:bg-emerald-700 text-white'
+        }`}
       >
         Masuk
       </a>
     </div>
 
-    <div id="mobile-user-actions" class="hidden pt-2 mt-2 border-t border-slate-800 items-center gap-2">
+    <!-- Tombol Profil & Keluar di Mobile Menu (Saat Login) -->
+    <div id="mobile-user-actions" class="hidden pt-3 mt-2 border-t border-slate-800 items-center gap-2.5">
       <a
         id="mobile-dashboard-link"
         href="/profil"
-        class="flex-1 text-center py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition truncate px-3"
+        class="flex-1 text-center py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition truncate"
       >
         Profil Saya
       </a>
       <button
         type="button"
         id="mobile-logout-btn"
-        class="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer"
+        class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer shrink-0"
       >
         Keluar
       </button>
@@ -199,18 +214,30 @@ const currentActive = (active ||
   function initNavbar() {
     const mobileBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('mobile-icon-open');
+    const iconClose = document.getElementById('mobile-icon-close');
+
+    const toggleMobileIcons = (isOpen) => {
+      if (iconOpen && iconClose) {
+        iconOpen.classList.toggle('hidden', isOpen);
+        iconClose.classList.toggle('hidden', !isOpen);
+      }
+    };
 
     if (mobileBtn && mobileMenu && mobileBtn.dataset.bound !== 'true') {
       mobileBtn.dataset.bound = 'true';
       mobileBtn.addEventListener('click', () => {
         const isHidden = mobileMenu.classList.toggle('hidden');
-        mobileBtn.setAttribute('aria-expanded', String(!isHidden));
+        const isOpen = !isHidden;
+        mobileBtn.setAttribute('aria-expanded', String(isOpen));
+        toggleMobileIcons(isOpen);
       });
 
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
           mobileMenu.classList.add('hidden');
           mobileBtn.setAttribute('aria-expanded', 'false');
+          toggleMobileIcons(false);
         }
       });
     }
@@ -235,11 +262,12 @@ const currentActive = (active ||
     };
 
     if (session && (session.role || session.id || session.email)) {
-      guestBox?.classList.remove('sm:flex');
+      // Desktop: sembunyikan guest, tampilkan user (hanya di md ke atas)
+      guestBox?.classList.remove('md:flex');
       guestBox?.classList.add('hidden');
-      userBox?.classList.remove('hidden');
-      userBox?.classList.add('flex');
+      userBox?.classList.add('md:flex');
 
+      // Mobile dropdown: sembunyikan guest, tampilkan user
       mobileGuestBox?.classList.add('hidden');
       mobileUserBox?.classList.remove('hidden');
       mobileUserBox?.classList.add('flex');
@@ -277,11 +305,12 @@ const currentActive = (active ||
         mobileLogoutBtn.addEventListener('click', handleLogout);
       }
     } else {
-      guestBox?.classList.remove('hidden');
-      guestBox?.classList.add('sm:flex');
+      // Desktop: tampilkan guest (hanya di md ke atas), sembunyikan user
+      guestBox?.classList.add('md:flex');
+      userBox?.classList.remove('md:flex');
       userBox?.classList.add('hidden');
-      userBox?.classList.remove('flex');
 
+      // Mobile dropdown: tampilkan guest, sembunyikan user
       mobileGuestBox?.classList.remove('hidden');
       mobileUserBox?.classList.add('hidden');
       mobileUserBox?.classList.remove('flex');
