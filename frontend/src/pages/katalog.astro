@@ -136,13 +136,6 @@ function getQuickSpecs(item: any): string[] {
             <p class="text-xs text-slate-500">
               Menampilkan <span id="visible-count" class="font-bold text-slate-900">{properties.length}</span> unit properti.
             </p>
-            <button
-              type="button"
-              id="refresh-btn"
-              class="px-3 py-1 rounded-lg text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer"
-            >
-              Muat Ulang Data
-            </button>
             <a
               id="saved-shortcut-link"
               href="/profil"
@@ -302,16 +295,12 @@ function getQuickSpecs(item: any): string[] {
 
     <Footer />
 
-    <script is:inline define:vars={{ apiUrl: API_URL, fallbackList: FALLBACK_PROPERTIES }}>
-      const API_BASE = apiUrl || '';
+    <script is:inline>
       const filterButtons = document.querySelectorAll('.filter-btn');
       const searchInput = document.getElementById('search-input');
       const searchBtn = document.getElementById('search-btn');
-      const refreshBtn = document.getElementById('refresh-btn');
       const visibleCountEl = document.getElementById('visible-count');
-      const allCountEl = document.getElementById('all-count');
       const noResultsEl = document.getElementById('no-results');
-      const catalogContainer = document.getElementById('catalog-container');
       const toastEl = document.getElementById('catalog-toast');
       let currentCategory = 'all';
       let toastTimer = null;
@@ -462,153 +451,6 @@ function getQuickSpecs(item: any): string[] {
         if (noResultsEl) noResultsEl.classList.toggle('hidden', !(count === 0 && cards.length > 0));
       }
 
-      function buildQuickSpecs(item) {
-        const cat = (item.category || '').toLowerCase();
-        const s = item.specifications && typeof item.specifications === 'object' ? item.specifications : {};
-        const badges = [];
-        if (item.block_or_unit && item.block_or_unit !== '-') badges.push(item.block_or_unit);
-        if (cat === 'kos') {
-          if (s.kos_type) badges.push(s.kos_type);
-          if (s.bathroom) badges.push(String(s.bathroom).replace(' + Water Heater', ''));
-        } else if (cat === 'rumah') {
-          if (s.land_area) badges.push(`LT ${s.land_area}`);
-          if (s.bedrooms) badges.push(s.bedrooms);
-          if (s.legality) badges.push(String(s.legality).split('•')[0].trim());
-        } else if (cat === 'tanah') {
-          if (s.land_area) badges.push(`Luas ${s.land_area}`);
-          if (s.certificate) badges.push(String(s.certificate).split('(')[0].trim());
-        }
-        return badges.slice(0, 3);
-      }
-
-      function renderCards(items) {
-        if (!catalogContainer) return;
-        const list = Array.isArray(items) && items.length > 0 ? items : fallbackList;
-        if (allCountEl) allCountEl.textContent = String(list.length);
-
-        const cardsHtml = list.map((item) => {
-          const stLower = String(item.status || 'available').toLowerCase();
-          const isBooked = stLower === 'booked' || stLower === 'sold';
-          const cat = (item.category || '').toLowerCase();
-          const quickSpecs = buildQuickSpecs(item);
-          const searchMeta = `${item.title || ''} ${item.location || ''} ${item.block_or_unit || ''} ${JSON.stringify(item.specifications || {})}`
-            .toLowerCase()
-            .replace(/"/g, '&quot;');
-          const catColor = cat === 'kos' ? 'bg-indigo-600' : cat === 'rumah' ? 'bg-blue-600' : 'bg-amber-600';
-          const badgesHtml = quickSpecs.length > 0
-            ? `<div class="flex flex-wrap gap-1.5 mt-3">${quickSpecs.map((b) => `<span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80">${b}</span>`).join('')}</div>`
-            : '';
-
-          const extraGallery = Array.isArray(item.gallery)
-            ? item.gallery
-            : (Array.isArray(item.specifications?.gallery) ? item.specifications.gallery : []);
-          const totalPhotos = (item.image_url ? 1 : 0) + extraGallery.filter(Boolean).length;
-
-          const coverHtml = item.image_url
-            ? `<img src="${item.image_url}" alt="${item.title || ''}" class="w-full h-full object-cover transition duration-300 ${isBooked ? 'opacity-85' : 'hover:scale-105'}" />`
-            : `<div class="w-full h-full flex items-center justify-center text-xs font-bold text-slate-400">Belum Ada Foto Sampul</div>`;
-
-          return `
-            <article
-              data-category="${cat}"
-              data-search="${searchMeta}"
-              class="property-card bg-white rounded-xl shadow-xs hover:shadow-md border border-slate-200 overflow-hidden flex flex-col justify-between transition"
-            >
-              <div>
-                <div class="relative h-48 bg-slate-200 overflow-hidden">
-                  ${coverHtml}
-                  <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-md text-white ${catColor}">
-                      ${(item.category || 'PROPERTI').toUpperCase()}
-                    </span>
-                    <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-md text-white ${isBooked ? 'bg-rose-600' : 'bg-emerald-600'}">
-                      ${isBooked ? 'TERKUNCI' : 'TERSEDIA'}
-                    </span>
-                  </div>
-
-                  <div class="absolute bottom-2.5 left-3 flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      data-like-id="${item.id}"
-                      aria-label="Sukai properti"
-                      title="Sukai Properti"
-                      class="btn-like-prop w-8 h-8 rounded-full bg-white/95 hover:bg-white text-slate-600 shadow-md flex items-center justify-center transition cursor-pointer"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      data-save-id="${item.id}"
-                      aria-label="Simpan properti"
-                      title="Simpan Properti"
-                      class="btn-save-prop w-8 h-8 rounded-full bg-white/95 hover:bg-white text-slate-600 shadow-md flex items-center justify-center transition cursor-pointer"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  ${totalPhotos > 1 ? `<span class="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded bg-slate-950/75 text-white text-[10px] font-bold">${totalPhotos} Foto</span>` : ''}
-                </div>
-
-                <div class="p-5">
-                  <h2 class="text-base font-bold text-slate-900 line-clamp-1">${item.title || ''}</h2>
-                  <p class="text-slate-500 text-xs mt-1 truncate">${item.location || ''}</p>
-                  ${badgesHtml}
-                  <div class="mt-4 pt-3 border-t border-slate-100">
-                    <span class="text-[11px] text-slate-400 block">Harga Ditawarkan:</span>
-                    <p class="text-base font-extrabold text-[#059669]">
-                      Rp ${Number(item.price || 0).toLocaleString('id-ID')}
-                      <span class="text-xs font-normal text-slate-500">/${item.price_unit || 'bulan'}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-5 pt-0">
-                <a
-                  href="/property/${item.id}"
-                  class="flex items-center justify-center gap-2 w-full font-semibold text-xs py-2.5 rounded-lg transition ${
-                    isBooked ? 'bg-slate-200 hover:bg-slate-300 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
-                  }"
-                >
-                  ${isBooked ? 'Lihat Detail (Sudah Terkunci)' : 'Detail & Ajukan Booking'}
-                </a>
-              </div>
-            </article>
-          `;
-        }).join('');
-
-        catalogContainer.innerHTML = `
-          <div>
-            <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${cardsHtml}</div>
-            <div id="no-results" class="hidden text-center py-16 bg-white rounded-xl border border-slate-200 mt-4">
-              <h3 class="text-sm font-bold text-slate-700">Unit Properti Tidak Ditemukan</h3>
-              <p class="text-xs text-slate-400 mt-1">Coba kata kunci lokasi lain atau pilih kategori Semua.</p>
-            </div>
-          </div>
-        `;
-        bindCardActions();
-        applyFilter();
-      }
-
-      async function fetchLiveProperties() {
-        try {
-          const res = await fetch(`${API_BASE}/api/properties?t=${Date.now()}`, { cache: 'no-store' });
-          if (!res.ok) {
-            renderCards(fallbackList);
-            return;
-          }
-          const data = await res.json();
-          renderCards(data);
-        } catch {
-          renderCards(fallbackList);
-        }
-      }
-
       filterButtons.forEach((btn) => {
         btn.addEventListener('click', () => {
           filterButtons.forEach((b) => {
@@ -624,7 +466,6 @@ function getQuickSpecs(item: any): string[] {
 
       searchInput?.addEventListener('input', applyFilter);
       searchBtn?.addEventListener('click', applyFilter);
-      refreshBtn?.addEventListener('click', fetchLiveProperties);
       window.addEventListener('focus', () => {
         syncCardActionStates();
       });
