@@ -2,6 +2,7 @@
 export const prerender = false;
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
+import { getSupabase } from '../../lib/apiServer';
 
 const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 const { id } = Astro.params;
@@ -17,6 +18,12 @@ const FALLBACK_PROPERTIES = [
     price_unit: 'bulan',
     status: 'AVAILABLE',
     image_url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Kos nyaman dan strategis di kawasan Soekarno Hatta Malang dengan akses cepat ke kampus, kuliner, dan transportasi umum.',
     specifications: {
       kos_type: 'Kos Putra/Putri',
@@ -36,6 +43,12 @@ const FALLBACK_PROPERTIES = [
     price_unit: 'unit',
     status: 'AVAILABLE',
     image_url: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Hunian 2 lantai di lingkungan mapan Sawojajar Malang dengan akses jalan lebar, pencahayaan alami, dan legalitas jelas.',
     specifications: {
       land_area: '120 m²',
@@ -57,6 +70,12 @@ const FALLBACK_PROPERTIES = [
     price_unit: 'kavling',
     status: 'AVAILABLE',
     image_url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80'
+    ],
     description: 'Kavling tanah datar berhawa sejuk di jalur wisata Dau Malang, cocok untuk hunian pribadi, villa, maupun investasi.',
     specifications: {
       land_area: '200 m²',
@@ -69,37 +88,69 @@ const FALLBACK_PROPERTIES = [
   }
 ];
 
+const EXTRA_PHOTOS_BY_CATEGORY: Record<string, string[]> = {
+  kos: [
+    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=80'
+  ],
+  rumah: [
+    'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80'
+  ],
+  tanah: [
+    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80'
+  ]
+};
+
 let property: any = null;
 let similarProperties: any[] = [];
 
+const cleanId = String(id || '').trim();
+
 try {
-  const res = await fetch(`${API_URL}/api/properties/${id}`, { cache: 'no-store' });
-  if (res.ok) {
-    property = await res.json();
+  const supabase = getSupabase(Astro.locals);
+  if (cleanId) {
+    const { data, error } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', cleanId)
+      .maybeSingle();
+    if (!error && data) {
+      property = data;
+    }
   }
 
-  const allRes = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
-  if (allRes.ok) {
-    const allList = await allRes.json();
-    similarProperties = (Array.isArray(allList) ? allList : [])
-      .filter((item: any) => String(item.id) !== String(id))
+  const { data: listData, error: listError } = await supabase
+    .from('properties')
+    .select('*')
+    .limit(6);
+  if (!listError && Array.isArray(listData) && listData.length > 0) {
+    similarProperties = listData
+      .filter((item: any) => String(item.id) !== cleanId)
       .slice(0, 3);
   }
 } catch {
-  property = null;
+  // Jika Supabase gagal di SSR, coba lanjutkan ke fallback
 }
 
-if (!property && id) {
-  property = FALLBACK_PROPERTIES.find((item) => item.id === String(id)) || null;
+if (!property && cleanId) {
+  property = FALLBACK_PROPERTIES.find((item) => item.id === cleanId) || null;
 }
 
 if (similarProperties.length === 0) {
-  similarProperties = FALLBACK_PROPERTIES.filter((item) => item.id !== String(id)).slice(0, 3);
+  similarProperties = FALLBACK_PROPERTIES.filter((item) => item.id !== cleanId).slice(0, 3);
 }
 
 const statusLower = String(property?.status || 'available').toLowerCase();
 const isBooked = statusLower === 'booked' || statusLower === 'sold';
-const cat = (property?.category || 'kos').toLowerCase();
+const cat = String(property?.category || 'kos').toLowerCase();
 const specs = property?.specifications && typeof property.specifications === 'object' ? property.specifications : {};
 
 const rawPhone = String(specs.seller_phone || property?.seller_phone || '081234567890').trim();
@@ -112,10 +163,19 @@ const rawExtras = Array.isArray(property?.gallery)
   ? property.gallery
   : (Array.isArray(specs.gallery) ? specs.gallery : []);
 
-const galleryPhotos: string[] = [
+const basePhotos: string[] = [
   ...(property?.image_url ? [String(property.image_url).trim()] : []),
   ...rawExtras.map((u: any) => String(u || '').trim()).filter(Boolean)
 ];
+
+const categoryPool = EXTRA_PHOTOS_BY_CATEGORY[cat] || EXTRA_PHOTOS_BY_CATEGORY.kos;
+const galleryPhotos: string[] = [...basePhotos];
+for (const extra of categoryPool) {
+  if (galleryPhotos.length >= 4) break;
+  if (!galleryPhotos.includes(extra)) {
+    galleryPhotos.push(extra);
+  }
+}
 
 let specCards: { label: string; value: string }[] = [];
 if (property) {
@@ -161,7 +221,7 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{property ? `${property.title} — InfoProperti` : 'Detail Properti — InfoProperti'}</title>
-    <link rel="canonical" href={`https://infoproperti.web.id/property/${id}`} />
+    <link rel="canonical" href={`https://infoproperti.web.id/property/${cleanId}`} />
     <style is:global>
       @import '../../styles/global.css';
     </style>
@@ -180,87 +240,39 @@ const mapQuery = encodeURIComponent(property?.location || 'Kota Malang, Jawa Tim
             <a href="/katalog" class="hover:text-emerald-700 transition capitalize">{cat}</a>
             <span>/</span>
             <span class="text-slate-800 font-semibold truncate max-w-xs sm:max-w-md">{property.title}</span>
+            {property.block_or_unit && (
+              <span class="px-2 py-0.5 rounded bg-slate-200/80 text-slate-700 text-[11px] font-semibold">
+                {property.block_or_unit}
+              </span>
+            )}
           </nav>
 
-          <!-- GALERI FOTO DINAMIS -->
-          {galleryPhotos.length === 1 && (
-            <section class="rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
-              <div class="relative h-72 sm:h-96 md:h-[420px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
-                <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
-                  <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
-                  <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
-                    {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
-                  </span>
-                </div>
-                <span class="absolute bottom-3.5 right-3.5 px-3 py-1 rounded-lg bg-slate-950/75 text-white text-xs font-bold">
-                  1 Foto • Klik Perbesar
+          <!-- GALERI FOTO (MINIMAL 4 FOTO) -->
+          <section class="grid grid-cols-1 md:grid-cols-4 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
+            <div class="md:col-span-2 md:row-span-2 relative h-64 sm:h-80 md:h-[380px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
+              <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+              <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
+                <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
+                <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
+                  {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
                 </span>
               </div>
-            </section>
-          )}
+              <span class="absolute bottom-3.5 right-3.5 px-3 py-1 rounded-lg bg-slate-950/75 text-white text-xs font-bold">
+                {galleryPhotos.length} Foto • Klik Perbesar
+              </span>
+            </div>
 
-          {galleryPhotos.length === 2 && (
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
-              {galleryPhotos.map((photo, idx) => (
-                <div class="relative h-64 sm:h-80 md:h-[360px] group cursor-pointer overflow-hidden" data-lightbox={photo}>
-                  <img src={photo} alt={`${property.title} foto ${idx + 1}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  {idx === 0 && (
-                    <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
-                      <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
-                      <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
-                        {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </section>
-          )}
-
-          {galleryPhotos.length === 3 && (
-            <section class="grid grid-cols-1 md:grid-cols-3 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
-              <div class="md:col-span-2 md:row-span-2 relative h-64 sm:h-80 md:h-[380px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
-                <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
-                  <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
-                  <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
-                    {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
-                  </span>
-                </div>
+            {galleryPhotos.slice(1, 5).map((photo, idx) => (
+              <div class="relative h-44 md:h-[185px] group cursor-pointer overflow-hidden bg-slate-300" data-lightbox={photo}>
+                <img src={photo} alt={`${property.title} foto ${idx + 2}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                {idx === 3 && galleryPhotos.length > 5 && (
+                  <div class="absolute inset-0 bg-slate-950/60 flex flex-col items-center justify-center text-white">
+                    <span class="text-xs font-extrabold">+{galleryPhotos.length - 5} Foto Lainnya</span>
+                  </div>
+                )}
               </div>
-              {galleryPhotos.slice(1, 3).map((photo, idx) => (
-                <div class="relative h-48 md:h-[185px] group cursor-pointer overflow-hidden bg-slate-300" data-lightbox={photo}>
-                  <img src={photo} alt={`${property.title} foto ${idx + 2}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                </div>
-              ))}
-            </section>
-          )}
-
-          {galleryPhotos.length >= 4 && (
-            <section class="grid grid-cols-1 md:grid-cols-4 gap-2.5 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 shadow-xs">
-              <div class="md:col-span-2 md:row-span-2 relative h-64 sm:h-80 md:h-[380px] group cursor-pointer overflow-hidden" data-lightbox={galleryPhotos[0]}>
-                <img src={galleryPhotos[0]} alt={property.title} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div class="absolute top-3.5 left-3.5 flex items-center gap-2">
-                  <span class="px-3 py-1 rounded-md bg-[#059669] text-white text-[11px] font-extrabold uppercase tracking-wide shadow">{cat}</span>
-                  <span class={`px-3 py-1 rounded-md text-[11px] font-extrabold uppercase tracking-wide shadow ${isBooked ? 'bg-rose-600 text-white' : 'bg-slate-900/85 text-emerald-300'}`}>
-                    {isBooked ? 'TERKUNCI / TERISI' : 'TERSEDIA'}
-                  </span>
-                </div>
-              </div>
-
-              {galleryPhotos.slice(1, 5).map((photo, idx) => (
-                <div class="relative h-44 md:h-[185px] group cursor-pointer overflow-hidden bg-slate-300" data-lightbox={photo}>
-                  <img src={photo} alt={`${property.title} foto ${idx + 2}`} class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  {idx === 3 && galleryPhotos.length > 5 && (
-                    <div class="absolute inset-0 bg-slate-950/60 flex flex-col items-center justify-center text-white">
-                      <span class="text-xs font-extrabold">+{galleryPhotos.length - 5} Foto Lainnya</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </section>
-          )}
+            ))}
+          </section>
 
           <!-- KONTEN UTAMA 2 KOLOM -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">

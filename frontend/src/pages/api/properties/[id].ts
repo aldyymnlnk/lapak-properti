@@ -65,7 +65,7 @@ const FALLBACK_PROPERTIES = [
 ];
 
 export const GET: APIRoute = async ({ params, locals }) => {
-  const id = String(params.id || '');
+  const id = String(params.id || '').trim();
   if (!id) {
     return jsonRes({ error: 'ID properti tidak valid' }, 400);
   }
