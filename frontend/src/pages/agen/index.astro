@@ -19,14 +19,14 @@ try {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard Agen Properti — LapakProperti</title>
+    <title>Dashboard Agen Properti — InfoProperti</title>
     <style is:global>
       @import '../../styles/global.css';
     </style>
   </head>
   <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col md:flex-row">
 
-    <!-- TOAST NOTIFIKASI PROFESIONAL -->
+    <!-- TOAST NOTIFIKASI -->
     <div
       id="agent-toast-container"
       aria-live="polite"
@@ -39,10 +39,10 @@ try {
         <div class="p-5 border-b border-slate-800 flex items-center justify-between">
           <a href="/agen" class="flex items-center gap-3">
             <span class="w-9 h-9 bg-[#059669] rounded-xl flex items-center justify-center font-black text-white text-base shadow-sm">
-              LP
+              IP
             </span>
             <div>
-              <h1 class="text-sm font-extrabold tracking-tight leading-none">LapakProperti</h1>
+              <h1 class="text-sm font-extrabold tracking-tight leading-none">InfoProperti</h1>
               <span class="text-[10px] text-emerald-400 font-semibold">Portal Mitra Agen</span>
             </div>
           </a>
@@ -60,7 +60,7 @@ try {
             data-target="tab-agent-overview"
             class="agent-nav-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 text-white transition whitespace-nowrap cursor-pointer text-left"
           >
-            <span>Ringkasan & Unit Saya</span>
+            <span>Ringkasan &amp; Unit Saya</span>
           </button>
 
           <button
@@ -76,7 +76,7 @@ try {
             data-target="tab-agent-profile"
             class="agent-nav-btn flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition whitespace-nowrap cursor-pointer text-left"
           >
-            <span>Profil & Kontak WhatsApp</span>
+            <span>Profil &amp; Kontak WhatsApp</span>
           </button>
         </nav>
       </div>
@@ -104,8 +104,8 @@ try {
     <div class="flex-1 flex flex-col min-w-0">
       <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 id="agent-page-heading" class="text-base sm:text-lg font-extrabold text-slate-900">Ringkasan & Daftar Properti Saya</h2>
-          <p class="text-xs text-slate-500">Kelola unit Kos, Rumah, & Kavling Tanah yang Anda pasarkan.</p>
+          <h2 id="agent-page-heading" class="text-base sm:text-lg font-extrabold text-slate-900">Ringkasan &amp; Daftar Properti Saya</h2>
+          <p class="text-xs text-slate-500">Kelola unit Kos, Rumah, &amp; Kavling Tanah yang Anda pasarkan.</p>
         </div>
         <div class="flex items-center gap-2">
           <button
@@ -158,8 +158,8 @@ try {
               <table class="w-full text-left text-xs text-slate-600">
                 <thead class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th class="px-5 py-3.5">Foto & Judul Unit</th>
-                    <th class="px-5 py-3.5">Kategori & Blok</th>
+                    <th class="px-5 py-3.5">Foto &amp; Judul Unit</th>
+                    <th class="px-5 py-3.5">Kategori &amp; Blok</th>
                     <th class="px-5 py-3.5">Harga</th>
                     <th class="px-5 py-3.5">Status (Klik Ubah)</th>
                     <th class="px-5 py-3.5 text-right">Aksi</th>
@@ -188,7 +188,7 @@ try {
                 id="btn-agent-cancel-edit"
                 class="hidden inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:underline cursor-pointer"
               >
-                <span>Batal Edit ✕</span>
+                <span>Batal Edit &#10005;</span>
               </button>
             </div>
 
@@ -279,7 +279,7 @@ try {
                       <select id="akos-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
                         <option value="Khusus Putri">Khusus Putri</option>
                         <option value="Khusus Putra">Khusus Putra</option>
-                        <option value="Campur (Putra & Putri)">Campur (Putra & Putri)</option>
+                        <option value="Campur (Putra & Putri)">Campur (Putra &amp; Putri)</option>
                       </select>
                     </div>
                     <div>
@@ -296,14 +296,14 @@ try {
                       </select>
                     </div>
                     <div>
-                      <label class="block font-semibold text-slate-700 mb-1">Sistem Listrik & Air</label>
+                      <label class="block font-semibold text-slate-700 mb-1">Sistem Listrik &amp; Air</label>
                       <select id="akos-electricity" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white">
                         <option value="Token Listrik Masing-masing">Token Listrik Masing-masing</option>
-                        <option value="Sudah Termasuk Listrik & Air">Sudah Termasuk Listrik & Air</option>
+                        <option value="Sudah Termasuk Listrik & Air">Sudah Termasuk Listrik &amp; Air</option>
                       </select>
                     </div>
                     <div class="sm:col-span-2">
-                      <label class="block font-semibold text-slate-700 mb-1">Fasilitas Kamar & Bersama</label>
+                      <label class="block font-semibold text-slate-700 mb-1">Fasilitas Kamar &amp; Bersama</label>
                       <input type="text" id="akos-facilities" placeholder="Contoh: AC, WiFi 100Mbps, Kasur, Lemari, Parkir Motor"
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
                     </div>
@@ -332,12 +332,12 @@ try {
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
                     </div>
                     <div>
-                      <label class="block font-semibold text-slate-700 mb-1">Daya Listrik & Sumber Air</label>
+                      <label class="block font-semibold text-slate-700 mb-1">Daya Listrik &amp; Sumber Air</label>
                       <input type="text" id="arumah-utilities" placeholder="Contoh: Listrik 2200W, Air PDAM"
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
                     </div>
                     <div>
-                      <label class="block font-semibold text-slate-700 mb-1">Legalitas & Carport</label>
+                      <label class="block font-semibold text-slate-700 mb-1">Legalitas &amp; Carport</label>
                       <input type="text" id="arumah-legality" placeholder="Contoh: SHM, Carport 2 Mobil"
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
                     </div>
@@ -369,7 +369,7 @@ try {
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
                     </div>
                     <div class="sm:col-span-2">
-                      <label class="block font-semibold text-slate-700 mb-1">Lebar & Kondisi Akses Jalan</label>
+                      <label class="block font-semibold text-slate-700 mb-1">Lebar &amp; Kondisi Akses Jalan</label>
                       <input type="text" id="atanah-road" placeholder="Contoh: Jalan Paving 6 Meter (2 Mobil Papasan)"
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white" />
                     </div>
@@ -377,7 +377,7 @@ try {
                 </div>
 
                 <div>
-                  <label class="block font-bold text-slate-700 mb-1">Deskripsi Lengkap & Keunggulan Lokasi *</label>
+                  <label class="block font-bold text-slate-700 mb-1">Deskripsi Lengkap &amp; Keunggulan Lokasi *</label>
                   <textarea id="aprop-description" rows="3" required placeholder="Jelaskan jarak ke kampus/jalan raya, aturan kos, atau kondisi lingkungan sekitar..."
                     class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
                 </div>
@@ -416,7 +416,6 @@ try {
                         class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
                     </div>
 
-                    <!-- Preview Sampul -->
                     <div id="acover-preview-wrapper" class="hidden relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
                       <img id="aimage-preview" src="" alt="Preview Sampul" class="w-full h-36 object-cover" />
                       <button
@@ -470,7 +469,7 @@ try {
         <section id="tab-agent-profile" class="agent-panel hidden">
           <div class="max-w-xl bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
             <div class="border-b border-slate-100 pb-4">
-              <h3 class="text-base font-extrabold text-slate-900">Profil & Kontak WhatsApp Agen</h3>
+              <h3 class="text-base font-extrabold text-slate-900">Profil &amp; Kontak WhatsApp Agen</h3>
               <p class="text-xs text-slate-500">Perbarui nama agen dan nomor WhatsApp default Anda di database.</p>
             </div>
 
@@ -550,7 +549,7 @@ try {
             escapeHtml(message || '') +
             '</p>' +
             '</div>' +
-            '<button type="button" aria-label="Tutup notifikasi" class="text-slate-400 hover:text-slate-700 text-xs font-bold px-1.5 py-0.5 rounded cursor-pointer">✕</button>';
+            '<button type="button" aria-label="Tutup notifikasi" class="text-slate-400 hover:text-slate-700 text-xs font-bold px-1.5 py-0.5 rounded cursor-pointer">&#10005;</button>';
 
           var closeBtn = toast.querySelector('button');
           function dismissToast() {
@@ -632,7 +631,7 @@ try {
             if (rawAuth) parsedAuth = JSON.parse(rawAuth);
           } catch {}
 
-          var authRole = parsedAuth && parsedAuth.role ? String(parsedAuth.role).toUpperCase() : '';
+          var authRole = parsedAuth && parsedAuth.role ? String(parsedAuth.role).trim().toUpperCase() : '';
           var isAuthAgent = authRole === 'AGENT' || authRole === 'SUPER_ADMIN';
 
           if (!parsedAgent && !isAuthAgent) {
@@ -640,7 +639,7 @@ try {
           }
 
           var base = Object.assign({}, parsedAgent || {}, parsedAuth || {});
-          base.role = authRole || String(base.role || 'AGENT').toUpperCase();
+          base.role = authRole || String(base.role || 'AGENT').trim().toUpperCase();
           return base;
         }
 
@@ -670,6 +669,7 @@ try {
         window.logoutAgent = function () {
           localStorage.removeItem('lapak_agent');
           localStorage.removeItem('ip_auth_user');
+          localStorage.removeItem('lapak_seller');
           window.location.href = '/agen/login';
         };
 
@@ -904,7 +904,7 @@ try {
             var delBtn = document.createElement('button');
             delBtn.type = 'button';
             delBtn.className = 'text-[10px] font-bold text-rose-600 hover:underline cursor-pointer';
-            delBtn.textContent = 'Hapus Foto ✕';
+            delBtn.textContent = 'Hapus Foto &#10005;';
             delBtn.addEventListener('click', function () {
               agentGalleryPhotos.splice(idx, 1);
               renderAgentGallerySlots();
