@@ -51,10 +51,8 @@ try {
   allProperties = FALLBACK_PROPERTIES;
 }
 
-// 3 Wakil Katalog
 const featuredProperties = allProperties.slice(0, 3);
 
-// 3 Wakil Galeri
 const fallbackGallery = [
   {
     id: 'demo-kos-soekarno-hatta',
@@ -81,7 +79,6 @@ const fallbackGallery = [
 
 const galleryPreview = (allProperties.length >= 3 ? allProperties.slice(0, 3) : [...allProperties, ...fallbackGallery]).slice(0, 3);
 
-// 3 Testimoni Pembeli & Penyewa
 const testimonials = [
   {
     name: 'Nadia Putri Maharani',
@@ -103,7 +100,6 @@ const testimonials = [
   }
 ];
 
-// FAQ Pembeli
 const faqs = [
   {
     q: 'Apakah status ketersediaan unit di InfoProperti selalu akurat?',

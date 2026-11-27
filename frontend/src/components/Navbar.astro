@@ -230,6 +230,7 @@ const currentActive = (active ||
     const handleLogout = () => {
       localStorage.removeItem('ip_auth_user');
       localStorage.removeItem('lapak_agent');
+      localStorage.removeItem('lapak_seller');
       window.location.href = '/masuk';
     };
 
