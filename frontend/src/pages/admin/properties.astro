@@ -7,7 +7,8 @@ let properties: any[] = [];
 try {
   const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
   if (res.ok) {
-    properties = await res.json();
+    const data = await res.json();
+    properties = Array.isArray(data) ? data : [];
   }
 } catch {
   properties = [];
@@ -18,7 +19,8 @@ try {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CMS Kelola Katalog Properti — LapakProperti</title>
+    <title>CMS Kelola Katalog Properti — InfoProperti</title>
+    <meta name="robots" content="noindex, nofollow" />
     <style is:global>
       @import '../../styles/global.css';
     </style>
@@ -31,27 +33,27 @@ try {
         <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-between items-center gap-3">
           <div class="flex items-center gap-3">
             <a href="/admin" class="w-9 h-9 bg-[#059669] rounded-lg flex items-center justify-center font-extrabold text-white text-lg tracking-wider">
-              LP
+              IP
             </a>
             <div>
-              <h1 class="text-base font-bold tracking-tight leading-none">CMS Dashboard Penjual</h1>
-              <span class="text-[10px] text-slate-400">Manajemen Katalog & Stok Properti</span>
+              <h1 class="text-base font-bold tracking-tight leading-none">CMS Dashboard Admin</h1>
+              <span id="cms-user-badge" class="text-[10px] text-slate-400">Manajemen Katalog & Stok Properti</span>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 text-xs font-semibold">
+          <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
             <a href="/admin" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition">
               Dashboard & Verifikasi
             </a>
             <a href="/admin/properties" class="bg-slate-800 text-emerald-400 px-3 py-1.5 rounded-lg border border-slate-700">
               Kelola Katalog Properti
             </a>
-            <a href="/katalog" target="_blank" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-500/30 transition">
+            <a href="/katalog" target="_blank" rel="noopener noreferrer" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 px-3 py-1.5 rounded-lg border border-emerald-500/30 transition">
               Lihat Katalog
             </a>
             <button
               type="button"
-              onclick="localStorage.removeItem('lapak_seller'); window.location.href='/';"
+              id="btn-cms-logout"
               class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg transition cursor-pointer"
             >
               Keluar
@@ -218,6 +220,7 @@ try {
                   const extraCnt = Array.isArray(item.gallery)
                     ? item.gallery.length
                     : (Array.isArray(item.specifications?.gallery) ? item.specifications.gallery.length : 0);
+                  const safeItemId = String(item.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
                   return (
                     <tr class="hover:bg-slate-50/80 transition">
                       <td class="px-5 py-4">
@@ -263,14 +266,14 @@ try {
                         <div class="flex items-center justify-end gap-2">
                           <button
                             type="button"
-                            onclick={`window.editProperty('${item.id}')`}
+                            onclick={`window.editProperty('${safeItemId}')`}
                             class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-md text-[11px] transition cursor-pointer"
                           >
                             Edit
                           </button>
                           <button
                             type="button"
-                            onclick={`window.deleteProperty('${item.id}')`}
+                            onclick={`window.deleteProperty('${safeItemId}')`}
                             class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-md text-[11px] transition cursor-pointer"
                           >
                             Hapus
@@ -295,22 +298,82 @@ try {
     </div>
 
     <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-      <p>© 2026 LapakProperti Admin CMS Portal.</p>
+      <p>© 2026 InfoProperti Admin CMS Portal.</p>
     </footer>
 
     <script is:inline define:vars={{ initialProperties: properties, apiUrl: API_URL }}>
       (function () {
-        let currentSeller = null;
-        const rawSeller = localStorage.getItem('lapak_seller');
-        if (!rawSeller) {
-          window.location.href = '/admin/login';
-        } else {
-          try {
-            currentSeller = JSON.parse(rawSeller);
-          } catch {}
+        const API_BASE = apiUrl || '';
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+        function clearAdminStorage() {
+          localStorage.removeItem('lapak_agent');
+          localStorage.removeItem('lapak_seller');
+          localStorage.removeItem('ip_auth_user');
+          localStorage.removeItem('ip_auth_token');
         }
 
-        const API_BASE = apiUrl || '';
+        // Semua request ke API membawa token Bearer; 401 -> kembali ke login admin
+        function authFetch(url, opts) {
+          opts = opts || {};
+          const headers = Object.assign({}, opts.headers || {});
+          try {
+            const token = localStorage.getItem('ip_auth_token');
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+          } catch (e) {}
+          opts.headers = headers;
+
+          return fetch(url, opts).then((res) => {
+            if (res.status === 401) {
+              clearAdminStorage();
+              window.location.href = '/admin/login';
+            }
+            return res;
+          });
+        }
+
+        // Sesi sama seperti dashboard admin: ip_auth_user (utama) atau lapak_seller (cadangan)
+        function getAdminSession() {
+          try {
+            const raw = localStorage.getItem('ip_auth_user') || localStorage.getItem('lapak_seller');
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || typeof parsed !== 'object') return null;
+            return {
+              id: parsed.id || '',
+              name: parsed.name || 'Admin',
+              email: parsed.email || '',
+              role: String(parsed.role || '').trim().toUpperCase()
+            };
+          } catch {
+            return null;
+          }
+        }
+
+        const currentSeller = getAdminSession();
+        const allowedRoles = ['ADMIN', 'SUPER_ADMIN', 'SELLER'];
+
+        if (!currentSeller) {
+          window.location.href = '/admin/login';
+          return;
+        }
+        if (currentSeller.role === 'AGENT') {
+          window.location.href = '/agen';
+          return;
+        }
+        if (!allowedRoles.includes(currentSeller.role)) {
+          window.location.href = '/profil';
+          return;
+        }
+
+        const badge = document.getElementById('cms-user-badge');
+        if (badge) badge.textContent = currentSeller.name + ' (' + currentSeller.role + ')';
+
+        document.getElementById('btn-cms-logout')?.addEventListener('click', () => {
+          clearAdminStorage();
+          window.location.href = '/admin/login';
+        });
+
         const form = document.getElementById('property-form');
         const formTitle = document.getElementById('form-title');
         const btnSubmit = document.getElementById('btn-submit-prop');
@@ -384,7 +447,10 @@ try {
 
             const top = document.createElement('div');
             top.className = 'flex justify-between items-center';
-            top.innerHTML = `<span class="text-[10px] font-bold text-slate-700">Foto Pendukung #${idx + 1}</span>`;
+            const topLabel = document.createElement('span');
+            topLabel.className = 'text-[10px] font-bold text-slate-700';
+            topLabel.textContent = 'Foto Pendukung #' + (idx + 1);
+            top.appendChild(topLabel);
             const rm = document.createElement('button');
             rm.type = 'button';
             rm.className = 'text-[10px] font-bold text-rose-600 cursor-pointer';
@@ -479,7 +545,7 @@ try {
 
           document.getElementById('prop-description').value = item.description || '';
 
-          formTitle.textContent = `Edit Unit: ${item.title}`;
+          formTitle.textContent = 'Edit Unit: ' + (item.title || '');
           btnSubmit.textContent = 'Simpan Perubahan Unit';
           btnReset.classList.remove('hidden');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -511,42 +577,48 @@ try {
             description: document.getElementById('prop-description').value
           };
 
-          if (!id && currentSeller && currentSeller.id && currentSeller.id !== 'demo-admin') {
+          // owner_id hanya diisi untuk akun database (UUID). Akun preset/kode akses (preset-admin) dilewati.
+          if (!id && currentSeller.id && UUID_RE.test(String(currentSeller.id))) {
             payload.owner_id = currentSeller.id;
             payload.owner_role = currentSeller.role || 'ADMIN';
           }
 
-          const url = id ? `${API_BASE}/api/admin/properties/${id}` : `${API_BASE}/api/admin/properties`;
+          const url = id
+            ? `${API_BASE}/api/admin/properties/${encodeURIComponent(String(id))}`
+            : `${API_BASE}/api/admin/properties`;
           const method = id ? 'PUT' : 'POST';
 
+          btnSubmit.disabled = true;
           try {
-            const res = await fetch(url, {
+            const res = await authFetch(url, {
               method,
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
 
             if (res.ok) {
               alert(data.message || 'Berhasil disimpan!');
               window.location.reload();
             } else {
               alert(data.error || 'Gagal menyimpan data unit.');
+              btnSubmit.disabled = false;
             }
           } catch {
             alert('Gagal terhubung ke server backend.');
+            btnSubmit.disabled = false;
           }
         });
 
         window.deleteProperty = async function (propId) {
           const item = initialProperties.find((p) => String(p.id) === String(propId));
-          if (!confirm(`Yakin ingin menghapus unit "${(item && item.title) || 'ini'}" dari katalog?`)) return;
+          if (!confirm('Yakin ingin menghapus unit "' + ((item && item.title) || 'ini') + '" dari katalog?')) return;
 
           try {
-            const res = await fetch(`${API_BASE}/api/admin/properties/${propId}`, {
+            const res = await authFetch(`${API_BASE}/api/admin/properties/${encodeURIComponent(String(propId))}`, {
               method: 'DELETE'
             });
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
 
             if (res.ok) {
               alert('Unit berhasil dihapus.');
