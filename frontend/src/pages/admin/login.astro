@@ -1,240 +1,196 @@
 ---
 import Navbar from '../../components/Navbar.astro';
 import Footer from '../../components/Footer.astro';
+
+const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 ---
 
 <html lang="id">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Admin - LapakProperti</title>
+    <title>Login Admin — InfoProperti</title>
+    <meta name="robots" content="noindex, nofollow" />
     <style is:global>
       @import '../../styles/global.css';
     </style>
   </head>
-  <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
+  <body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col justify-between">
     <div>
-      <Navbar />
+      <Navbar active="admin" />
 
-      <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-          
-          <!-- Header Portal -->
-          <div class="text-center mb-6">
-            <a href="/" class="inline-flex items-center justify-center gap-2.5 font-extrabold text-xl tracking-tight text-slate-900 mb-3">
-              <span class="w-9 h-9 rounded-xl bg-[#059669] text-white flex items-center justify-center font-black text-base shadow-sm">
-                LP
-              </span>
-              <span>Lapak<span class="text-emerald-600">Properti</span></span>
-            </a>
-            <span class="block text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 mb-1">
-              Administrator Control Panel
+      <main class="max-w-md mx-auto px-4 py-14">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="bg-[#0F172A] text-white p-6 text-center">
+            <span class="inline-block px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider mb-2">
+              ADMIN OPERASIONAL
             </span>
-            <h1 class="text-2xl font-extrabold text-slate-900">Login Admin</h1>
-            <p class="text-xs text-slate-500 mt-1">
-              Silakan isi kredensial Anda untuk mengelola katalog properti, agen, dan verifikasi.
+            <h1 class="text-xl font-extrabold">Masuk Panel Admin</h1>
+            <p class="text-xs text-slate-300 mt-1">
+              Khusus admin operasional InfoProperti.
             </p>
           </div>
 
-          <!-- Notifikasi jika masih ada sesi login sebelumnya (TIDAK auto-redirect paksa) -->
-          <div id="session-notice" class="hidden mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">
-            <p>Anda masih memiliki sesi aktif sebagai <strong id="session-user-name">Admin</strong>.</p>
-            <div class="flex items-center gap-2">
-              <a href="/admin" class="px-3 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-[11px]">
-                Lanjutkan ke Dashboard &rarr;
-              </a>
-              <button type="button" id="btn-reset-session" class="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-900 font-bold text-[11px] cursor-pointer">
-                Hapus Sesi & Login Ulang
+          <div class="p-6 space-y-5">
+            <div id="adm-login-alert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+            <form id="adm-login-form" class="space-y-4 text-xs">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Email atau Username Admin</label>
+                <input
+                  type="text"
+                  id="adm-identifier"
+                  autocomplete="off"
+                  placeholder="admin@infoproperti.web.id"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Kata Sandi</label>
+                <input
+                  type="password"
+                  id="adm-password"
+                  placeholder="Masukkan kata sandi"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                />
+              </div>
+
+              <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                <span class="flex-1 h-px bg-slate-200"></span>
+                <span>ATAU</span>
+                <span class="flex-1 h-px bg-slate-200"></span>
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Kode Akses</label>
+                <input
+                  type="password"
+                  id="adm-code"
+                  autocomplete="off"
+                  placeholder="Isi kode akses (tanpa email & sandi)"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono focus:outline-none focus:ring-2 focus:ring-[#059669]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                id="btn-adm-login"
+                class="w-full bg-[#059669] hover:bg-emerald-700 text-white font-extrabold text-sm py-3 rounded-xl shadow-xs transition cursor-pointer"
+              >
+                Masuk ke Panel Admin
               </button>
+            </form>
+
+            <div class="text-center pt-3 border-t border-slate-100 text-xs space-y-1.5">
+              <p>
+                <a href="/agen/login" class="font-bold text-slate-700 hover:text-[#059669] hover:underline">Portal Agen &rarr;</a>
+              </p>
+              <p>
+                <a href="/superadmin/login" class="font-bold text-slate-700 hover:text-[#059669] hover:underline">Login Super Admin &rarr;</a>
+              </p>
             </div>
           </div>
-
-          <!-- Tab Pilihan Mode -->
-          <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl mb-6 text-xs font-semibold">
-            <button type="button" id="tab-login" class="py-2 rounded-lg bg-white text-slate-900 shadow-sm transition cursor-pointer">
-              Login Admin
-            </button>
-            <button type="button" id="tab-register" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">
-              Daftar Akun
-            </button>
-            <button type="button" id="tab-code" class="py-2 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer">
-              Kode Akses
-            </button>
-          </div>
-
-          <!-- Alert Pesan Error / Sukses -->
-          <div id="auth-alert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium"></div>
-
-          <!-- FORM 1: LOGIN EMAIL & PASSWORD -->
-          <form id="form-login" class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Email Admin *</label>
-              <input type="email" id="login-email" required autocomplete="off" placeholder="admin@lapakproperti.id"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Password *</label>
-              <input type="password" id="login-password" required placeholder="Masukkan password Anda"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <button type="submit"
-              class="w-full py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-sm">
-              Masuk ke Dashboard Admin
-            </button>
-          </form>
-
-          <!-- FORM 2: REGISTER ADMIN / MITRA BARU -->
-          <form id="form-register" class="space-y-4 hidden">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
-              <input type="text" id="reg-name" required placeholder="Nama lengkap admin / pengelola"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Email *</label>
-              <input type="email" id="reg-email" required placeholder="email@domain.com"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Buat Password *</label>
-              <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <button type="submit"
-              class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer">
-              Daftar & Masuk Dashboard
-            </button>
-          </form>
-
-          <!-- FORM 3: KODE AKSES CEPAT (WAJIB DIISI MANUAL) -->
-          <form id="form-code" class="space-y-4 hidden">
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600">
-              Masukkan kode akses khusus pengelola untuk masuk ke panel administrasi.
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Kode Akses Admin *</label>
-              <input type="password" id="access-code" required placeholder="Masukkan kode akses"
-                class="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs" />
-            </div>
-            <button type="submit"
-              class="w-full py-3 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer">
-              Verifikasi Kode & Masuk
-            </button>
-          </form>
-
-          <!-- Footer Links -->
-          <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-            <a href="/" class="hover:text-slate-900">&larr; Kembali ke Beranda</a>
-            <a href="/agen/login" class="font-bold text-[#059669] hover:underline">Portal Khusus Agen &rarr;</a>
-          </div>
-
         </div>
-      </div>
+      </main>
     </div>
 
     <Footer />
 
-    <script is:inline>
+    <script is:inline define:vars={{ apiUrl: API_URL }}>
       const API_BASE = apiUrl || '';
+      const alertBox = document.getElementById('adm-login-alert');
+      const btn = document.getElementById('btn-adm-login');
+      const identifierInput = document.getElementById('adm-identifier');
+      const passwordInput = document.getElementById('adm-password');
+      const codeInput = document.getElementById('adm-code');
 
-      // Cek sesi lama tanpa langsung auto-redirect
-      const existingSeller = localStorage.getItem('lapak_seller');
-      if (existingSeller) {
-        try {
-          const parsed = JSON.parse(existingSeller);
-          document.getElementById('session-notice')?.classList.remove('hidden');
-          const nameEl = document.getElementById('session-user-name');
-          if (nameEl) nameEl.textContent = parsed.name || parsed.email || 'Admin';
-        } catch {}
-      }
-
-      document.getElementById('btn-reset-session')?.addEventListener('click', () => {
-        localStorage.removeItem('lapak_seller');
-        document.getElementById('session-notice')?.classList.add('hidden');
+      // Jika kode akses diisi, kosongkan email & kata sandi agar tidak ambigu
+      codeInput?.addEventListener('input', () => {
+        if (codeInput.value.trim().length > 0) {
+          if (identifierInput) identifierInput.value = '';
+          if (passwordInput) passwordInput.value = '';
+        }
       });
 
-      const tabs = {
-        login: { btn: document.getElementById('tab-login'), form: document.getElementById('form-login') },
-        register: { btn: document.getElementById('tab-register'), form: document.getElementById('form-register') },
-        code: { btn: document.getElementById('tab-code'), form: document.getElementById('form-code') }
-      };
-
-      const alertBox = document.getElementById('auth-alert');
-
-      function showAlert(msg, isError = true) {
-        if (!alertBox) return;
+      function showAlert(msg, isErr = true) {
         alertBox.textContent = msg;
-        alertBox.className = `mb-4 p-3 rounded-xl text-xs font-medium ${
-          isError
-            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+        alertBox.className = `p-3 rounded-xl text-xs font-semibold ${
+          isErr ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
         }`;
         alertBox.classList.remove('hidden');
       }
 
-      function switchTab(activeKey) {
-        alertBox?.classList.add('hidden');
-        Object.keys(tabs).forEach((key) => {
-          const item = tabs[key];
-          if (key === activeKey) {
-            item.btn?.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
-            item.btn?.classList.remove('text-slate-600');
-            item.form?.classList.remove('hidden');
-          } else {
-            item.btn?.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
-            item.btn?.classList.add('text-slate-600');
-            item.form?.classList.add('hidden');
-          }
-        });
+      function resetBtn() {
+        btn.disabled = false;
+        btn.textContent = 'Masuk ke Panel Admin';
       }
 
-      tabs.login.btn?.addEventListener('click', () => switchTab('login'));
-      tabs.register.btn?.addEventListener('click', () => switchTab('register'));
-      tabs.code.btn?.addEventListener('click', () => switchTab('code'));
+      document.getElementById('adm-login-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const identifier = (identifierInput?.value || '').trim();
+        const password = passwordInput?.value || '';
+        const accessCode = (codeInput?.value || '').trim();
 
-      async function handleAuth(url, payload) {
+        if (!accessCode && (!identifier || !password)) {
+          showAlert('Isi email/username dan kata sandi, atau isi Kode Akses.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Memverifikasi...';
+
+        const payload = accessCode
+          ? { access_code: accessCode }
+          : {
+              email: identifier.includes('@') ? identifier : undefined,
+              username: !identifier.includes('@') ? identifier : undefined,
+              password
+            };
+
         try {
-          const res = await fetch(`${API_BASE}${url}`, {
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
 
-          if (!res.ok) {
-            showAlert(data.error || 'Autentikasi gagal. Periksa kembali data Anda.', true);
+          if (!res.ok || !data.user) {
+            showAlert(data.error || 'Kredensial atau kode akses admin tidak valid.');
+            resetBtn();
             return;
           }
 
-          localStorage.setItem('lapak_seller', JSON.stringify(data.user));
-          showAlert('Login berhasil! Mengalihkan ke Dashboard Admin...', false);
+          const role = String(data.user.role || '').toUpperCase();
+          const allowed = ['ADMIN', 'SELLER', 'SUPER_ADMIN'];
+          if (!allowed.includes(role)) {
+            showAlert(
+              'Akun/kode ini terdaftar sebagai "' + (role || 'BUYER') + '", bukan Admin. ' +
+                (role === 'AGENT' ? 'Gunakan Portal Agen (/agen/login).' : 'Gunakan halaman Masuk yang sesuai.')
+            );
+            resetBtn();
+            return;
+          }
+
+          const sessionUser = { ...data.user, role };
+          localStorage.removeItem('lapak_agent');
+          localStorage.removeItem('lapak_seller');
+          localStorage.removeItem('ip_auth_token');
+          localStorage.setItem('ip_auth_user', JSON.stringify(sessionUser));
+          if (data.token) localStorage.setItem('ip_auth_token', data.token);
+          if (role !== 'SUPER_ADMIN') {
+            localStorage.setItem('lapak_seller', JSON.stringify(sessionUser));
+          }
+
+          showAlert(data.message || 'Login berhasil! Mengalihkan...', false);
           setTimeout(() => {
-            window.location.href = '/admin';
-          }, 500);
+            window.location.href = role === 'SUPER_ADMIN' ? '/superadmin' : '/admin';
+          }, 400);
         } catch {
-          showAlert('Gagal terhubung ke server backend (pastikan port 5000 aktif).', true);
+          showAlert('Gagal terhubung ke server.');
+          resetBtn();
         }
-      }
-
-      tabs.login.form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        handleAuth('/api/auth/login', { email, password });
-      });
-
-      tabs.register.form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('reg-name').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const password = document.getElementById('reg-password').value;
-        handleAuth('/api/auth/register', { name, email, password });
-      });
-
-      tabs.code.form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const access_code = document.getElementById('access-code').value.trim();
-        handleAuth('/api/auth/login', { access_code });
       });
     </script>
   </body>
