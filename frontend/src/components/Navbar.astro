@@ -262,12 +262,10 @@ const currentActive = (active ||
     };
 
     if (session && (session.role || session.id || session.email)) {
-      // Desktop: sembunyikan guest, tampilkan user (hanya di md ke atas)
       guestBox?.classList.remove('md:flex');
       guestBox?.classList.add('hidden');
       userBox?.classList.add('md:flex');
 
-      // Mobile dropdown: sembunyikan guest, tampilkan user
       mobileGuestBox?.classList.add('hidden');
       mobileUserBox?.classList.remove('hidden');
       mobileUserBox?.classList.add('flex');
@@ -305,12 +303,10 @@ const currentActive = (active ||
         mobileLogoutBtn.addEventListener('click', handleLogout);
       }
     } else {
-      // Desktop: tampilkan guest (hanya di md ke atas), sembunyikan user
       guestBox?.classList.add('md:flex');
       userBox?.classList.remove('md:flex');
       userBox?.classList.add('hidden');
 
-      // Mobile dropdown: tampilkan guest, sembunyikan user
       mobileGuestBox?.classList.remove('hidden');
       mobileUserBox?.classList.add('hidden');
       mobileUserBox?.classList.remove('flex');

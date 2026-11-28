@@ -1,0 +1,314 @@
+---
+interface Props {
+  checkboxId?: string;
+  submitBtnId?: string;
+  helperTextId?: string;
+  mode?: 'daftar' | 'masuk';
+}
+
+const {
+  checkboxId = 'agree-legal-checkbox',
+  submitBtnId = 'auth-submit-btn',
+  helperTextId = 'legal-gate-helper',
+  mode = 'daftar'
+} = Astro.props;
+
+const actionVerb = mode === 'masuk' ? 'masuk ke akun' : 'mendaftar akun';
+---
+
+<div
+  class="rounded-2xl border border-slate-700/80 bg-slate-900/75 p-4 space-y-3"
+  data-legal-gate
+  data-checkbox-id={checkboxId}
+  data-submit-btn-id={submitBtnId}
+  data-helper-id={helperTextId}
+>
+  <div class="flex items-start gap-3">
+    <input
+      type="checkbox"
+      id={checkboxId}
+      name={checkboxId}
+      disabled
+      required
+      class="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
+    />
+    <div class="text-xs text-slate-300 leading-relaxed">
+      <label for={checkboxId} class="cursor-pointer select-none">
+        Saya telah membaca dan menyetujui{' '}
+        <button
+          type="button"
+          data-open-legal="terms"
+          class="font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 cursor-pointer"
+        >
+          Syarat &amp; Ketentuan
+        </button>{' '}
+        serta{' '}
+        <button
+          type="button"
+          data-open-legal="privacy"
+          class="font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 cursor-pointer"
+        >
+          Kebijakan Privasi
+        </button>{' '}
+        InfoProperti sebelum {actionVerb}.
+      </label>
+    </div>
+  </div>
+
+  <!-- Status Indikator Membaca Dokumen -->
+  <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800 text-[11px]">
+    <p id={helperTextId} class="text-amber-300/90 font-medium">
+      Buka &amp; baca Syarat &amp; Ketentuan serta Kebijakan Privasi terlebih dahulu untuk membuka centang.
+    </p>
+    <div class="flex items-center gap-2">
+      <span
+        data-badge="terms"
+        class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 font-semibold"
+      >
+        S&amp;K: Belum Dibaca
+      </span>
+      <span
+        data-badge="privacy"
+        class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 font-semibold"
+      >
+        Privasi: Belum Dibaca
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BACA DOKUMEN LEGAL -->
+<div
+  id="legal-read-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="legal-modal-title"
+  class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4"
+>
+  <div class="w-full max-w-xl rounded-3xl border border-slate-700 bg-[#0F172A] text-white shadow-2xl overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+      <div>
+        <span id="legal-modal-badge" class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+          Dokumen Wajib Dibaca
+        </span>
+        <h3 id="legal-modal-title" class="text-base font-extrabold text-white">
+          Syarat &amp; Ketentuan InfoProperti
+        </h3>
+      </div>
+      <button
+        type="button"
+        id="legal-modal-close"
+        aria-label="Tutup jendela dokumen"
+        class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div
+      id="legal-modal-scroll"
+      class="px-6 py-5 max-h-[55vh] overflow-y-auto space-y-3 text-xs text-slate-300 leading-relaxed"
+    >
+      <!-- Diisi dinamis via JavaScript -->
+    </div>
+
+    <div class="px-6 py-4 border-t border-slate-800 bg-slate-900/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <a
+        id="legal-modal-full-link"
+        href="/syarat-ketentuan"
+        class="text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
+      >
+        Buka Halaman Lengkap &rarr;
+      </a>
+      <button
+        type="button"
+        id="legal-modal-acknowledge"
+        class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer"
+      >
+        Saya Sudah Membaca Bagian Ini
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  const LEGAL_DOCS = {
+    terms: {
+      title: 'Syarat & Ketentuan Penggunaan',
+      badge: 'Ketentuan Layanan • infoproperti.web.id',
+      fullHref: '/syarat-ketentuan',
+      body: `
+        <p>1. <strong>Peran Platform:</strong> InfoProperti menyediakan katalog informasi Kos, Rumah, dan Kavling Tanah di Malang Raya serta memfasilitasi komunikasi antara pencari properti, agen, dan pengelola.</p>
+        <p>2. <strong>Akurasi Data &amp; Ketersediaan:</strong> Spesifikasi unit, harga, legalitas (seperti SHM/HGB), dan status ketersediaan diperbarui oleh pengelola/agen. Calon penyewa atau pembeli disarankan melakukan survei langsung dan verifikasi dokumen sebelum pembayaran/transaksi.</p>
+        <p>3. <strong>Etika Akun &amp; Penayangan:</strong> Pengguna dilarang mengunggah informasi palsu, melanggar hak cipta, atau menyalahgunakan kontak pihak lain di platform.</p>
+      `
+    },
+    privacy: {
+      title: 'Kebijakan Privasi Pengguna',
+      badge: 'Perlindungan Data • infoproperti.web.id',
+      fullHref: '/kebijakan-privasi',
+      body: `
+        <p>1. <strong>Data yang Dikumpulkan:</strong> Kami memproses informasi akun (seperti nama, email, nomor WhatsApp, dan preferensi pencarian/penawaran properti) untuk keperluan operasional layanan dan komunikasi yang Anda minta.</p>
+        <p>2. <strong>Tujuan Pemrosesan:</strong> Data digunakan untuk autentikasi sesi, menampilkan unit relevan, serta menghubungkan Anda dengan pihak terkait saat Anda melakukan permintaan informasi atau konsultasi.</p>
+        <p>3. <strong>Keamanan &amp; Hak Pengguna:</strong> Kami menerapkan langkah pengamanan teknis yang wajar dan tidak menjual data pribadi Anda ke pihak ketiga tanpa dasar yang sah. Anda dapat memperbarui data profil atau menghubungi tim melalui kontak resmi.</p>
+      `
+    }
+  };
+
+  function initLegalAgreementGates() {
+    const STORAGE_KEY = 'ip_legal_read_v1';
+    let readState = { terms: false, privacy: false };
+
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+      readState.terms = Boolean(saved.terms);
+      readState.privacy = Boolean(saved.privacy);
+    } catch {}
+
+    const modal = document.getElementById('legal-read-modal');
+    const modalTitle = document.getElementById('legal-modal-title');
+    const modalBadge = document.getElementById('legal-modal-badge');
+    const modalBody = document.getElementById('legal-modal-scroll');
+    const fullLink = document.getElementById('legal-modal-full-link');
+    const ackBtn = document.getElementById('legal-modal-acknowledge');
+    const closeBtn = document.getElementById('legal-modal-close');
+
+    let activeDocKey = null;
+
+    const syncGates = () => {
+      const allRead = readState.terms && readState.privacy;
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(readState));
+      } catch {}
+
+      document.querySelectorAll('[data-legal-gate]').forEach((gate) => {
+        const cbId = gate.getAttribute('data-checkbox-id') || 'agree-legal-checkbox';
+        const btnId = gate.getAttribute('data-submit-btn-id') || 'auth-submit-btn';
+        const helperId = gate.getAttribute('data-helper-id') || 'legal-gate-helper';
+
+        const checkbox = document.getElementById(cbId);
+        const submitBtn = document.getElementById(btnId);
+        const helperEl = document.getElementById(helperId);
+
+        const termsBadge = gate.querySelector('[data-badge="terms"]');
+        const privacyBadge = gate.querySelector('[data-badge="privacy"]');
+
+        if (termsBadge) {
+          termsBadge.textContent = readState.terms ? 'S&K: Sudah Dibaca' : 'S&K: Belum Dibaca';
+          termsBadge.className = readState.terms
+            ? 'px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-700/70 font-semibold'
+            : 'px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+        }
+
+        if (privacyBadge) {
+          privacyBadge.textContent = readState.privacy ? 'Privasi: Sudah Dibaca' : 'Privasi: Belum Dibaca';
+          privacyBadge.className = readState.privacy
+            ? 'px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-700/70 font-semibold'
+            : 'px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+        }
+
+        if (checkbox) {
+          checkbox.disabled = !allRead;
+          if (!allRead) checkbox.checked = false;
+        }
+
+        if (helperEl) {
+          if (!allRead) {
+            helperEl.className = 'text-amber-300/90 font-medium';
+            helperEl.textContent = 'Klik tautan Syarat & Ketentuan serta Kebijakan Privasi untuk membuka centang.';
+          } else if (!checkbox?.checked) {
+            helperEl.className = 'text-emerald-300 font-medium';
+            helperEl.textContent = 'Dokumen sudah dibaca. Silakan centang kotak persetujuan untuk melanjutkan.';
+          } else {
+            helperEl.className = 'text-emerald-400 font-semibold';
+            helperEl.textContent = 'Persetujuan Syarat & Ketentuan dan Kebijakan Privasi terkonfirmasi.';
+          }
+        }
+
+        if (submitBtn) {
+          const canSubmit = Boolean(allRead && checkbox?.checked);
+          submitBtn.disabled = !canSubmit;
+          submitBtn.classList.toggle('opacity-50', !canSubmit);
+          submitBtn.classList.toggle('cursor-not-allowed', !canSubmit);
+        }
+      });
+    };
+
+    const openDocModal = (docKey) => {
+      const doc = LEGAL_DOCS[docKey];
+      if (!doc || !modal) return;
+      activeDocKey = docKey;
+      if (modalTitle) modalTitle.textContent = doc.title;
+      if (modalBadge) modalBadge.textContent = doc.badge;
+      if (modalBody) {
+        modalBody.innerHTML = doc.body;
+        modalBody.scrollTop = 0;
+      }
+      if (fullLink) fullLink.href = doc.fullHref;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    const closeDocModal = () => {
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      activeDocKey = null;
+    };
+
+    document.querySelectorAll('[data-open-legal]').forEach((btn) => {
+      if (btn.dataset.legalBound === 'true') return;
+      btn.dataset.legalBound = 'true';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const docKey = btn.getAttribute('data-open-legal');
+        if (docKey) openDocModal(docKey);
+      });
+    });
+
+    document.querySelectorAll('[data-legal-gate]').forEach((gate) => {
+      const cbId = gate.getAttribute('data-checkbox-id') || 'agree-legal-checkbox';
+      const checkbox = document.getElementById(cbId);
+      if (checkbox && checkbox.dataset.legalBound !== 'true') {
+        checkbox.dataset.legalBound = 'true';
+        checkbox.addEventListener('change', syncGates);
+      }
+    });
+
+    if (ackBtn && ackBtn.dataset.legalBound !== 'true') {
+      ackBtn.dataset.legalBound = 'true';
+      ackBtn.addEventListener('click', () => {
+        if (activeDocKey && Object.prototype.hasOwnProperty.call(readState, activeDocKey)) {
+          readState[activeDocKey] = true;
+        }
+        closeDocModal();
+        syncGates();
+      });
+    }
+
+    if (closeBtn && closeBtn.dataset.legalBound !== 'true') {
+      closeBtn.dataset.legalBound = 'true';
+      closeBtn.addEventListener('click', closeDocModal);
+    }
+
+    if (modal && modal.dataset.legalBound !== 'true') {
+      modal.dataset.legalBound = 'true';
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeDocModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+          closeDocModal();
+        }
+      });
+    }
+
+    syncGates();
+  }
+
+  initLegalAgreementGates();
+  document.addEventListener('astro:page-load', initLegalAgreementGates);
+</script>
