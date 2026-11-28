@@ -71,7 +71,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       {
         message:
           userRole === 'AGENT'
-            ? 'Pendaftaran Agen berhasil dikirim dan menunggu verifikasi KTP oleh Admin/Super Admin.'
+            ? 'Pendaftaran Agen berhasil dikirim dan menunggu verifikasi KTP oleh Super Admin. Kami akan menghubungi Anda lewat WhatsApp setelah akun diaktifkan.'
             : 'Registrasi akun Pembeli berhasil!',
         user: data
       },

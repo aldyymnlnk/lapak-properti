@@ -35,8 +35,11 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           </div>
 
           <div class="flex flex-wrap items-center gap-2.5">
-            <a href="/admin" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">
-              Buka Operasional Admin &rarr;
+            <a href="/superadmin/properties" class="px-4 py-2.5 rounded-xl bg-[#059669] hover:bg-emerald-700 text-white text-xs font-bold transition">
+              Kelola Katalog Properti &rarr;
+            </a>
+            <a href="/admin" class="px-4 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-300 text-xs font-bold transition">
+              Operasional Admin &rarr;
             </a>
             <button type="button" id="btn-sync-sheets" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold cursor-pointer transition">
               Sync Google Sheets
@@ -66,6 +69,23 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
             <span class="text-[11px] font-bold text-slate-400 uppercase">Mitra Agen</span>
             <strong id="stat-agents" class="block text-2xl font-black text-[#059669] mt-1">0</strong>
             <span id="stat-agents-pending" class="text-[11px] text-amber-600 font-semibold">0 menunggu aktif</span>
+          </div>
+        </section>
+
+        <!-- ANTREAN VERIFIKASI AGEN -->
+        <section id="agent-queue" class="bg-white rounded-2xl border-2 border-amber-300/70 shadow-xs overflow-hidden">
+          <div class="p-5 border-b border-amber-100 bg-amber-50/60 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-amber-700">Perlu Tindakan</span>
+              <h2 class="text-base font-extrabold text-slate-900">
+                Antrean Verifikasi Agen
+                <span id="agent-queue-count" class="ml-1.5 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[11px] font-black">0</span>
+              </h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">Pendaftar dari Portal Agen menunggu pengecekan NIK &amp; foto KTP sebelum bisa login.</p>
+            </div>
+          </div>
+          <div id="agent-queue-list" class="divide-y divide-slate-100 text-xs">
+            <div class="p-6 text-center text-slate-400">Memuat antrean...</div>
           </div>
         </section>
 
@@ -160,8 +180,55 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
     <Footer />
 
+    <!-- MODAL FOTO KTP (foto KTP berbentuk data URL tidak bisa dibuka lewat link biasa) -->
+    <div id="ktp-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 flex items-center justify-center p-4">
+      <button type="button" id="ktp-close" class="absolute top-5 right-5 text-white bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-lg text-xs font-bold cursor-pointer">
+        Tutup &times;
+      </button>
+      <img id="ktp-img" src="" alt="Foto KTP" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain bg-white" />
+    </div>
+
     <script is:inline define:vars={{ apiUrl: API_URL }}>
       const API_BASE = apiUrl || '';
+
+      function escapeHtml(str) {
+        return String(str == null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function safeId(id) {
+        return String(id == null ? '' : id).replace(/[^a-zA-Z0-9_-]/g, '');
+      }
+
+      function clearSession() {
+        localStorage.removeItem('lapak_agent');
+        localStorage.removeItem('lapak_seller');
+        localStorage.removeItem('ip_auth_user');
+        localStorage.removeItem('ip_auth_token');
+      }
+
+      // Semua request ke API membawa token Bearer; 401 -> kembali ke login super admin
+      function authFetch(url, opts) {
+        opts = opts || {};
+        const headers = Object.assign({}, opts.headers || {});
+        try {
+          const token = localStorage.getItem('ip_auth_token');
+          if (token) headers['Authorization'] = 'Bearer ' + token;
+        } catch (e) {}
+        opts.headers = headers;
+
+        return fetch(url, opts).then((res) => {
+          if (res.status === 401) {
+            clearSession();
+            window.location.href = '/superadmin/login';
+          }
+          return res;
+        });
+      }
 
       function getSuperAdminSession() {
         try {
@@ -181,8 +248,9 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
       }
 
       const currentUser = getSuperAdminSession();
+      const isAuthorized = Boolean(currentUser && currentUser.role === 'SUPER_ADMIN');
 
-      if (!currentUser || currentUser.role !== 'SUPER_ADMIN') {
+      if (!isAuthorized) {
         window.location.href = '/superadmin/login';
       } else {
         const badgeEl = document.getElementById('sa-user-badge');
@@ -191,12 +259,34 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         }
       }
 
+      const usersCache = {};
+      const ktpMap = {};
+
+      // ---------- Viewer foto KTP ----------
+      const ktpModal = document.getElementById('ktp-modal');
+      const ktpImg = document.getElementById('ktp-img');
+
+      window.viewKtp = (id) => {
+        const src = ktpMap[id];
+        if (!src || !/^(https?:\/\/|data:image\/)/i.test(src)) {
+          alert('Foto KTP tidak tersedia atau formatnya tidak valid.');
+          return;
+        }
+        ktpImg.src = src;
+        ktpModal.classList.remove('hidden');
+      };
+      document.getElementById('ktp-close')?.addEventListener('click', () => ktpModal.classList.add('hidden'));
+      ktpModal?.addEventListener('click', (e) => {
+        if (e.target === ktpModal) ktpModal.classList.add('hidden');
+      });
+
       async function loadDashboardData() {
+        if (!isAuthorized) return;
         try {
           const [usersRes, propsRes, ordersRes] = await Promise.all([
-            fetch(`${API_BASE}/api/superadmin/users`, { cache: 'no-store' }),
+            authFetch(`${API_BASE}/api/superadmin/users`, { cache: 'no-store' }),
             fetch(`${API_BASE}/api/properties`, { cache: 'no-store' }),
-            fetch(`${API_BASE}/api/admin/orders`, { cache: 'no-store' })
+            authFetch(`${API_BASE}/api/admin/orders`, { cache: 'no-store' })
           ]);
 
           const users = usersRes.ok ? await usersRes.json().catch(() => []) : [];
@@ -205,7 +295,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
 
           document.getElementById('stat-props').textContent = String(Array.isArray(props) ? props.length : 0);
           const bookedCount = Array.isArray(props)
-            ? props.filter((p) => String(p.status).toUpperCase() === 'BOOKED').length
+            ? props.filter((p) => ['BOOKED', 'SOLD'].includes(String(p.status).toUpperCase())).length
             : 0;
           document.getElementById('stat-booked').textContent = `${bookedCount} unit terkunci`;
 
@@ -225,6 +315,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           document.getElementById('stat-agents-pending').textContent = `${pendingAgents} menunggu aktif`;
 
           renderUsersTable(safeUsers);
+          renderAgentQueue(safeUsers);
           renderRecentOrders(Array.isArray(orders) ? orders.slice(0, 5) : []);
         } catch (err) {
           console.error('Gagal memuat dashboard Super Admin:', err);
@@ -239,6 +330,8 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         }
 
         tbody.innerHTML = users.map((u) => {
+          const uid = safeId(u.id);
+          usersCache[uid] = u;
           const role = String(u.role || 'BUYER').toUpperCase();
           const roleBadge = role === 'SUPER_ADMIN'
             ? 'bg-amber-100 text-amber-800'
@@ -249,19 +342,22 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
             : 'bg-slate-100 text-slate-700';
 
           const isActive = u.is_active !== false;
-          const nikInfo = u.nik ? ` • NIK: <span class="font-mono">${u.nik}</span>` : '';
-          const ktpLink = u.ktp_image_url
-            ? ` • <a href="${u.ktp_image_url}" target="_blank" rel="noopener noreferrer" class="text-emerald-700 font-bold underline">Lihat KTP</a>`
-            : '';
+          const nikInfo = u.nik ? ` • NIK: <span class="font-mono">${escapeHtml(u.nik)}</span>` : '';
+
+          let ktpLink = '';
+          if (u.ktp_image_url && /^(https?:\/\/|data:image\/)/i.test(String(u.ktp_image_url).trim())) {
+            ktpMap[uid] = String(u.ktp_image_url).trim();
+            ktpLink = ` • <button type="button" onclick="viewKtp('${uid}')" class="text-emerald-700 font-bold underline cursor-pointer">Lihat KTP</button>`;
+          }
 
           return `
             <tr class="hover:bg-slate-50/80">
               <td class="px-4 py-3.5">
-                <strong class="block text-slate-900">${u.name || '-'}</strong>
-                <span class="text-[11px] text-slate-500">${u.email || '-'} ${u.phone ? `• ${u.phone}` : ''}${nikInfo}${ktpLink}</span>
+                <strong class="block text-slate-900">${escapeHtml(u.name || '-')}</strong>
+                <span class="text-[11px] text-slate-500">${escapeHtml(u.email || '-')} ${u.phone ? `• ${escapeHtml(u.phone)}` : ''}${nikInfo}${ktpLink}</span>
               </td>
               <td class="px-4 py-3.5">
-                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold ${roleBadge}">${role}</span>
+                <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold ${roleBadge}">${escapeHtml(role)}</span>
               </td>
               <td class="px-4 py-3.5">
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'}">
@@ -271,20 +367,70 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
               <td class="px-4 py-3.5 text-right space-x-1.5">
                 <button
                   type="button"
-                  onclick="toggleUserStatus('${u.id}', ${!isActive})"
+                  onclick="toggleUserStatus('${uid}', ${!isActive})"
                   class="px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-100 text-[11px] font-bold text-slate-700 cursor-pointer"
                 >
                   ${isActive ? 'Nonaktifkan' : 'Setujui & Aktifkan'}
                 </button>
                 <button
                   type="button"
-                  onclick="deleteUser('${u.id}', '${String(u.name || '').replace(/'/g, '')}')"
+                  onclick="deleteUser('${uid}')"
                   class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-[11px] font-bold text-rose-700 cursor-pointer"
                 >
                   Hapus
                 </button>
               </td>
             </tr>
+          `;
+        }).join('');
+      }
+
+      function renderAgentQueue(users) {
+        const box = document.getElementById('agent-queue-list');
+        const countEl = document.getElementById('agent-queue-count');
+        const pending = (Array.isArray(users) ? users : []).filter(
+          (u) => String(u.role || '').toUpperCase() === 'AGENT' && u.is_active === false
+        );
+        if (countEl) countEl.textContent = String(pending.length);
+        if (!box) return;
+
+        if (!pending.length) {
+          box.innerHTML = `<div class="p-6 text-center text-slate-400">Tidak ada pendaftaran agen yang menunggu verifikasi.</div>`;
+          return;
+        }
+
+        box.innerHTML = pending.map((u) => {
+          const uid = safeId(u.id);
+          usersCache[uid] = u;
+
+          let ktpBtn = `<span class="text-[11px] text-slate-400">Tanpa foto KTP</span>`;
+          if (u.ktp_image_url && /^(https?:\/\/|data:image\/)/i.test(String(u.ktp_image_url).trim())) {
+            ktpMap[uid] = String(u.ktp_image_url).trim();
+            ktpBtn = `<button type="button" onclick="viewKtp('${uid}')" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold cursor-pointer">Lihat KTP</button>`;
+          }
+
+          const nikValid = /^\d{16}$/.test(String(u.nik || ''));
+          const dateTxt = u.created_at
+            ? new Date(u.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+            : '-';
+
+          return `
+            <div class="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-slate-50/70">
+              <div class="space-y-1">
+                <strong class="text-sm font-extrabold text-slate-900">${escapeHtml(u.name || '-')}</strong>
+                <p class="text-[11px] text-slate-600">${escapeHtml(u.email || '-')} • WA: ${escapeHtml(u.phone || '-')}</p>
+                <p class="text-[11px] text-slate-600">
+                  NIK: <span class="font-mono">${escapeHtml(u.nik || '-')}</span>
+                  ${nikValid ? '' : '<span class="text-rose-600 font-bold">(format NIK tidak valid)</span>'}
+                  • Daftar: ${escapeHtml(dateTxt)}
+                </p>
+              </div>
+              <div class="flex flex-wrap items-center gap-2 shrink-0">
+                ${ktpBtn}
+                <button type="button" onclick="toggleUserStatus('${uid}', true)" class="px-3 py-1.5 rounded-lg bg-[#059669] hover:bg-emerald-700 text-white font-bold cursor-pointer">Setujui &amp; Aktifkan</button>
+                <button type="button" onclick="deleteUser('${uid}')" class="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold cursor-pointer">Tolak &amp; Hapus</button>
+              </div>
+            </div>
           `;
         }).join('');
       }
@@ -298,29 +444,62 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         box.innerHTML = orders.map((o) => `
           <div class="p-4 px-5 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <strong class="text-slate-900">${o.properties?.title || 'Unit Properti'}</strong>
-              <span class="block text-[11px] text-slate-500">Pemesan: ${o.buyer_name} (${o.buyer_phone})</span>
+              <strong class="text-slate-900">${escapeHtml(o.properties?.title || 'Unit Properti')}</strong>
+              <span class="block text-[11px] text-slate-500">Pemesan: ${escapeHtml(o.buyer_name)} (${escapeHtml(o.buyer_phone)})</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-700">${o.status}</span>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-700">${escapeHtml(o.status)}</span>
             </div>
           </div>
         `).join('');
       }
 
+      function showApprovedNotice(user) {
+        const old = document.getElementById('approved-notice');
+        if (old) old.remove();
+        const list = document.getElementById('agent-queue-list');
+        if (!list || !user) return;
+        let phone = String(user.phone || '').replace(/\D/g, '');
+        if (phone.startsWith('0')) phone = '62' + phone.slice(1);
+        const msg = `Halo ${user.name || ''}, pendaftaran agen Anda di InfoProperti sudah disetujui dan akun sudah aktif. Silakan masuk di ${location.origin}/agen/login menggunakan email dan password saat mendaftar. Terima kasih.`;
+        const waHref = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(msg)}` : '';
+        const box = document.createElement('div');
+        box.id = 'approved-notice';
+        box.className = 'p-4 bg-emerald-50 border-b border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs';
+        box.innerHTML = `
+          <span class="text-emerald-900 font-semibold">Akun ${escapeHtml(user.name || 'agen')} sudah aktif. Kabari agen agar tahu sudah bisa masuk.</span>
+          ${waHref ? `<a href="${waHref}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-lg bg-[#059669] hover:bg-emerald-700 text-white font-bold">Kabari via WhatsApp</a>` : '<span class="text-rose-700 font-bold">Nomor WA tidak tersedia</span>'}
+        `;
+        list.parentNode.insertBefore(box, list);
+      }
+
       window.toggleUserStatus = async (id, nextActive) => {
-        const res = await fetch(`${API_BASE}/api/superadmin/users/${id}`, {
+        const target = usersCache[id];
+        const wasPendingAgent = !!(target && String(target.role || '').toUpperCase() === 'AGENT' && target.is_active === false);
+        const res = await authFetch(`${API_BASE}/api/superadmin/users/${encodeURIComponent(id)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_active: nextActive })
         });
-        if (res.ok) loadDashboardData();
+        if (res.ok) {
+          await loadDashboardData();
+          if (nextActive && wasPendingAgent) showApprovedNotice(target);
+        } else {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || 'Gagal mengubah status akun.');
+        }
       };
 
-      window.deleteUser = async (id, name) => {
+      window.deleteUser = async (id) => {
+        const name = (usersCache[id] && usersCache[id].name) || 'ini';
         if (!confirm(`Hapus permanen akun ${name}?`)) return;
-        const res = await fetch(`${API_BASE}/api/superadmin/users/${id}`, { method: 'DELETE' });
-        if (res.ok) loadDashboardData();
+        const res = await authFetch(`${API_BASE}/api/superadmin/users/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadDashboardData();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          alert(data.error || 'Gagal menghapus akun.');
+        }
       };
 
       document.getElementById('create-user-form')?.addEventListener('submit', async (e) => {
@@ -330,7 +509,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
         btn.textContent = 'Menyimpan...';
 
         try {
-          const res = await fetch(`${API_BASE}/api/superadmin/users`, {
+          const res = await authFetch(`${API_BASE}/api/superadmin/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -359,7 +538,7 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
       });
 
       document.getElementById('btn-sync-sheets')?.addEventListener('click', async () => {
-        const res = await fetch(`${API_BASE}/api/admin/sync-sheets`, { method: 'POST' });
+        const res = await authFetch(`${API_BASE}/api/admin/sync-sheets`, { method: 'POST' });
         const data = await res.json().catch(() => ({}));
         alert(data.message || data.error || 'Sinkronisasi selesai.');
       });

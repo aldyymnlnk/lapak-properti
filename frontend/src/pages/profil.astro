@@ -292,6 +292,42 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
         window.location.href = '/masuk';
       }
 
+      function escapeHtml(v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function safeImg(v) {
+        const s = String(v || '').trim();
+        return /^(https?:\/\/|data:image\/)/i.test(s) ? s : '';
+      }
+
+      function getToken() {
+        try {
+          return localStorage.getItem('ip_auth_token') || '';
+        } catch {
+          return '';
+        }
+      }
+
+      function authFetch(url, options = {}) {
+        const headers = { ...(options.headers || {}) };
+        const token = getToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return fetch(url, { ...options, headers });
+      }
+
+      function clearSessionAndGoLogin() {
+        ['ip_auth_user', 'ip_auth_token', 'lapak_agent', 'lapak_seller'].forEach((k) => {
+          try { localStorage.removeItem(k); } catch {}
+        });
+        window.location.href = '/masuk';
+      }
+
       const userScope = session?.id ? encodeURIComponent(String(session.id).trim()) : 'guest';
       const LIKED_KEY = `ip_liked_props_${userScope}`;
       const SAVED_KEY = `ip_saved_props_${userScope}`;
@@ -464,20 +500,20 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
               <div class="p-4 sm:p-5 rounded-2xl border ${st === 'PAID' ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-200 bg-white'} flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="space-y-1">
                   <div class="flex flex-wrap items-center gap-2">
-                    <span class="font-mono text-[11px] font-bold text-slate-400">#${String(o.id).slice(0, 8).toUpperCase()}</span>
+                    <span class="font-mono text-[11px] font-bold text-slate-400">#${escapeHtml(String(o.id).slice(0, 8).toUpperCase())}</span>
                     ${badgeHtml}
                     <span class="text-[11px] text-slate-400">• ${dateStr}</span>
                   </div>
                   <h3 class="text-sm sm:text-base font-extrabold text-slate-900">
-                    ${prop.title || 'Unit Properti'} ${prop.block_or_unit && prop.block_or_unit !== '-' ? `(${prop.block_or_unit})` : ''}
+                    ${escapeHtml(prop.title || 'Unit Properti')} ${prop.block_or_unit && prop.block_or_unit !== '-' ? `(${escapeHtml(prop.block_or_unit)})` : ''}
                   </h3>
                   <p class="text-xs text-slate-600">
-                    Nilai Unit: <strong class="text-[#059669]">Rp ${price}</strong>/${prop.price_unit || 'unit'} • Pemesan: <strong>${o.buyer_name || session.name}</strong>
+                    Nilai Unit: <strong class="text-[#059669]">Rp ${price}</strong>/${escapeHtml(prop.price_unit || 'unit')} • Pemesan: <strong>${escapeHtml(o.buyer_name || session.name)}</strong>
                   </p>
                 </div>
 
                 <a
-                  href="/order/${o.id}"
+                  href="/order/${encodeURIComponent(String(o.id))}"
                   class="px-4 py-2.5 rounded-xl text-xs font-bold text-center shrink-0 transition ${actionClass}"
                 >
                   ${actionLabel} &rarr;
@@ -518,17 +554,17 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
               <div>
                 <div class="relative h-40 bg-slate-200 overflow-hidden">
                   ${
-                    item.image_url
-                      ? `<img src="${item.image_url}" alt="${item.title || ''}" class="w-full h-full object-cover" />`
+                    safeImg(item.image_url)
+                      ? `<img src="${escapeHtml(safeImg(item.image_url))}" alt="${escapeHtml(item.title || '')}" class="w-full h-full object-cover" />`
                       : `<div class="w-full h-full flex items-center justify-center text-xs text-slate-400">Tanpa Foto</div>`
                   }
                   <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded bg-slate-900/85 text-white text-[10px] font-bold uppercase">
-                    ${item.category || 'PROPERTI'}
+                    ${escapeHtml(item.category || 'PROPERTI')}
                   </span>
                   <button
                     type="button"
-                    data-remove-key="${storageKey}"
-                    data-remove-id="${item.id}"
+                    data-remove-key="${escapeHtml(storageKey)}"
+                    data-remove-id="${escapeHtml(item.id)}"
                     title="Hapus dari daftar"
                     class="btn-remove-collection absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-white/95 hover:bg-rose-600 text-slate-700 hover:text-white text-[10px] font-extrabold shadow cursor-pointer transition"
                   >
@@ -537,18 +573,18 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
                 </div>
 
                 <div class="p-4">
-                  <h3 class="text-sm font-extrabold text-slate-900 line-clamp-1">${item.title || ''}</h3>
-                  <p class="text-[11px] text-slate-500 mt-0.5 truncate">${item.location || ''}</p>
+                  <h3 class="text-sm font-extrabold text-slate-900 line-clamp-1">${escapeHtml(item.title || '')}</h3>
+                  <p class="text-[11px] text-slate-500 mt-0.5 truncate">${escapeHtml(item.location || '')}</p>
                   <p class="text-sm font-black text-[#059669] mt-2.5">
                     Rp ${Number(item.price || 0).toLocaleString('id-ID')}
-                    <span class="text-[11px] font-normal text-slate-500">/${item.price_unit || 'unit'}</span>
+                    <span class="text-[11px] font-normal text-slate-500">/${escapeHtml(item.price_unit || 'unit')}</span>
                   </p>
                 </div>
               </div>
 
               <div class="p-4 pt-0">
                 <a
-                  href="/property/${item.id}"
+                  href="/property/${encodeURIComponent(String(item.id))}"
                   class="block w-full text-center py-2 rounded-xl text-xs font-bold transition ${
                     isBooked ? 'bg-slate-200 text-slate-700' : 'bg-[#059669] hover:bg-emerald-700 text-white'
                   }"
@@ -618,11 +654,7 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
         alertBox.classList.remove('hidden');
       }
 
-      document.getElementById('btn-profile-logout')?.addEventListener('click', () => {
-        localStorage.removeItem('ip_auth_user');
-        localStorage.removeItem('lapak_agent');
-        window.location.href = '/masuk';
-      });
+      document.getElementById('btn-profile-logout')?.addEventListener('click', clearSessionAndGoLogin);
 
       document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -636,11 +668,26 @@ const waConsultUrl = `https://wa.me/6281234567890?text=${encodeURIComponent(
         const cleanName = document.getElementById('prof-name').value.trim();
 
         try {
-          const res = await fetch(`${API_BASE}/api/users/${encodeURIComponent(String(session.id))}`, {
+          // Akun kode akses (preset-...) tidak punya baris di database: simpan di perangkat saja
+          if (String(session.id).startsWith('preset-')) {
+            const localUpdated = { ...session, name: cleanName, phone: cleanPhone };
+            localStorage.setItem('ip_auth_user', JSON.stringify(localUpdated));
+            session = localUpdated;
+            renderHeaderInfo();
+            if (typeof window.initNavbar === 'function') window.initNavbar();
+            showAlert('Profil diperbarui di perangkat ini (akun kode akses).', false);
+            return;
+          }
+
+          const res = await authFetch(`${API_BASE}/api/users/${encodeURIComponent(String(session.id))}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: cleanName, phone: cleanPhone })
           });
+          if (res.status === 401) {
+            clearSessionAndGoLogin();
+            return;
+          }
           const data = await res.json().catch(() => ({}));
 
           if (res.ok && data.user) {

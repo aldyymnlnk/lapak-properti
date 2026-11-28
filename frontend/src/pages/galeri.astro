@@ -2,16 +2,107 @@
 export const prerender = false;
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import { getAllProperties } from '../lib/properties';
 
-const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
+const FALLBACK_IMG =
+  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80';
 
-let properties: any[] = [];
-try {
-  const res = await fetch(`${API_URL}/api/properties`, { cache: 'no-store' });
-  if (res.ok) properties = await res.json();
-} catch {
-  properties = [];
+// Foto contoh: hanya tampil kalau foto asli dari properti yang diposting masih sedikit.
+const SAMPLE_PHOTOS = [
+  {
+    category: 'rumah',
+    title: 'Contoh Fasad Rumah Minimalis',
+    location: 'Malang Raya',
+    src: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    category: 'kos',
+    title: 'Contoh Interior Kamar Kos',
+    location: 'Malang Raya',
+    src: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    category: 'rumah',
+    title: 'Contoh Ruang Keluarga',
+    location: 'Malang Raya',
+    src: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    category: 'tanah',
+    title: 'Contoh Kawasan Kavling Tanah',
+    location: 'Malang Raya',
+    src: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80'
+  }
+];
+const MIN_PHOTOS = 4;
+const MAX_EXTRA_PER_PROPERTY = 5;
+
+const properties: any[] = await getAllProperties(Astro.locals);
+
+function readSpecs(raw: any): Record<string, any> {
+  if (!raw) return {};
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return typeof raw === 'object' ? raw : {};
 }
+
+function validSrc(v: any): string {
+  const s = String(v || '').trim();
+  return /^(https?:\/\/|data:image\/)/i.test(s) ? s : '';
+}
+
+type Photo = { key: string; href: string; src: string; title: string; location: string; category: string; sample: boolean };
+
+const photos: Photo[] = [];
+for (const item of properties) {
+  if (!item) continue;
+  const specs = readSpecs(item.specifications);
+  const gallery: any[] = Array.isArray(specs.gallery) ? specs.gallery : [];
+  const cover = validSrc(item.image_url) || FALLBACK_IMG;
+  const srcs = [cover];
+  for (const g of gallery.slice(0, MAX_EXTRA_PER_PROPERTY)) {
+    const s = validSrc(g);
+    if (s && !srcs.includes(s)) srcs.push(s);
+  }
+  srcs.forEach((src, i) => {
+    photos.push({
+      key: `${item.id}-${i}`,
+      href: `/property/${item.id}`,
+      src,
+      title: String(item.title || 'Unit Properti'),
+      location: String(item.location || ''),
+      category: String(item.category || '').toLowerCase(),
+      sample: false
+    });
+  });
+}
+
+if (photos.length < MIN_PHOTOS) {
+  SAMPLE_PHOTOS.forEach((s, i) => {
+    photos.push({
+      key: `sample-${i}`,
+      href: '/katalog',
+      src: s.src,
+      title: s.title,
+      location: s.location,
+      category: s.category,
+      sample: true
+    });
+  });
+}
+
+const FILTERS = [
+  { id: 'all', label: 'Semua' },
+  { id: 'kos', label: 'Kos' },
+  { id: 'rumah', label: 'Rumah' },
+  { id: 'tanah', label: 'Tanah' }
+];
 ---
 
 <html lang="id">
@@ -43,36 +134,88 @@ try {
       </section>
 
       <main class="max-w-6xl mx-auto px-4 py-10">
-        {properties.length > 0 ? (
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((item: any) => (
-              <a href={`/property/${item.id}`} class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition">
-                <div class="relative h-56 overflow-hidden bg-slate-200">
-                  <img
-                    src={item.image_url || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80'}
-                    alt={item.title}
-                    class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/80 text-white text-[10px] font-bold uppercase">
-                    {item.category}
+        <div class="flex flex-wrap justify-center gap-2 mb-6" id="galeri-filters">
+          {FILTERS.map((f) => (
+            <button
+              type="button"
+              data-filter={f.id}
+              class={`galeri-filter px-4 py-1.5 rounded-full text-xs font-bold border transition cursor-pointer ${
+                f.id === 'all'
+                  ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                  : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="galeri-grid">
+          {photos.map((p) => (
+            <a
+              href={p.href}
+              data-category={p.category}
+              class="galeri-item group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition"
+            >
+              <div class="relative h-56 overflow-hidden bg-slate-200">
+                <img
+                  src={p.src}
+                  alt={p.title}
+                  loading="lazy"
+                  onerror={`this.onerror=null;this.src='${FALLBACK_IMG}'`}
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-slate-900/80 text-white text-[10px] font-bold uppercase">
+                  {p.category || 'properti'}
+                </span>
+                {p.sample && (
+                  <span class="absolute top-3 right-3 px-2.5 py-1 rounded-md bg-amber-400 text-slate-900 text-[10px] font-extrabold uppercase">
+                    Contoh
                   </span>
-                </div>
-                <div class="p-4">
-                  <h2 class="text-sm font-bold text-slate-900 line-clamp-1">{item.title}</h2>
-                  <p class="text-xs text-slate-500 mt-0.5 truncate">{item.location}</p>
-                </div>
-              </a>
-            ))}
-          </div>
-        ) : (
-          <div class="text-center py-16 bg-white rounded-2xl border border-slate-200">
-            <h2 class="text-sm font-bold text-slate-700">Belum Ada Foto Galeri</h2>
-            <p class="text-xs text-slate-400 mt-1">Foto unit akan otomatis tampil setelah properti diposting ke katalog.</p>
-          </div>
-        )}
+                )}
+              </div>
+              <div class="p-4">
+                <h2 class="text-sm font-bold text-slate-900 line-clamp-1">{p.title}</h2>
+                <p class="text-xs text-slate-500 mt-0.5 truncate">{p.location}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <p id="galeri-empty" class="hidden text-center text-xs text-slate-400 py-10">
+          Belum ada foto untuk kategori ini.
+        </p>
       </main>
     </div>
 
     <Footer />
+
+    <script is:inline>
+      (function () {
+        var buttons = document.querySelectorAll('.galeri-filter');
+        var items = document.querySelectorAll('.galeri-item');
+        var emptyMsg = document.getElementById('galeri-empty');
+        buttons.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var f = btn.getAttribute('data-filter');
+            var shown = 0;
+            items.forEach(function (it) {
+              var ok = f === 'all' || it.getAttribute('data-category') === f;
+              it.style.display = ok ? '' : 'none';
+              if (ok) shown++;
+            });
+            buttons.forEach(function (b) {
+              var active = b === btn;
+              b.className =
+                'galeri-filter px-4 py-1.5 rounded-full text-xs font-bold border transition cursor-pointer ' +
+                (active
+                  ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                  : 'bg-white text-slate-600 border-slate-300 hover:border-slate-500');
+            });
+            if (emptyMsg) emptyMsg.classList.toggle('hidden', shown > 0);
+          });
+        });
+      })();
+    </script>
   </body>
 </html>

@@ -367,13 +367,14 @@ const API_URL = (import.meta as any).env?.PUBLIC_API_URL || '';
           if (res.ok) {
             showAlert(
               role === 'AGENT'
-                ? 'Pendaftaran Agen terkirim! Menunggu verifikasi KTP oleh Admin/Super Admin.'
+                ? 'Pendaftaran Agen terkirim! Akun menunggu verifikasi KTP oleh Super Admin. Anda akan dikabari lewat WhatsApp setelah akun aktif, lalu silakan masuk di halaman Login Agen.'
                 : 'Akun Pembeli berhasil dibuat! Mengalihkan ke halaman masuk...',
               false
             );
+            btn.textContent = role === 'AGENT' ? 'Menunggu Verifikasi' : 'Berhasil';
             setTimeout(() => {
-              window.location.href = '/masuk';
-            }, 1200);
+              window.location.href = role === 'AGENT' ? '/agen/login' : '/masuk';
+            }, role === 'AGENT' ? 6000 : 1200);
           } else {
             showAlert(data.error || 'Gagal mendaftar.');
             btn.disabled = false;

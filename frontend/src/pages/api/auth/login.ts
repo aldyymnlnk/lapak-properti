@@ -99,7 +99,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     if (error || !user) {
-      return jsonRes({ error: 'Email/username atau kata sandi tidak sesuai.' }, 401);
+      return jsonRes({ error: 'Email/username atau kata sandi tidak sesuai. Jika pendaftaran agen Anda ditolak, silakan daftar ulang dengan data yang benar.' }, 401);
     }
 
     const check = await verifyPassword(password, user.password_hash);
@@ -112,7 +112,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         {
           error:
             user.role === 'AGENT'
-              ? 'Akun Agen Anda masih menunggu verifikasi KTP oleh Admin/Super Admin.'
+              ? 'Akun Agen Anda masih menunggu verifikasi KTP oleh Super Admin. Kami akan mengabari lewat WhatsApp begitu akun diaktifkan, lalu Anda bisa masuk lagi.'
               : 'Akun Anda sedang dinonaktifkan.'
         },
         403
